@@ -21,12 +21,12 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	api := operations.NewProdxAPI(swaggerSpec)
+	api := operations.NewConfigManagerAPI(swaggerSpec)
 	server := restapi.NewServer(api)
 	defer server.Shutdown()
 
 	parser := flags.NewParser(server, flags.Default)
-	parser.ShortDescription = "prodx"
+	parser.ShortDescription = "configManager"
 	parser.LongDescription = swaggerSpec.Spec().Info.Description
 
 	server.ConfigureFlags()

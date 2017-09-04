@@ -28,9 +28,9 @@ import (
 	"../../restapi/operations/role"
 )
 
-// NewProdxAPI creates a new Prodx instance
-func NewProdxAPI(spec *loads.Document) *ProdxAPI {
-	return &ProdxAPI{
+// NewConfigManagerAPI creates a new ConfigManager instance
+func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
+	return &ConfigManagerAPI{
 		handlers:            make(map[string]map[string]http.Handler),
 		formats:             strfmt.Default,
 		defaultConsumes:     "application/json",
@@ -163,8 +163,8 @@ func NewProdxAPI(spec *loads.Document) *ProdxAPI {
 	}
 }
 
-/*ProdxAPI the prodx API */
-type ProdxAPI struct {
+/*ConfigManagerAPI the config manager API */
+type ConfigManagerAPI struct {
 	spec            *loads.Document
 	context         *middleware.Context
 	handlers        map[string]map[string]http.Handler
@@ -286,42 +286,42 @@ type ProdxAPI struct {
 }
 
 // SetDefaultProduces sets the default produces media type
-func (o *ProdxAPI) SetDefaultProduces(mediaType string) {
+func (o *ConfigManagerAPI) SetDefaultProduces(mediaType string) {
 	o.defaultProduces = mediaType
 }
 
 // SetDefaultConsumes returns the default consumes media type
-func (o *ProdxAPI) SetDefaultConsumes(mediaType string) {
+func (o *ConfigManagerAPI) SetDefaultConsumes(mediaType string) {
 	o.defaultConsumes = mediaType
 }
 
 // SetSpec sets a spec that will be served for the clients.
-func (o *ProdxAPI) SetSpec(spec *loads.Document) {
+func (o *ConfigManagerAPI) SetSpec(spec *loads.Document) {
 	o.spec = spec
 }
 
 // DefaultProduces returns the default produces media type
-func (o *ProdxAPI) DefaultProduces() string {
+func (o *ConfigManagerAPI) DefaultProduces() string {
 	return o.defaultProduces
 }
 
 // DefaultConsumes returns the default consumes media type
-func (o *ProdxAPI) DefaultConsumes() string {
+func (o *ConfigManagerAPI) DefaultConsumes() string {
 	return o.defaultConsumes
 }
 
 // Formats returns the registered string formats
-func (o *ProdxAPI) Formats() strfmt.Registry {
+func (o *ConfigManagerAPI) Formats() strfmt.Registry {
 	return o.formats
 }
 
 // RegisterFormat registers a custom format validator
-func (o *ProdxAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
+func (o *ConfigManagerAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
 	o.formats.Add(name, format, validator)
 }
 
-// Validate validates the registrations in the ProdxAPI
-func (o *ProdxAPI) Validate() error {
+// Validate validates the registrations in the ConfigManagerAPI
+func (o *ConfigManagerAPI) Validate() error {
 	var unregistered []string
 
 	if o.JSONConsumer == nil {
@@ -496,12 +496,12 @@ func (o *ProdxAPI) Validate() error {
 }
 
 // ServeErrorFor gets a error handler for a given operation id
-func (o *ProdxAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
+func (o *ConfigManagerAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
 	return o.ServeError
 }
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
-func (o *ProdxAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
+func (o *ConfigManagerAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 
 	result := make(map[string]runtime.Authenticator)
 	for name, scheme := range schemes {
@@ -520,7 +520,7 @@ func (o *ProdxAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map
 }
 
 // ConsumersFor gets the consumers for the specified media types
-func (o *ProdxAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
+func (o *ConfigManagerAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 
 	result := make(map[string]runtime.Consumer)
 	for _, mt := range mediaTypes {
@@ -539,7 +539,7 @@ func (o *ProdxAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer
 }
 
 // ProducersFor gets the producers for the specified media types
-func (o *ProdxAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
+func (o *ConfigManagerAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 
 	result := make(map[string]runtime.Producer)
 	for _, mt := range mediaTypes {
@@ -555,7 +555,7 @@ func (o *ProdxAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path
-func (o *ProdxAPI) HandlerFor(method, path string) (http.Handler, bool) {
+func (o *ConfigManagerAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	if o.handlers == nil {
 		return nil, false
 	}
@@ -570,8 +570,8 @@ func (o *ProdxAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	return h, ok
 }
 
-// Context returns the middleware context for the prodx API
-func (o *ProdxAPI) Context() *middleware.Context {
+// Context returns the middleware context for the config manager API
+func (o *ConfigManagerAPI) Context() *middleware.Context {
 	if o.context == nil {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)
 	}
@@ -579,7 +579,7 @@ func (o *ProdxAPI) Context() *middleware.Context {
 	return o.context
 }
 
-func (o *ProdxAPI) initHandlerCache() {
+func (o *ConfigManagerAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
 
 	if o.handlers == nil {
@@ -775,7 +775,7 @@ func (o *ProdxAPI) initHandlerCache() {
 
 // Serve creates a http handler to serve the API over HTTP
 // can be used directly in http.ListenAndServe(":8000", api.Serve(nil))
-func (o *ProdxAPI) Serve(builder middleware.Builder) http.Handler {
+func (o *ConfigManagerAPI) Serve(builder middleware.Builder) http.Handler {
 	o.Init()
 
 	if o.Middleware != nil {
@@ -785,7 +785,7 @@ func (o *ProdxAPI) Serve(builder middleware.Builder) http.Handler {
 }
 
 // Init allows you to just initialize the handler cache, you can then recompose the middelware as you see fit
-func (o *ProdxAPI) Init() {
+func (o *ConfigManagerAPI) Init() {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}

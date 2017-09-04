@@ -17,7 +17,7 @@ func init() {
   ],
   "swagger": "2.0",
   "info": {
-    "title": "prodx",
+    "title": "configManager",
     "contact": {
       "email": "alexandre@ineosystems.com.br"
     },

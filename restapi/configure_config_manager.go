@@ -10,28 +10,28 @@ import (
 	//"github.com/go-swagger/go-swagger/examples/authentication/models"
 	graceful "github.com/tylerb/graceful"
 
-	"../../prodx/restapi/operations"
-	"../../prodx/restapi/operations/cell"
-	"../../prodx/restapi/operations/component"
-	"../../prodx/restapi/operations/customer"
-	"../../prodx/restapi/operations/hostgroup"
-	"../../prodx/restapi/operations/keypair"
-	"../../prodx/restapi/operations/provider"
-	"../../prodx/restapi/operations/providertype"
-	"../../prodx/restapi/operations/role"
 	"../handlers"
 	"../models"
+	"./operations"
+	"./operations/cell"
+	"./operations/component"
+	"./operations/customer"
+	"./operations/hostgroup"
+	"./operations/keypair"
+	"./operations/provider"
+	"./operations/providertype"
+	"./operations/role"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten
 
 //go:generate swagger generate server --target .. --name  --spec ../swagger.yml
 
-func configureFlags(api *operations.ProdxAPI) {
+func configureFlags(api *operations.ConfigManagerAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
-func configureAPI(api *operations.ProdxAPI) http.Handler {
+func configureAPI(api *operations.ConfigManagerAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 

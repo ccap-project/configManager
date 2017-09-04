@@ -2,7 +2,7 @@ swagger: "2.0"
 info:
   description: ""
   version: "0.0.1"
-  title: "prodx"
+  title: "configManager"
   contact:
     email: "alexandre@ineosystems.com.br"
 host: "127.0.0.1:3000"

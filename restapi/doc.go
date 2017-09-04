@@ -1,4 +1,4 @@
-/*Package restapi prodx
+/*Package restapi configManager
 
     Schemes:
       http
