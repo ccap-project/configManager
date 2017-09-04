@@ -1,0 +1,1453 @@
+swagger: "2.0"
+info:
+  description: ""
+  version: "0.0.1"
+  title: "prodx"
+  contact:
+    email: "alexandre@ineosystems.com.br"
+host: "127.0.0.1:3000"
+basePath: "/v1"
+tags:
+- name: "customer"
+  description: "Everything about the Customer"
+  externalDocs:
+    description: "Find out more"
+    url: "http://swagger.io"
+- name: "cell"
+- name: "component"
+- name: "keypair"
+- name: "provider"
+- name: "providertype"
+- name: "role"
+- name: "roleversion"
+schemes:
+- "http"
+securityDefinitions:
+  APIKeyHeader:
+    type: apiKey
+    in: header
+    name: x-api-token
+paths:
+  /customer:
+    post:
+      tags:
+      - "customer"
+      summary: "Add a new customer"
+      description: ""
+      operationId: "addCustomer"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Customer object that needs to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/Customer"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            type: integer
+        405:
+          description: "Invalid input"
+        409:
+          description: "Already exists"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+    put:
+      tags:
+      - "customer"
+      summary: "Update an existing customer"
+      description: ""
+      operationId: "updateCustomer"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Customer object that needs to be updated"
+        required: true
+        schema:
+          $ref: "#/definitions/Customer"
+      responses:
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Customer not found"
+        405:
+          description: "Validation exception"
+  /customer/findByName:
+    get:
+      tags:
+      - "customer"
+      summary: "Finds Customer by name"
+      operationId: "findCustomerByName"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "customer_name"
+        in: "query"
+        description: "Name that need to be considered for filter"
+        required: true
+        type: "string"
+        items:
+          type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Customer"
+        400:
+          description: "Invalid customer name"
+        404:
+          description: "Customer not found"
+  /customer/{customerId}:
+    get:
+      tags:
+      - "customer"
+      summary: "Find customer by ID"
+      description: "Returns a single customer"
+      operationId: "getCustomerById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "customerId"
+        in: "path"
+        description: "ID of customer to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Customer"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Customer not found"
+    post:
+      tags:
+      - "customer"
+      summary: "Updates a customer with form data"
+      description: ""
+      operationId: "updateCustomerWithForm"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "customerId"
+        in: "path"
+        description: "ID of customer that needs to be updated"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "customer_name"
+        in: "formData"
+        description: "Updated name of the customer"
+        required: false
+        type: "string"
+      responses:
+        405:
+          description: "Invalid input"
+    delete:
+      tags:
+      - "customer"
+      summary: "Deletes a customer"
+      description: ""
+      operationId: "deleteCustomer"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "api_key"
+        in: "header"
+        required: false
+        type: "string"
+      - name: "customerId"
+        in: "path"
+        description: "Customer id to delete"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Customer not found"
+
+
+  /keypair:
+    post:
+      tags:
+      - "keypair"
+      summary: "Add a new keypair"
+      description: ""
+      operationId: "addKeypair"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Keypair object that needs to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/Keypair"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            type: integer
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        409:
+          description: "Already exists"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+    put:
+      tags:
+      - "keypair"
+      summary: "Update an existing keypair"
+      description: ""
+      operationId: "updateKeypair"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Keypair object that needs to be updated"
+        required: true
+        schema:
+          $ref: "#/definitions/Keypair"
+      responses:
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Keypair not found"
+        405:
+          description: "Validation exception"
+  /keypairs:
+    get:
+      tags:
+      - "keypair"
+      summary: "Finds Keypair by customer"
+      operationId: "findKeypairByCustomer"
+      security:
+        - APIKeyHeader: []
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Keypair"
+        400:
+          description: "Invalid customer id"
+        404:
+          description: "Keypair not found"
+        500:
+          description: "InternalError"
+          schema:
+            $ref: "#definitions/ApiResponse"
+  /keypair/{keypair_id}:
+    get:
+      tags:
+      - "keypair"
+      summary: "Find keypair by ID"
+      description: "Returns a single keypair"
+      operationId: "getKeypairById"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "keypair_id"
+        in: "path"
+        description: "ID of keypair to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Keypair"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Keypair not found"
+        500:
+          description: "InternalError"
+          schema:
+            $ref: "#definitions/ApiResponse"
+    post:
+      tags:
+      - "keypair"
+      summary: "Updates a keypair with form data"
+      description: ""
+      operationId: "updateKeypairWithForm"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "keypair_id"
+        in: "path"
+        description: "ID of keypair that needs to be updated"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "public_key"
+        in: "formData"
+        description: "Updated name of the keypair"
+        required: false
+        type: "string"
+      responses:
+        405:
+          description: "Invalid input"
+    delete:
+      tags:
+      - "keypair"
+      summary: "Deletes a keypair"
+      description: ""
+      operationId: "deleteKeypair"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "api_key"
+        in: "header"
+        required: false
+        type: "string"
+      - name: "keypair_id"
+        in: "path"
+        description: "Keypair id to delete"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Keypair not found"
+
+
+  /providertypes:
+    get:
+      tags:
+      - "providertype"
+      summary: "List provider types"
+      description: "Returns a list of provider types"
+      operationId: "listProviderTypes"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/ProviderType"
+        500:
+          description: "InternalError"
+          schema:
+            $ref: "#definitions/ApiResponse"
+  /providertype:
+    post:
+      tags:
+      - "providertype"
+      summary: "Add a new provider type"
+      description: ""
+      operationId: "addProviderType"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "ProviderType object that needs to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/ProviderType"
+      responses:
+        200:
+          description: "Already exists"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/ProviderTypeID"
+        405:
+          description: "Invalid input"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+    put:
+      tags:
+      - "providertype"
+      summary: "Update an existing provider type"
+      description: ""
+      operationId: "updateProviderType"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "ProviderType object that needs to be updated"
+        required: true
+        schema:
+          $ref: "#/definitions/ProviderType"
+      responses:
+        201:
+          description: "Created"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "ProviderType not found"
+        405:
+          description: "Validation exception"
+  /providertype/{providertype_id}:
+    get:
+      tags:
+      - "providertype"
+      summary: "Find provider type by ID"
+      description: "Returns a single provider type"
+      operationId: "getProviderTypeById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "providertype_id"
+        in: "path"
+        description: "ID of providertype to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/ProviderType"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Provider not found"
+    delete:
+      tags:
+      - "providertype"
+      summary: "Deletes a provider type"
+      description: ""
+      operationId: "deleteProviderType"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "api_key"
+        in: "header"
+        required: false
+        type: "string"
+      - name: "providertype_id"
+        in: "path"
+        description: "Provider type id to delete"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Provider not found"
+
+
+  /cell:
+    post:
+      tags:
+      - "cell"
+      summary: "Add a new cell"
+      description: ""
+      operationId: "addCell"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Cell object that needs to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/Cell"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            type: integer
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        409:
+          description: "Already exists"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+  /cells:
+    get:
+      tags:
+      - "cell"
+      summary: "Finds Cells by customer"
+      operationId: "findCellByCustomer"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Cell"
+        400:
+          description: "Invalid cell name"
+        404:
+          description: "cells not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+
+  /cell/{cell_id}:
+    get:
+      tags:
+      - "cell"
+      summary: "Find cell by ID"
+      description: "Returns a single cell"
+      operationId: "getCellById"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Cell"
+        404:
+          description: "Cell not found"
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+    post:
+      tags:
+      - "cell"
+      summary: "Updates a cell with form data"
+      description: ""
+      operationId: "updateCellWithForm"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that needs to be updated"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "public_key"
+        in: "formData"
+        description: "Updated name of the cell"
+        required: false
+        type: "string"
+      responses:
+        405:
+          description: "Invalid input"
+    delete:
+      tags:
+      - "cell"
+      summary: "Deletes a cell"
+      description: ""
+      operationId: "deleteCell"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "api_key"
+        in: "header"
+        required: false
+        type: "string"
+      - name: "cell_id"
+        in: "path"
+        description: "Cell id to delete"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Cell not found"
+
+  /cell/{cell_id}/keypair/{keypair_name}:
+    post:
+      tags:
+      - "keypair"
+      summary: "Add a keypair to cell"
+      description: ""
+      operationId: "addCellKeypair"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "keypair_name"
+        in: "path"
+        description: "Name of keypair that will be used"
+        required: true
+        type: "string"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            type: integer
+        404:
+          description: "does not exists"
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        409:
+          description: "Already exists"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+
+  /cell/{cell_id}/deploy:
+    get:
+      tags:
+      - "cell"
+      summary: "Deploy cell by ID"
+      description: "Deploy a single cell"
+      operationId: "deployCellById"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        204:
+          description: "no content"
+        404:
+          description: "Cell not found"
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+  /cell/{cell_id}/components:
+    get:
+      tags:
+      - "component"
+      summary: "Finds Components by Cell"
+      operationId: "findCellComponents"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that needs to be updated"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Component"
+        400:
+          description: "Invalid cell id"
+        404:
+          description: "component not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+  /cell/{cell_id}/component:
+    post:
+      tags:
+      - "component"
+      summary: "Add a new component"
+      description: ""
+      operationId: "addComponent"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "body"
+        description: "Component object that needs to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/Component"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            type: integer
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        409:
+          description: "Already exists"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+
+  /cell/{cell_id}/component/{component_id}/hostgroups:
+    get:
+      tags:
+      - "hostgroup"
+      summary: "List component Hostgroups"
+      operationId: "findComponentHostgroups"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "component_id"
+        in: "path"
+        description: "ID of component that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Hostgroup"
+        400:
+          description: "Invalid cell id or component id"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+  /cell/{cell_id}/component/{component_id}/hostgroup:
+    post:
+      tags:
+      - "hostgroup"
+      summary: "Add a new hostgroup to a component"
+      description: ""
+      operationId: "AddComponentHostgroup"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "component_id"
+        in: "path"
+        description: "ID of component that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "body"
+        description: "Component object that needs to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/Hostgroup"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            type: integer
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        409:
+          description: "Already exists"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+  /cell/{cell_id}/component/{component_id}/hostgroup/{hostgroup_id}:
+    get:
+      tags:
+      - "hostgroup"
+      summary: "Get component Hostgroup"
+      operationId: "getComponentHostgroupByID"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "component_id"
+        in: "path"
+        description: "ID of component that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "hostgroup_id"
+        in: "path"
+        description: "ID of hostgroup that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+              $ref: "#/definitions/Hostgroup"
+        400:
+          description: "Invalid cell id or component id"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        404:
+          description: "hostgroup does not exists"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+    put:
+      tags:
+      - "hostgroup"
+      summary: "Update an existing hostgroup"
+      description: ""
+      operationId: "UpdateComponentHostgroup"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "component_id"
+        in: "path"
+        description: "ID of component that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "hostgroup_id"
+        in: "path"
+        description: "hostgroup that will be updated"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "body"
+        description: "Hostgroup object that needs to be updated"
+        required: true
+        schema:
+          $ref: "#/definitions/Hostgroup"
+      responses:
+        200:
+          description: "successful operation"
+        400:
+          description: "Invalid cell id or role id"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        404:
+          description: "Role does not exists"
+        409:
+          description: "Role does not exists"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+
+  /cell/{cell_id}/component/{component_id}/role:
+    post:
+      tags:
+      - "role"
+      summary: "Add a new role to a component"
+      description: ""
+      operationId: "addComponentRole"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "component_id"
+        in: "path"
+        description: "ID of component that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "body"
+        description: "Component object that needs to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/Role"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            type: integer
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        409:
+          description: "Already exists"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+  /cell/{cell_id}/component/{component_id}/role/{role_name}:
+    delete:
+      tags:
+      - "role"
+      summary: "Delete an existing role"
+      description: ""
+      operationId: "deleteComponentRole"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "component_id"
+        in: "path"
+        description: "ID of component that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "role_name"
+        in: "path"
+        description: "role that will be updated"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+        400:
+          description: "Invalid cell id or role id"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        404:
+          description: "Role does not exists"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+    put:
+      tags:
+      - "role"
+      summary: "Update an existing role"
+      description: ""
+      operationId: "updateComponentRole"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "component_id"
+        in: "path"
+        description: "ID of component that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "role_name"
+        in: "path"
+        description: "role that will be updated"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "Role object that needs to be updated"
+        required: true
+        schema:
+          $ref: "#/definitions/Role"
+      responses:
+        200:
+          description: "successful operation"
+        400:
+          description: "Invalid cell id or role id"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        404:
+          description: "Role does not exists"
+        409:
+          description: "Role does not exists"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+  /cell/{cell_id}/component/{component_id}/roles:
+    get:
+      tags:
+      - "role"
+      summary: "List component Roles"
+      operationId: "findComponentRoles"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "component_id"
+        in: "path"
+        description: "ID of component that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Role"
+        400:
+          description: "Invalid cell id or role id"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+
+  /cell/{cell_id}/provider:
+    get:
+      tags:
+      - "provider"
+      summary: "Find provider"
+      description: "Returns cell's provider"
+      operationId: "getProvider"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Provider"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Provider not found"
+    post:
+      tags:
+      - "provider"
+      summary: "Add a new provider"
+      description: ""
+      operationId: "addProvider"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "body"
+        description: "Provider object that needs to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/Provider"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            type: integer
+        409:
+          description: "Already exists"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+    put:
+      tags:
+      - "provider"
+      summary: "Update a provider"
+      description: ""
+      operationId: "updateProvider"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "body"
+        description: "Provider object that needs to be updated"
+        required: true
+        schema:
+          $ref: "#/definitions/Provider"
+      responses:
+        200:
+          description: "successful operation"
+        404:
+          description: "Does not exists"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        409:
+          description: "Already exists"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+
+
+definitions:
+  Customer:
+    type: "object"
+    required:
+      - name
+    properties:
+      id:
+        type: integer
+      name:
+        type: "string"
+
+  Component:
+    type: "object"
+    required:
+      - name
+    properties:
+      id:
+        type: integer
+      name:
+        type: "string"
+
+  Hostgroup:
+    type: "object"
+    required:
+      - name
+      - image
+      - flavor
+      - username
+      - count
+      - network
+    properties:
+      id:
+        type: "integer"
+      name:
+        type: "string"
+      image:
+        type: "string"
+      flavor:
+        type: "string"
+      username:
+        type: "string"
+      bootstrap_command:
+        type: "string"
+      count:
+        type: "integer"
+      network:
+        type: "string"
+      roles:
+        type: array
+        items:
+          $ref: "#/definitions/Role"
+
+  Keypair:
+    type: "object"
+    required:
+      - name
+      - public_key
+    properties:
+      id:
+        type: integer
+      name:
+        type: "string"
+      public_key:
+        type: "string"
+
+  Provider:
+    type: object
+    required:
+      - name
+      - domain_name
+      - auth_url
+      - tenant_name
+      - username
+      - password
+      - providertype_id
+    properties:
+      id:
+        type: integer
+      auth_url:
+        type: string
+      domain_name:
+        type: string
+      name:
+        type: string
+      tenant_name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+      providertype_id:
+        type: integer
+      type:
+        type: string
+
+  ProviderType:
+    type: object
+    properties:
+      id:
+        type: integer
+      auth_url:
+        type: string
+      domain_name:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+
+  ProviderTypeID:
+    type: string
+
+  Cell:
+    type: object
+    required:
+      - name
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+
+  Role:
+    type: "object"
+    required:
+      - name
+      - url
+      - version
+    properties:
+      id:
+        type: integer
+      name:
+        type: "string"
+      version:
+        type: "string"
+      url:
+        type: "string"
+      params:
+        type: array
+        items:
+          $ref: "#/definitions/RoleParameter"
+
+  RoleParameter:
+    type: "object"
+    required:
+      - name
+      - value
+    properties:
+      id:
+        type: integer
+      name:
+        type: "string"
+      value:
+        type: "string"
+
+  EntireCell:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      customer_name:
+        type: "string"
+      provider:
+        $ref: "#/definitions/Provider"
+      keypair:
+        $ref: "#/definitions/Keypair"
+      hostgroups:
+        type: array
+        items:
+          $ref: "#/definitions/Hostgroup"
+
+  ApiResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      type:
+        type: "string"
+      message:
+        type: "string"
