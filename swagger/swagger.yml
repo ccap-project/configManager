@@ -640,6 +640,40 @@ paths:
         404:
           description: "Cell not found"
 
+  /cell/{cell_id}/full:
+    get:
+      tags:
+      - "cell"
+      summary: "Get full cell by ID"
+      description: "Returns full cell definition"
+      operationId: "getCellFullById"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/FullCell"
+        404:
+          description: "Cell not found"
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+
   /cell/{cell_id}/keypair/{keypair_name}:
     post:
       tags:
@@ -1288,6 +1322,14 @@ definitions:
         type: integer
       name:
         type: "string"
+      hostgroups:
+        type: array
+        items:
+          $ref: "#/definitions/Hostgroup"
+      roles:
+        type: array
+        items:
+          $ref: "#/definitions/Role"
 
   Hostgroup:
     type: "object"
@@ -1440,6 +1482,20 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/Hostgroup"
+
+  FullCell:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      provider:
+        $ref: "#/definitions/Provider"
+      keypair:
+        $ref: "#/definitions/Keypair"
+      components:
+        type: array
+        items:
+          $ref: "#/definitions/Component"
 
   ApiResponse:
     type: "object"
