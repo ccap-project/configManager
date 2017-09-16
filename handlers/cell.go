@@ -129,6 +129,7 @@ func GetCellByID(params cell.GetCellByIDParams, principal *models.Customer) midd
 		log.Printf("An error occurred preparing statement: %s", err)
 		return cell.NewGetCellByIDInternalServerError()
 	}
+	defer stmt.Close()
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{"name": swag.StringValue(principal.Name),
 		"kid": params.CellID})
@@ -146,9 +147,26 @@ func GetCellByID(params cell.GetCellByIDParams, principal *models.Customer) midd
 	_cell := &models.Cell{ID: output[0].(int64),
 		Name: &_name}
 
-	stmt.Close()
-
 	return cell.NewGetCellByIDOK().WithPayload(_cell)
+}
+
+func GetCellFullByID(params cell.GetCellFullByIDParams, principal *models.Customer) middleware.Responder {
+
+	Cell := getCellByID(principal.Name, params.CellID)
+
+	if Cell == nil {
+		log.Println("cell does not exists !")
+		return cell.NewDeployCellByIDNotFound()
+	}
+
+	FullCell := getCellFull(principal.Name, params.CellID)
+
+	if FullCell == nil {
+		log.Print("cell is empty")
+		return cell.NewDeployCellByIDNotFound()
+	}
+
+	return cell.NewGetCellFullByIDOK().WithPayload(FullCell)
 }
 
 func FindCellByCustomer(params cell.FindCellByCustomerParams, principal *models.Customer) middleware.Responder {
@@ -281,6 +299,164 @@ func getCellByID(customerName *string, cellID int64) *models.Cell {
 	return cell
 }
 
+/*
+ * Return cell structure in ui format
+ */
+func getCellFull(customerName *string, cellID int64) *models.FullCell {
+	cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell)
+							WHERE id(cell) = {cell_id}
+							MATCH (cell)-[:DEPLOY_WITH]->(keypair:Keypair)
+							MATCH (cell)-[:USE]->(provider:Provider)
+							MATCH (provider)-[:PROVIDER_IS]->(provider_type:ProviderType)
+							MATCH (cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role)
+							OPTIONAL MATCH (role)-->(parameter:Parameter)
+							OPTIONAL MATCH (component)-->(hostgroup:Hostgroup)
+							return *`
+
+	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	if err != nil {
+		log.Println("error connecting to neo4j:", err)
+		return nil
+	}
+	defer db.Close()
+
+	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
+		"customer_name": swag.StringValue(customerName),
+		"cell_id":       cellID})
+
+	if err != nil {
+		log.Printf("An error occurred querying Neo: %s", err)
+		return nil
+	}
+
+	res := new(models.FullCell)
+
+	res.Keypair = new(models.Keypair)
+	res.Provider = new(models.Provider)
+
+	for _, row := range data {
+		if len(res.Name) == 0 {
+			cellNode := getNodeByLabel(row, "Cell")
+
+			if len(cellNode) > 0 {
+				res.Name = cellNode["name"].(string)
+			}
+		}
+
+		if res.Keypair.Name == nil {
+			keypairNode := getNodeByLabel(row, "Keypair")
+
+			if len(keypairNode) > 0 {
+				res.Keypair.Name = new(string)
+				res.Keypair.PublicKey = new(string)
+
+				*res.Keypair.Name = keypairNode["name"].(string)
+				*res.Keypair.PublicKey = keypairNode["public_key"].(string)
+			}
+		}
+
+		if res.Provider.Name == nil {
+			providerNode := getNodeByLabel(row, "Provider")
+			providerTypeNode := getNodeByLabel(row, "ProviderType")
+
+			if len(providerNode) > 0 {
+				res.Provider.AuthURL = copyString(providerNode["auth_url"])
+				res.Provider.DomainName = copyString(providerNode["domain_name"])
+				res.Provider.Name = copyString(providerNode["name"])
+				res.Provider.Password = copyString(providerNode["password"])
+				res.Provider.TenantName = copyString(providerNode["tenantname"])
+				res.Provider.Username = copyString(providerNode["username"])
+
+				res.Provider.Type = *copyString(providerTypeNode["name"])
+			}
+		}
+
+		// Component
+		componentNode := getNodeByLabel(row, "Component")
+
+		if len(componentNode) > 0 {
+			var component *models.Component
+
+			component = _getComponentByName(res.Components, componentNode["name"].(string))
+
+			if component == nil {
+				component = new(models.Component)
+
+				component.Name = copyString(componentNode["name"])
+
+				res.Components = append(res.Components, component)
+			}
+			// Hostgroup
+			hostgroupNode := getNodeByLabel(row, "Hostgroup")
+
+			if len(hostgroupNode) > 0 {
+
+				var hg *models.Hostgroup
+
+				hg = getHostgroupByName(component.Hostgroups, hostgroupNode["name"].(string))
+
+				if hg == nil {
+					hg = new(models.Hostgroup)
+
+					hg.Flavor = copyString(hostgroupNode["flavor"])
+					hg.Image = copyString(hostgroupNode["image"])
+					hg.Name = copyString(hostgroupNode["name"])
+					hg.Network = copyString(hostgroupNode["network"])
+					hg.Username = copyString(hostgroupNode["username"])
+					hg.BootstrapCommand = *copyString(hostgroupNode["bootstrap_command"])
+
+					hg.Count = new(int64)
+
+					*hg.Count = hostgroupNode["count"].(int64)
+
+					component.Hostgroups = append(component.Hostgroups, hg)
+				}
+			}
+
+			// Roles
+			roleNode := getNodeByLabel(row, "Role")
+
+			if len(roleNode) > 0 {
+
+				var role *models.Role
+
+				role = getRoleByName(component.Roles, roleNode["name"].(string))
+
+				if role == nil {
+					role = new(models.Role)
+
+					role.Name = copyString(roleNode["name"])
+					role.URL = copyString(roleNode["url"])
+					role.Version = copyString(roleNode["version"])
+
+					component.Roles = append(component.Roles, role)
+				}
+
+				parameterNode := getNodeByLabel(row, "Parameter")
+
+				if parameterNode != nil {
+					var parameter *models.RoleParameter
+					parameter = getParameterByName(role.Params, parameterNode["name"].(string))
+
+					if parameter == nil {
+						parameter = new(models.RoleParameter)
+
+						parameter.Name = copyString(parameterNode["name"])
+						parameter.Value = copyString(parameterNode["value"])
+
+						role.Params = append(role.Params, parameter)
+					}
+				}
+			}
+		}
+	}
+
+	return (res)
+}
+
+/*
+ * Return cell structure in deploy format
+ */
 func getCellRecursive(customerName *string, cellID int64) *models.EntireCell {
 	cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell)
 							WHERE id(cell) = {cell_id}
@@ -441,6 +617,16 @@ func getNodeByLabel(row []interface{}, nodeName string) map[string]interface{} {
 	var res map[string]interface{}
 
 	return res
+}
+
+func _getComponentByName(components []*models.Component, componentName string) *models.Component {
+	for _, component := range components {
+		if strings.Compare(componentName, *component.Name) == 0 {
+			return component
+		}
+	}
+
+	return nil
 }
 
 func getHostgroupByName(hostgroups []*models.Hostgroup, hostgroupName string) *models.Hostgroup {

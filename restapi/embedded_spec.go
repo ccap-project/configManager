@@ -921,6 +921,57 @@ func init() {
         }
       }
     },
+    "/cell/{cell_id}/full": {
+      "get": {
+        "description": "Returns full cell definition",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "cell"
+        ],
+        "summary": "Get full cell by ID",
+        "operationId": "getCellFullById",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell to return",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/FullCell"
+            }
+          },
+          "404": {
+            "description": "Cell not found"
+          },
+          "405": {
+            "description": "Invalid input",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
     "/cell/{cell_id}/keypair/{keypair_name}": {
       "post": {
         "consumes": [
@@ -1898,11 +1949,23 @@ func init() {
         "name"
       ],
       "properties": {
+        "hostgroups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Hostgroup"
+          }
+        },
         "id": {
           "type": "integer"
         },
         "name": {
           "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Role"
+          }
         }
       }
     },
@@ -1930,6 +1993,26 @@ func init() {
           "type": "array",
           "items": {
             "$ref": "#/definitions/Hostgroup"
+          }
+        },
+        "keypair": {
+          "$ref": "#/definitions/Keypair"
+        },
+        "name": {
+          "type": "string"
+        },
+        "provider": {
+          "$ref": "#/definitions/Provider"
+        }
+      }
+    },
+    "FullCell": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Component"
           }
         },
         "keypair": {

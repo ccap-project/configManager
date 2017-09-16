@@ -113,6 +113,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		CellGetCellByIDHandler: cell.GetCellByIDHandlerFunc(func(params cell.GetCellByIDParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation CellGetCellByID has not yet been implemented")
 		}),
+		CellGetCellFullByIDHandler: cell.GetCellFullByIDHandlerFunc(func(params cell.GetCellFullByIDParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation CellGetCellFullByID has not yet been implemented")
+		}),
 		HostgroupGetComponentHostgroupByIDHandler: hostgroup.GetComponentHostgroupByIDHandlerFunc(func(params hostgroup.GetComponentHostgroupByIDParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupGetComponentHostgroupByID has not yet been implemented")
 		}),
@@ -241,6 +244,8 @@ type ConfigManagerAPI struct {
 	KeypairFindKeypairByCustomerHandler keypair.FindKeypairByCustomerHandler
 	// CellGetCellByIDHandler sets the operation handler for the get cell by Id operation
 	CellGetCellByIDHandler cell.GetCellByIDHandler
+	// CellGetCellFullByIDHandler sets the operation handler for the get cell full by Id operation
+	CellGetCellFullByIDHandler cell.GetCellFullByIDHandler
 	// HostgroupGetComponentHostgroupByIDHandler sets the operation handler for the get component hostgroup by ID operation
 	HostgroupGetComponentHostgroupByIDHandler hostgroup.GetComponentHostgroupByIDHandler
 	// CustomerGetCustomerByIDHandler sets the operation handler for the get customer by Id operation
@@ -430,6 +435,10 @@ func (o *ConfigManagerAPI) Validate() error {
 
 	if o.CellGetCellByIDHandler == nil {
 		unregistered = append(unregistered, "cell.GetCellByIDHandler")
+	}
+
+	if o.CellGetCellFullByIDHandler == nil {
+		unregistered = append(unregistered, "cell.GetCellFullByIDHandler")
 	}
 
 	if o.HostgroupGetComponentHostgroupByIDHandler == nil {
@@ -700,6 +709,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/cell/{cell_id}"] = cell.NewGetCellByID(o.context, o.CellGetCellByIDHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/cell/{cell_id}/full"] = cell.NewGetCellFullByID(o.context, o.CellGetCellFullByIDHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

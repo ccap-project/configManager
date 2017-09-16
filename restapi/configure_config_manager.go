@@ -87,6 +87,8 @@ func configureAPI(api *operations.ConfigManagerAPI) http.Handler {
 	api.CellAddCellHandler = cell.AddCellHandlerFunc(handlers.AddCell)
 	api.CellFindCellByCustomerHandler = cell.FindCellByCustomerHandlerFunc(handlers.FindCellByCustomer)
 	api.CellGetCellByIDHandler = cell.GetCellByIDHandlerFunc(handlers.GetCellByID)
+	api.CellGetCellFullByIDHandler = cell.GetCellFullByIDHandlerFunc(handlers.GetCellFullByID)
+
 	api.CellDeployCellByIDHandler = cell.DeployCellByIDHandlerFunc(handlers.DeployCell)
 
 	// Component
