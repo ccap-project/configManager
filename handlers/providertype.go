@@ -63,7 +63,7 @@ func GetProviderTypeByID(params providertype.GetProviderTypeByIDParams) middlewa
 	neo4jURL := `http://192.168.20.54:7474`
 
 	cypher := `MATCH (p:ProviderType)
-							WHERE ID(p) = {0}
+							WHERE p.name = {0}
 							RETURN ID(p) as id,
 											p.name as name,
 											p.auth_url as auth_url,

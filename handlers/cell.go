@@ -109,6 +109,53 @@ func DeployCell(params cell.DeployCellByIDParams, principal *models.Customer) mi
 	return response
 }
 
+func DeployCellApp(params cell.DeployCellAppByIDParams, principal *models.Customer) middleware.Responder {
+
+	Cell := getCellByID(principal.Name, params.CellID)
+
+	if Cell == nil {
+		log.Println("cell does not exists !")
+		return cell.NewDeployCellAppByIDNotFound()
+	}
+
+	EntireCell := getCellRecursive(principal.Name, params.CellID)
+
+	if EntireCell == nil {
+		log.Print("cell is empty")
+		return cell.NewDeployCellAppByIDNoContent()
+	}
+
+	jsonOut, err := json.Marshal(EntireCell)
+	if err != nil {
+		log.Println("decoding cell, ", err)
+		return cell.NewDeployCellAppByIDInternalServerError()
+	}
+
+	jsonString := strings.NewReader(string(jsonOut))
+	log.Println(jsonString)
+
+	requestRes, err := http.Post("http://127.0.0.1:8080/v1/application/deploy", "application/json", jsonString)
+
+	if err != nil {
+		log.Println("deploying cell, ", err)
+		return cell.NewDeployCellAppByIDInternalServerError()
+	}
+	defer requestRes.Body.Close()
+
+	response := cell.NewDeployCellAppByIDOK()
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(requestRes.Body)
+
+	response.Payload.Message = buf.String()
+
+	if err != nil {
+		log.Println("reading deploy cell response, ", err)
+		return cell.NewDeployCellAppByIDInternalServerError()
+	}
+	return response
+}
+
 func GetCellByID(params cell.GetCellByIDParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (c:Customer {name: {name} })-[:HAS]->(k:Cell)
@@ -366,8 +413,7 @@ func getCellFull(customerName *string, cellID int64) *models.FullCell {
 				res.Provider.Password = copyString(providerNode["password"])
 				res.Provider.TenantName = copyString(providerNode["tenantname"])
 				res.Provider.Username = copyString(providerNode["username"])
-
-				res.Provider.Type = *copyString(providerTypeNode["name"])
+				res.Provider.Type = copyString(providerTypeNode["name"])
 			}
 		}
 
@@ -530,7 +576,7 @@ func getCellRecursive(customerName *string, cellID int64) *models.EntireCell {
 				res.Provider.TenantName = copyString(providerNode["tenantname"])
 				res.Provider.Username = copyString(providerNode["username"])
 
-				res.Provider.Type = *copyString(providerTypeNode["name"])
+				res.Provider.Type = copyString(providerTypeNode["name"])
 			}
 		}
 

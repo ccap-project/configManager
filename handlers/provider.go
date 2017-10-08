@@ -15,7 +15,7 @@ func AddCellProvider(params provider.AddProviderParams, principal *models.Custom
 
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell),
 										(providertype:ProviderType)
-							WHERE id(cell) = {cell_id} AND id(providertype) = {providertype_id}
+							WHERE id(cell) = {cell_id} AND providertype.name = {providertype}
 							CREATE (cell)-[:USE]->(provider:Provider {
 								name: {provider_name},
 							 	domain_name: {domain_name},
@@ -48,15 +48,15 @@ func AddCellProvider(params provider.AddProviderParams, principal *models.Custom
 	}
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
-		"name":            swag.StringValue(principal.Name),
-		"cell_id":         params.CellID,
-		"provider_name":   swag.StringValue(params.Body.Name),
-		"domain_name":     swag.StringValue(params.Body.DomainName),
-		"tenant_name":     swag.StringValue(params.Body.TenantName),
-		"auth_url":        swag.StringValue(params.Body.AuthURL),
-		"username":        swag.StringValue(params.Body.Username),
-		"password":        swag.StringValue(params.Body.Password),
-		"providertype_id": swag.Int64Value(params.Body.ProvidertypeID)})
+		"name":          swag.StringValue(principal.Name),
+		"cell_id":       params.CellID,
+		"provider_name": swag.StringValue(params.Body.Name),
+		"domain_name":   swag.StringValue(params.Body.DomainName),
+		"tenant_name":   swag.StringValue(params.Body.TenantName),
+		"auth_url":      swag.StringValue(params.Body.AuthURL),
+		"username":      swag.StringValue(params.Body.Username),
+		"password":      swag.StringValue(params.Body.Password),
+		"type":          swag.StringValue(params.Body.Type)})
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
@@ -137,7 +137,7 @@ func getProvider(customerName *string, CellID int64) *models.Provider {
 	provider.DomainName = new(string)
 	provider.TenantName = new(string)
 	provider.AuthURL = new(string)
-	provider.ProvidertypeID = new(int64)
+	provider.Type = new(string)
 	provider.Username = new(string)
 	provider.Password = new(string)
 
@@ -146,7 +146,7 @@ func getProvider(customerName *string, CellID int64) *models.Provider {
 	*provider.DomainName = output[2].(string)
 	*provider.TenantName = output[3].(string)
 	*provider.AuthURL = output[4].(string)
-	*provider.ProvidertypeID = output[5].(int64)
+	*provider.Type = output[5].(string)
 	*provider.Username = output[6].(string)
 	*provider.Password = output[7].(string)
 
@@ -159,14 +159,14 @@ func UpdateCellProvider(params provider.UpdateProviderParams, principal *models.
 							(cell:Cell)-[rel:USE]->(provider:Provider)-[rel2:PROVIDER_IS]->(provider_type:ProviderType)
 							WHERE id(cell) = {cell_id}
 						MATCH (newProviderType:ProviderType)
-							WHERE id(newProviderType) = {providertype_id}
+							WHERE newProviderType.name = {providertype}
 							SET provider.name={name},
 									provider.domain_name={domain_name},
 									provider.tenantname={tenant_name},
 									provider.auth_url={auth_url},
 									provider.username={username},
 									provider.password={password},
-									provider.providertype_id={providertype_id}
+									provider.providertype={providertype}
 							DELETE rel, rel2
 							CREATE (cell)-[:USE]->(provider)-[:PROVIDER_IS]->(newProviderType)
 							return provider`
@@ -193,15 +193,15 @@ func UpdateCellProvider(params provider.UpdateProviderParams, principal *models.
 	}
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
-		"customer_name":   swag.StringValue(principal.Name),
-		"cell_id":         params.CellID,
-		"name":            swag.StringValue(params.Body.Name),
-		"domain_name":     swag.StringValue(params.Body.DomainName),
-		"tenant_name":     swag.StringValue(params.Body.TenantName),
-		"auth_url":        swag.StringValue(params.Body.AuthURL),
-		"username":        swag.StringValue(params.Body.Username),
-		"password":        swag.StringValue(params.Body.Password),
-		"providertype_id": swag.Int64Value(params.Body.ProvidertypeID)})
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID,
+		"name":          swag.StringValue(params.Body.Name),
+		"domain_name":   swag.StringValue(params.Body.DomainName),
+		"tenant_name":   swag.StringValue(params.Body.TenantName),
+		"auth_url":      swag.StringValue(params.Body.AuthURL),
+		"username":      swag.StringValue(params.Body.Username),
+		"password":      swag.StringValue(params.Body.Password),
+		"type":          swag.StringValue(params.Body.Type)})
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
