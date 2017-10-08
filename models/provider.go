@@ -34,16 +34,13 @@ type Provider struct {
 	// Required: true
 	Password *string `json:"password"`
 
-	// providertype id
-	// Required: true
-	ProvidertypeID *int64 `json:"providertype_id"`
-
 	// tenant name
 	// Required: true
 	TenantName *string `json:"tenant_name"`
 
 	// type
-	Type string `json:"type,omitempty"`
+	// Required: true
+	Type *string `json:"type"`
 
 	// username
 	// Required: true
@@ -74,12 +71,12 @@ func (m *Provider) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateProvidertypeID(formats); err != nil {
+	if err := m.validateTenantName(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
 
-	if err := m.validateTenantName(formats); err != nil {
+	if err := m.validateType(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -131,18 +128,18 @@ func (m *Provider) validatePassword(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Provider) validateProvidertypeID(formats strfmt.Registry) error {
+func (m *Provider) validateTenantName(formats strfmt.Registry) error {
 
-	if err := validate.Required("providertype_id", "body", m.ProvidertypeID); err != nil {
+	if err := validate.Required("tenant_name", "body", m.TenantName); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *Provider) validateTenantName(formats strfmt.Registry) error {
+func (m *Provider) validateType(formats strfmt.Registry) error {
 
-	if err := validate.Required("tenant_name", "body", m.TenantName); err != nil {
+	if err := validate.Required("type", "body", m.Type); err != nil {
 		return err
 	}
 

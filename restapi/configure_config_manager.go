@@ -90,6 +90,7 @@ func configureAPI(api *operations.ConfigManagerAPI) http.Handler {
 	api.CellGetCellFullByIDHandler = cell.GetCellFullByIDHandlerFunc(handlers.GetCellFullByID)
 
 	api.CellDeployCellByIDHandler = cell.DeployCellByIDHandlerFunc(handlers.DeployCell)
+	api.CellDeployCellAppByIDHandler = cell.DeployCellAppByIDHandlerFunc(handlers.DeployCellApp)
 
 	// Component
 	api.ComponentAddComponentHandler = component.AddComponentHandlerFunc(handlers.AddCellComponent)

@@ -89,6 +89,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		ProvidertypeDeleteProviderTypeHandler: providertype.DeleteProviderTypeHandlerFunc(func(params providertype.DeleteProviderTypeParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProvidertypeDeleteProviderType has not yet been implemented")
 		}),
+		CellDeployCellAppByIDHandler: cell.DeployCellAppByIDHandlerFunc(func(params cell.DeployCellAppByIDParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation CellDeployCellAppByID has not yet been implemented")
+		}),
 		CellDeployCellByIDHandler: cell.DeployCellByIDHandlerFunc(func(params cell.DeployCellByIDParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation CellDeployCellByID has not yet been implemented")
 		}),
@@ -228,6 +231,8 @@ type ConfigManagerAPI struct {
 	KeypairDeleteKeypairHandler keypair.DeleteKeypairHandler
 	// ProvidertypeDeleteProviderTypeHandler sets the operation handler for the delete provider type operation
 	ProvidertypeDeleteProviderTypeHandler providertype.DeleteProviderTypeHandler
+	// CellDeployCellAppByIDHandler sets the operation handler for the deploy cell app by Id operation
+	CellDeployCellAppByIDHandler cell.DeployCellAppByIDHandler
 	// CellDeployCellByIDHandler sets the operation handler for the deploy cell by Id operation
 	CellDeployCellByIDHandler cell.DeployCellByIDHandler
 	// CellFindCellByCustomerHandler sets the operation handler for the find cell by customer operation
@@ -403,6 +408,10 @@ func (o *ConfigManagerAPI) Validate() error {
 
 	if o.ProvidertypeDeleteProviderTypeHandler == nil {
 		unregistered = append(unregistered, "providertype.DeleteProviderTypeHandler")
+	}
+
+	if o.CellDeployCellAppByIDHandler == nil {
+		unregistered = append(unregistered, "cell.DeployCellAppByIDHandler")
 	}
 
 	if o.CellDeployCellByIDHandler == nil {
@@ -669,6 +678,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/providertype/{providertype_id}"] = providertype.NewDeleteProviderType(o.context, o.ProvidertypeDeleteProviderTypeHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/cell/{cell_id}/deploy/app"] = cell.NewDeployCellAppByID(o.context, o.CellDeployCellAppByIDHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

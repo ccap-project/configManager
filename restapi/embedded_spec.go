@@ -921,6 +921,60 @@ func init() {
         }
       }
     },
+    "/cell/{cell_id}/deploy/app": {
+      "get": {
+        "description": "Deploy a single cell apps",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "cell"
+        ],
+        "summary": "Deploy cell apps by ID",
+        "operationId": "deployCellAppById",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell to return",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "204": {
+            "description": "no content"
+          },
+          "404": {
+            "description": "Cell not found"
+          },
+          "405": {
+            "description": "Invalid input",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
     "/cell/{cell_id}/full": {
       "get": {
         "description": "Returns full cell definition",
@@ -2096,7 +2150,7 @@ func init() {
         "tenant_name",
         "username",
         "password",
-        "providertype_id"
+        "type"
       ],
       "properties": {
         "auth_url": {
@@ -2113,9 +2167,6 @@ func init() {
         },
         "password": {
           "type": "string"
-        },
-        "providertype_id": {
-          "type": "integer"
         },
         "tenant_name": {
           "type": "string"
