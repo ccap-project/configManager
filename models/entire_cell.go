@@ -22,6 +22,9 @@ type EntireCell struct {
 	// hostgroups
 	Hostgroups []*Hostgroup `json:"hostgroups"`
 
+	// hosts
+	Hosts []*Host `json:"hosts"`
+
 	// keypair
 	Keypair *Keypair `json:"keypair,omitempty"`
 
@@ -37,6 +40,11 @@ func (m *EntireCell) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateHostgroups(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateHosts(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -74,6 +82,33 @@ func (m *EntireCell) validateHostgroups(formats strfmt.Registry) error {
 			if err := m.Hostgroups[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("hostgroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *EntireCell) validateHosts(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Hosts) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Hosts); i++ {
+
+		if swag.IsZero(m.Hosts[i]) { // not required
+			continue
+		}
+
+		if m.Hosts[i] != nil {
+
+			if err := m.Hosts[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("hosts" + "." + strconv.Itoa(i))
 				}
 				return err
 			}

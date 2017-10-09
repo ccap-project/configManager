@@ -481,11 +481,11 @@ func getCellFull(customerName *string, cellID int64) *models.FullCell {
 				parameterNode := getNodeByLabel(row, "Parameter")
 
 				if parameterNode != nil {
-					var parameter *models.RoleParameter
+					var parameter *models.Parameter
 					parameter = getParameterByName(role.Params, parameterNode["name"].(string))
 
 					if parameter == nil {
-						parameter = new(models.RoleParameter)
+						parameter = new(models.Parameter)
 
 						parameter.Name = copyString(parameterNode["name"])
 						parameter.Value = copyString(parameterNode["value"])
@@ -507,11 +507,13 @@ func getCellRecursive(customerName *string, cellID int64) *models.EntireCell {
 	cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell)
 							WHERE id(cell) = {cell_id}
 							MATCH (cell)-[:DEPLOY_WITH]->(keypair:Keypair)
+							MATCH (cell)-[:HAS]->(host:Host)
 							MATCH (cell)-[:USE]->(provider:Provider)
 							MATCH (provider)-[:PROVIDER_IS]->(provider_type:ProviderType)
 							MATCH (cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role)
 							OPTIONAL MATCH (role)-->(parameter:Parameter)
 							OPTIONAL MATCH (component)-->(hostgroup:Hostgroup)
+							OPTIONAL MATCH (host)-->(option:Option)
 							return *`
 
 	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
@@ -552,6 +554,8 @@ func getCellRecursive(customerName *string, cellID int64) *models.EntireCell {
 			}
 		}
 
+		componentNode := getNodeByLabel(row, "Component")
+
 		if res.Keypair.Name == nil {
 			keypairNode := getNodeByLabel(row, "Keypair")
 
@@ -580,6 +584,41 @@ func getCellRecursive(customerName *string, cellID int64) *models.EntireCell {
 			}
 		}
 
+		// Hosts
+		hostNode := getNodeByLabel(row, "Host")
+
+		if len(hostNode) > 0 {
+
+			var h *models.Host
+
+			h = getHostByName(res.Hosts, hostNode["name"].(string))
+
+			if h == nil {
+				h = new(models.Host)
+
+				h.Name = copyString(hostNode["name"])
+
+				res.Hosts = append(res.Hosts, h)
+			}
+
+			optionNode := getNodeByLabel(row, "Option")
+
+			if optionNode != nil {
+				var option *models.Parameter
+				option = getParameterByName(h.Options, optionNode["name"].(string))
+
+				if option == nil {
+					option = new(models.Parameter)
+
+					option.Name = copyString(optionNode["name"])
+					option.Value = copyString(optionNode["value"])
+
+					h.Options = append(h.Options, option)
+				}
+			}
+
+		}
+
 		// Hostgroup
 		hostgroupNode := getNodeByLabel(row, "Hostgroup")
 
@@ -598,12 +637,13 @@ func getCellRecursive(customerName *string, cellID int64) *models.EntireCell {
 				hg.Network = copyString(hostgroupNode["network"])
 				hg.Username = copyString(hostgroupNode["username"])
 				hg.BootstrapCommand = *copyString(hostgroupNode["bootstrap_command"])
-
+				hg.Component = *copyString(componentNode["name"])
 				hg.Count = new(int64)
 
 				*hg.Count = hostgroupNode["count"].(int64)
 
 				res.Hostgroups = append(res.Hostgroups, hg)
+
 			}
 
 			// Roles
@@ -628,11 +668,11 @@ func getCellRecursive(customerName *string, cellID int64) *models.EntireCell {
 				parameterNode := getNodeByLabel(row, "Parameter")
 
 				if parameterNode != nil {
-					var parameter *models.RoleParameter
+					var parameter *models.Parameter
 					parameter = getParameterByName(role.Params, parameterNode["name"].(string))
 
 					if parameter == nil {
-						parameter = new(models.RoleParameter)
+						parameter = new(models.Parameter)
 
 						parameter.Name = copyString(parameterNode["name"])
 						parameter.Value = copyString(parameterNode["value"])
@@ -675,6 +715,16 @@ func _getComponentByName(components []*models.Component, componentName string) *
 	return nil
 }
 
+func getHostByName(hosts []*models.Host, hostName string) *models.Host {
+	for _, host := range hosts {
+		if strings.Compare(hostName, *host.Name) == 0 {
+			return host
+		}
+	}
+
+	return nil
+}
+
 func getHostgroupByName(hostgroups []*models.Hostgroup, hostgroupName string) *models.Hostgroup {
 	for _, hostgroup := range hostgroups {
 		if strings.Compare(hostgroupName, *hostgroup.Name) == 0 {
@@ -685,7 +735,7 @@ func getHostgroupByName(hostgroups []*models.Hostgroup, hostgroupName string) *m
 	return nil
 }
 
-func getParameterByName(params []*models.RoleParameter, paramName string) *models.RoleParameter {
+func getParameterByName(params []*models.Parameter, paramName string) *models.Parameter {
 	for _, param := range params {
 		if strings.Compare(paramName, *param.Name) == 0 {
 			return param

@@ -1026,6 +1026,121 @@ func init() {
         }
       }
     },
+    "/cell/{cell_id}/host": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "host"
+        ],
+        "summary": "Add a new host",
+        "operationId": "addCellHost",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell that will be used",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Host object that will be added",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Host"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          "405": {
+            "description": "Invalid input",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "409": {
+            "description": "Already exists",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/cell/{cell_id}/hosts": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "host"
+        ],
+        "summary": "Find Hosts by Cell",
+        "operationId": "findCellHosts",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell that will be used",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Host"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid cell id"
+          },
+          "404": {
+            "description": "component not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
     "/cell/{cell_id}/keypair/{keypair_name}": {
       "post": {
         "consumes": [
@@ -2049,6 +2164,12 @@ func init() {
             "$ref": "#/definitions/Hostgroup"
           }
         },
+        "hosts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Host"
+          }
+        },
         "keypair": {
           "$ref": "#/definitions/Keypair"
         },
@@ -2080,6 +2201,26 @@ func init() {
         }
       }
     },
+    "Host": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Parameter"
+          }
+        }
+      }
+    },
     "Hostgroup": {
       "type": "object",
       "required": [
@@ -2092,6 +2233,9 @@ func init() {
       ],
       "properties": {
         "bootstrap_command": {
+          "type": "string"
+        },
+        "component": {
           "type": "string"
         },
         "count": {
@@ -2137,6 +2281,24 @@ func init() {
           "type": "string"
         },
         "public_key": {
+          "type": "string"
+        }
+      }
+    },
+    "Parameter": {
+      "type": "object",
+      "required": [
+        "name",
+        "value"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
           "type": "string"
         }
       }
@@ -2222,31 +2384,13 @@ func init() {
         "params": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/RoleParameter"
+            "$ref": "#/definitions/Parameter"
           }
         },
         "url": {
           "type": "string"
         },
         "version": {
-          "type": "string"
-        }
-      }
-    },
-    "RoleParameter": {
-      "type": "object",
-      "required": [
-        "name",
-        "value"
-      ],
-      "properties": {
-        "id": {
-          "type": "integer"
-        },
-        "name": {
-          "type": "string"
-        },
-        "value": {
           "type": "string"
         }
       }
@@ -2273,6 +2417,9 @@ func init() {
     },
     {
       "name": "component"
+    },
+    {
+      "name": "host"
     },
     {
       "name": "keypair"

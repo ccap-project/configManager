@@ -247,7 +247,7 @@ func UpdateComponentRole(params role.UpdateComponentRoleParams, principal *model
 	return role.NewUpdateComponentRoleOK()
 }
 
-func addComponentRoleParameters(customer *string, cellID int64, componentID int64, roleName *string, params []*models.RoleParameter, db driver.Conn) error {
+func addComponentRoleParameters(customer *string, cellID int64, componentID int64, roleName *string, params []*models.Parameter, db driver.Conn) error {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role{name: {role_name}})

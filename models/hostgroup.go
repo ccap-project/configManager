@@ -20,6 +20,9 @@ type Hostgroup struct {
 	// bootstrap command
 	BootstrapCommand string `json:"bootstrap_command,omitempty"`
 
+	// component
+	Component string `json:"component,omitempty"`
+
 	// count
 	// Required: true
 	Count *int64 `json:"count"`

@@ -25,7 +25,7 @@ type Role struct {
 	Name *string `json:"name"`
 
 	// params
-	Params []*RoleParameter `json:"params"`
+	Params []*Parameter `json:"params"`
 
 	// url
 	// Required: true

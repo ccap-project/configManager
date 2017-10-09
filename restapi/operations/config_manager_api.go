@@ -21,6 +21,7 @@ import (
 	"../../restapi/operations/cell"
 	"../../restapi/operations/component"
 	"../../restapi/operations/customer"
+	"../../restapi/operations/host"
 	"../../restapi/operations/hostgroup"
 	"../../restapi/operations/keypair"
 	"../../restapi/operations/provider"
@@ -52,6 +53,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		}),
 		CellAddCellHandler: cell.AddCellHandlerFunc(func(params cell.AddCellParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation CellAddCell has not yet been implemented")
+		}),
+		HostAddCellHostHandler: host.AddCellHostHandlerFunc(func(params host.AddCellHostParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation HostAddCellHost has not yet been implemented")
 		}),
 		KeypairAddCellKeypairHandler: keypair.AddCellKeypairHandlerFunc(func(params keypair.AddCellKeypairParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation KeypairAddCellKeypair has not yet been implemented")
@@ -100,6 +104,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		}),
 		ComponentFindCellComponentsHandler: component.FindCellComponentsHandlerFunc(func(params component.FindCellComponentsParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation ComponentFindCellComponents has not yet been implemented")
+		}),
+		HostFindCellHostsHandler: host.FindCellHostsHandlerFunc(func(params host.FindCellHostsParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation HostFindCellHosts has not yet been implemented")
 		}),
 		HostgroupFindComponentHostgroupsHandler: hostgroup.FindComponentHostgroupsHandlerFunc(func(params hostgroup.FindComponentHostgroupsParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupFindComponentHostgroups has not yet been implemented")
@@ -207,6 +214,8 @@ type ConfigManagerAPI struct {
 	HostgroupUpdateComponentHostgroupHandler hostgroup.UpdateComponentHostgroupHandler
 	// CellAddCellHandler sets the operation handler for the add cell operation
 	CellAddCellHandler cell.AddCellHandler
+	// HostAddCellHostHandler sets the operation handler for the add cell host operation
+	HostAddCellHostHandler host.AddCellHostHandler
 	// KeypairAddCellKeypairHandler sets the operation handler for the add cell keypair operation
 	KeypairAddCellKeypairHandler keypair.AddCellKeypairHandler
 	// ComponentAddComponentHandler sets the operation handler for the add component operation
@@ -239,6 +248,8 @@ type ConfigManagerAPI struct {
 	CellFindCellByCustomerHandler cell.FindCellByCustomerHandler
 	// ComponentFindCellComponentsHandler sets the operation handler for the find cell components operation
 	ComponentFindCellComponentsHandler component.FindCellComponentsHandler
+	// HostFindCellHostsHandler sets the operation handler for the find cell hosts operation
+	HostFindCellHostsHandler host.FindCellHostsHandler
 	// HostgroupFindComponentHostgroupsHandler sets the operation handler for the find component hostgroups operation
 	HostgroupFindComponentHostgroupsHandler hostgroup.FindComponentHostgroupsHandler
 	// RoleFindComponentRolesHandler sets the operation handler for the find component roles operation
@@ -362,6 +373,10 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "cell.AddCellHandler")
 	}
 
+	if o.HostAddCellHostHandler == nil {
+		unregistered = append(unregistered, "host.AddCellHostHandler")
+	}
+
 	if o.KeypairAddCellKeypairHandler == nil {
 		unregistered = append(unregistered, "keypair.AddCellKeypairHandler")
 	}
@@ -424,6 +439,10 @@ func (o *ConfigManagerAPI) Validate() error {
 
 	if o.ComponentFindCellComponentsHandler == nil {
 		unregistered = append(unregistered, "component.FindCellComponentsHandler")
+	}
+
+	if o.HostFindCellHostsHandler == nil {
+		unregistered = append(unregistered, "host.FindCellHostsHandler")
 	}
 
 	if o.HostgroupFindComponentHostgroupsHandler == nil {
@@ -622,6 +641,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
+	o.handlers["POST"]["/cell/{cell_id}/host"] = host.NewAddCellHost(o.context, o.HostAddCellHostHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
 	o.handlers["POST"]["/cell/{cell_id}/keypair/{keypair_name}"] = keypair.NewAddCellKeypair(o.context, o.KeypairAddCellKeypairHandler)
 
 	if o.handlers["POST"] == nil {
@@ -698,6 +722,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/cell/{cell_id}/components"] = component.NewFindCellComponents(o.context, o.ComponentFindCellComponentsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/cell/{cell_id}/hosts"] = host.NewFindCellHosts(o.context, o.HostFindCellHostsHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

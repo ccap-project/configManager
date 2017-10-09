@@ -16,6 +16,7 @@ import (
 	"./operations/cell"
 	"./operations/component"
 	"./operations/customer"
+	"./operations/host"
 	"./operations/hostgroup"
 	"./operations/keypair"
 	"./operations/provider"
@@ -89,6 +90,10 @@ func configureAPI(api *operations.ConfigManagerAPI) http.Handler {
 	api.CellGetCellByIDHandler = cell.GetCellByIDHandlerFunc(handlers.GetCellByID)
 	api.CellGetCellFullByIDHandler = cell.GetCellFullByIDHandlerFunc(handlers.GetCellFullByID)
 
+	// Host
+	api.HostAddCellHostHandler = host.AddCellHostHandlerFunc(handlers.AddCellHost)
+
+	// Deploy
 	api.CellDeployCellByIDHandler = cell.DeployCellByIDHandlerFunc(handlers.DeployCell)
 	api.CellDeployCellAppByIDHandler = cell.DeployCellAppByIDHandlerFunc(handlers.DeployCellApp)
 
