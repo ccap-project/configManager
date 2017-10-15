@@ -16,7 +16,7 @@ func AddComponentRole(params role.AddComponentRoleParams, principal *models.Cust
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->(cell:Cell)-[:PROVIDES]->(component:Component)
 							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
-							CREATE (component)-[:USE]->(role:Role {name: {role_name}, url: {role_url}, version: {role_version}} )
+							CREATE (component)-[:USE]->(role:Role {name: {role_name}, url: {role_url}, version: {role_version}, order: {role_order}} )
 								RETURN id(role) as id`
 
 	log.Printf("= getRoleByName(%s), (%#v)", params.Body.Name, getComponentRoleByName(principal.Name, params.CellID, params.ComponentID, params.Body.Name))
@@ -46,13 +46,18 @@ func AddComponentRole(params role.AddComponentRoleParams, principal *models.Cust
 		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
+	if params.Body.Order == nil {
+		params.Body.Order = swag.Int64(99)
+	}
+
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"customer_name": swag.StringValue(principal.Name),
 		"cell_id":       params.CellID,
 		"component_id":  params.ComponentID,
 		"role_name":     swag.StringValue(params.Body.Name),
 		"role_url":      swag.StringValue(params.Body.URL),
-		"role_version":  swag.StringValue(params.Body.Version)})
+		"role_version":  swag.StringValue(params.Body.Version),
+		"role_order":    swag.Int64Value(params.Body.Order)})
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
@@ -130,7 +135,8 @@ func FindComponentRoles(params role.FindComponentRolesParams, principal *models.
 								RETURN id(role) as id,
 												role.name as name,
 												role.url as url,
-												role.version as version`
+												role.version as version,
+												role.order as order`
 
 	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
 	if err != nil {
@@ -159,6 +165,9 @@ func FindComponentRoles(params role.FindComponentRolesParams, principal *models.
 		_url := ""
 		_version := ""
 
+		var _order int64
+		_order = 99
+
 		if row[2] != nil {
 			_url = row[2].(string)
 		}
@@ -167,11 +176,16 @@ func FindComponentRoles(params role.FindComponentRolesParams, principal *models.
 			_version = row[3].(string)
 		}
 
+		if row[4] != nil {
+			_order = row[4].(int64)
+		}
+
 		res[idx] = &models.Role{
 			ID:      row[0].(int64),
 			Name:    &_name,
 			Version: &_version,
-			URL:     &_url}
+			URL:     &_url,
+			Order:   &_order}
 	}
 
 	log.Printf("= Res(%#v)", res)
@@ -184,10 +198,10 @@ func UpdateComponentRole(params role.UpdateComponentRoleParams, principal *model
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role{name: {role_current_name}})-[:PARAM]->(param:Parameter)
 							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
-							SET role.name={role_new_name}, role.url={role_url}, role.version={role_version}
+							SET role.name={role_new_name}, role.url={role_url}, role.version={role_version}, role.order={role_order}
 							DETACH DELETE param`
 
-	log.Printf("= getRoleByName(%s), (%#v)", params.Body.Name, getComponentRoleByName(principal.Name, params.CellID, params.ComponentID, params.Body.Name))
+	log.Printf("= getRoleByName(%s), (%v)", params.Body.Name, getComponentRoleByName(principal.Name, params.CellID, params.ComponentID, params.Body.Name))
 
 	if getComponentRoleByName(principal.Name, params.CellID, params.ComponentID, &params.RoleName) == nil {
 		log.Println("role does not exists !")
@@ -228,7 +242,8 @@ func UpdateComponentRole(params role.UpdateComponentRoleParams, principal *model
 		"role_current_name": params.RoleName,
 		"role_new_name":     swag.StringValue(params.Body.Name),
 		"role_url":          swag.StringValue(params.Body.URL),
-		"role_version":      swag.StringValue(params.Body.Version)})
+		"role_version":      swag.StringValue(params.Body.Version),
+		"role_order":        swag.Int64Value(params.Body.Order)})
 
 	if err != nil {
 		log.Printf("-> An error occurred querying Neo: %s", err)
@@ -237,11 +252,14 @@ func UpdateComponentRole(params role.UpdateComponentRoleParams, principal *model
 
 	stmt.Close()
 
-	err = addComponentRoleParameters(principal.Name, params.CellID, params.ComponentID, params.Body.Name, params.Body.Params, db)
-	if err != nil {
-		log.Printf("An error occurred adding Role parameters: %s", err)
-		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+	if len(params.Body.Params) > 0 {
+		err = addComponentRoleParameters(principal.Name, params.CellID, params.ComponentID, params.Body.Name, params.Body.Params, db)
+		if err != nil {
+			log.Printf("An error occurred adding Role parameters: %s", err)
+			return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		}
 	}
+
 	tx.Commit()
 
 	return role.NewUpdateComponentRoleOK()
@@ -293,7 +311,8 @@ func getComponentRoleByName(customer *string, cellID int64, componentID int64, r
 								RETURN ID(role) as id,
 												role.name as name,
 												role.url as url,
-												role.version as version`
+												role.version as version,
+												role.order as order`
 
 	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
 	if err != nil {
@@ -320,13 +339,14 @@ func getComponentRoleByName(customer *string, cellID int64, componentID int64, r
 		return role
 	}
 
-	//log.Printf("here => (%#v)", rows)
-
 	output, _, err := rows.NextNeo()
 	if err != nil {
 		//log.Printf("An error occurred fetching row: %s", err)
 		return role
 	}
+
+	var _order int64
+
 	_name := output[1].(string)
 	_url := ""
 	_version := output[3].(string)
@@ -335,11 +355,15 @@ func getComponentRoleByName(customer *string, cellID int64, componentID int64, r
 		_url = output[2].(string)
 	}
 
+	if output[4] != nil {
+		_order = output[4].(int64)
+	}
+
 	role = &models.Role{ID: output[0].(int64),
 		Name:    &_name,
 		URL:     &_url,
-		Version: &_version}
+		Version: &_version,
+		Order:   &_order}
 
-	log.Printf("here => (%#v)", role)
 	return role
 }

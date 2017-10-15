@@ -24,6 +24,9 @@ type Role struct {
 	// Required: true
 	Name *string `json:"name"`
 
+	// order
+	Order *int64 `json:"order,omitempty"`
+
 	// params
 	Params []*Parameter `json:"params"`
 

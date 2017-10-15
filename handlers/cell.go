@@ -514,7 +514,8 @@ func getCellRecursive(customerName *string, cellID int64) *models.EntireCell {
 							OPTIONAL MATCH (role)-->(parameter:Parameter)
 							OPTIONAL MATCH (component)-->(hostgroup:Hostgroup)
 							OPTIONAL MATCH (host)-->(option:Option)
-							return *`
+							RETURN *
+							ORDER BY component.name, role.order`
 
 	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
 	if err != nil {
