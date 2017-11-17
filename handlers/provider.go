@@ -56,7 +56,7 @@ func AddCellProvider(params provider.AddProviderParams, principal *models.Custom
 		"auth_url":      swag.StringValue(params.Body.AuthURL),
 		"username":      swag.StringValue(params.Body.Username),
 		"password":      swag.StringValue(params.Body.Password),
-		"type":          swag.StringValue(params.Body.Type)})
+		"providertype":  swag.StringValue(params.Body.Type)})
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
@@ -95,6 +95,7 @@ func getProvider(customerName *string, CellID int64) *models.Provider {
 
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)-[:USE]->(provider:Provider)
 							WHERE id(cell) = {cell_id}
+							MATCH (provider)-[:PROVIDER_IS]->(provider_type:ProviderType)
 								RETURN ID(provider) as id,
 												provider.name as name,
 												provider.domain_name as domain_name,
@@ -102,7 +103,8 @@ func getProvider(customerName *string, CellID int64) *models.Provider {
 												provider.auth_url as auth_url,
 												provider.providertype_id as providertype_id,
 												provider.username as username,
-												provider.password as password`
+												provider.password as password,
+												provider_type.name as provider_type_name`
 
 	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
 	if err != nil {
@@ -146,9 +148,9 @@ func getProvider(customerName *string, CellID int64) *models.Provider {
 	*provider.DomainName = output[2].(string)
 	*provider.TenantName = output[3].(string)
 	*provider.AuthURL = output[4].(string)
-	*provider.Type = output[5].(string)
 	*provider.Username = output[6].(string)
 	*provider.Password = output[7].(string)
+	*provider.Type = output[8].(string)
 
 	return provider
 }
