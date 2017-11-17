@@ -90,8 +90,9 @@ func DeleteComponentRole(params role.DeleteComponentRoleParams, principal *model
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role {name: {role_name}})
+							OPTIONAL MATCH (role)-[r:PARAM]->(p)
 							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
-							DETACH DELETE role`
+							DETACH DELETE role, r, p`
 
 	if getComponentRoleByName(principal.Name, params.CellID, params.ComponentID, &params.RoleName) == nil {
 		log.Println("role does not exists !")
