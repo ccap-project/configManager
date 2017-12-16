@@ -14,8 +14,8 @@ import (
 func AddCellProvider(params provider.AddProviderParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell),
-										(providertype:ProviderType)
-							WHERE id(cell) = {cell_id} AND providertype.name = {providertype}
+										(providertype:ProviderType {name: {providertype}})
+							WHERE id(cell) = {cell_id}
 							CREATE (cell)-[:USE]->(provider:Provider {
 								name: {provider_name},
 							 	domain_name: {domain_name},
