@@ -73,6 +73,8 @@ func DeployCell(params cell.DeployCellByIDParams, principal *models.Customer) mi
 
 	EntireCell := getCellRecursive(principal.Name, params.CellID)
 
+	log.Printf("DeployCell(%#v)", EntireCell)
+
 	if EntireCell == nil {
 		log.Print("cell is empty")
 		return cell.NewDeployCellByIDNoContent()
@@ -87,7 +89,7 @@ func DeployCell(params cell.DeployCellByIDParams, principal *models.Customer) mi
 	jsonString := strings.NewReader(string(jsonOut))
 	log.Println(jsonString)
 
-	requestRes, err := http.Post("http://192.168.20.35:8080/v1/deploy", "application/json", jsonString)
+	requestRes, err := http.Post("http://127.0.0.1:8080/v1/deploy", "application/json", jsonString)
 
 	if err != nil {
 		log.Println("deploying cell, ", err)
@@ -352,14 +354,25 @@ func getCellByID(customerName *string, cellID int64) *models.Cell {
 func getCellFull(customerName *string, cellID int64) *models.FullCell {
 	cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell)
 							WHERE id(cell) = {cell_id}
-							MATCH (cell)-[:DEPLOY_WITH]->(keypair:Keypair)
-							MATCH (cell)-[:USE]->(provider:Provider)
-							MATCH (provider)-[:PROVIDER_IS]->(provider_type:ProviderType)
-							MATCH (cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role)
+							MATCH (cell)-[:DEPLOY_WITH]->(keypair:Keypair),
+										(cell)-[:USE]->(provider:Provider),
+										(provider)-[:PROVIDER_IS]->(provider_type:ProviderType),
+										(cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role)
 							OPTIONAL MATCH (role)-->(parameter:Parameter)
 							OPTIONAL MATCH (component)-->(hostgroup:Hostgroup)
-							return *`
-
+							OPTIONAL MATCH (cell)-->(host)-->(option:Option)
+							RETURN *`
+	/*
+		cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell)
+								WHERE id(cell) = {cell_id}
+								MATCH (cell)-[:DEPLOY_WITH]->(keypair:Keypair)
+								MATCH (cell)-[:USE]->(provider:Provider)
+								MATCH (provider)-[:PROVIDER_IS]->(provider_type:ProviderType)
+								MATCH (cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role)
+								OPTIONAL MATCH (role)-->(parameter:Parameter)
+								OPTIONAL MATCH (component)-->(hostgroup:Hostgroup)
+								return *`
+	*/
 	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
@@ -378,6 +391,9 @@ func getCellFull(customerName *string, cellID int64) *models.FullCell {
 
 	res := new(models.FullCell)
 
+	log.Printf("res(%v)", res)
+
+	res.CustomerName = *customerName
 	res.Keypair = new(models.Keypair)
 	res.Provider = new(models.Provider)
 
@@ -506,17 +522,29 @@ func getCellFull(customerName *string, cellID int64) *models.FullCell {
 func getCellRecursive(customerName *string, cellID int64) *models.EntireCell {
 	cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell)
 							WHERE id(cell) = {cell_id}
-							MATCH (cell)-[:DEPLOY_WITH]->(keypair:Keypair)
-							MATCH (cell)-[:HAS]->(host:Host)
-							MATCH (cell)-[:USE]->(provider:Provider)
-							MATCH (provider)-[:PROVIDER_IS]->(provider_type:ProviderType)
-							MATCH (cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role)
+							MATCH (cell)-[:DEPLOY_WITH]->(keypair:Keypair),
+										(cell)-[:USE]->(provider:Provider),
+										(provider)-[:PROVIDER_IS]->(provider_type:ProviderType),
+										(cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role)
 							OPTIONAL MATCH (role)-->(parameter:Parameter)
 							OPTIONAL MATCH (component)-->(hostgroup:Hostgroup)
-							OPTIONAL MATCH (host)-->(option:Option)
+							OPTIONAL MATCH (cell)-->(host)-->(option:Option)
 							RETURN *
 							ORDER BY component.name, role.order`
-
+	/*
+		cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell)
+								WHERE id(cell) = {cell_id}
+								MATCH (cell)-[:DEPLOY_WITH]->(keypair:Keypair)
+								MATCH (cell)-[:HAS]->(host:Host)
+								MATCH (cell)-[:USE]->(provider:Provider)
+								MATCH (provider)-[:PROVIDER_IS]->(provider_type:ProviderType)
+								MATCH (cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role)
+								OPTIONAL MATCH (role)-->(parameter:Parameter)
+								OPTIONAL MATCH (component)-->(hostgroup:Hostgroup)
+								OPTIONAL MATCH (host)-->(option:Option)
+								RETURN *
+								ORDER BY component.name, role.order`
+	*/
 	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
@@ -535,6 +563,7 @@ func getCellRecursive(customerName *string, cellID int64) *models.EntireCell {
 
 	res := new(models.EntireCell)
 
+	res.CustomerName = *customerName
 	res.Keypair = new(models.Keypair)
 	res.Provider = new(models.Provider)
 
