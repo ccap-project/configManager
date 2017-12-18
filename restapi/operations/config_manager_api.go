@@ -48,6 +48,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		HostgroupAddComponentHostgroupHandler: hostgroup.AddComponentHostgroupHandlerFunc(func(params hostgroup.AddComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupAddComponentHostgroup has not yet been implemented")
 		}),
+		HostgroupDeleteComponentHostgroupHandler: hostgroup.DeleteComponentHostgroupHandlerFunc(func(params hostgroup.DeleteComponentHostgroupParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation HostgroupDeleteComponentHostgroup has not yet been implemented")
+		}),
 		HostgroupUpdateComponentHostgroupHandler: hostgroup.UpdateComponentHostgroupHandlerFunc(func(params hostgroup.UpdateComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupUpdateComponentHostgroup has not yet been implemented")
 		}),
@@ -122,6 +125,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		}),
 		CellGetCellByIDHandler: cell.GetCellByIDHandlerFunc(func(params cell.GetCellByIDParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation CellGetCellByID has not yet been implemented")
+		}),
+		ComponentGetCellComponentHandler: component.GetCellComponentHandlerFunc(func(params component.GetCellComponentParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation ComponentGetCellComponent has not yet been implemented")
 		}),
 		CellGetCellFullByIDHandler: cell.GetCellFullByIDHandlerFunc(func(params cell.GetCellFullByIDParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation CellGetCellFullByID has not yet been implemented")
@@ -210,6 +216,8 @@ type ConfigManagerAPI struct {
 
 	// HostgroupAddComponentHostgroupHandler sets the operation handler for the add component hostgroup operation
 	HostgroupAddComponentHostgroupHandler hostgroup.AddComponentHostgroupHandler
+	// HostgroupDeleteComponentHostgroupHandler sets the operation handler for the delete component hostgroup operation
+	HostgroupDeleteComponentHostgroupHandler hostgroup.DeleteComponentHostgroupHandler
 	// HostgroupUpdateComponentHostgroupHandler sets the operation handler for the update component hostgroup operation
 	HostgroupUpdateComponentHostgroupHandler hostgroup.UpdateComponentHostgroupHandler
 	// CellAddCellHandler sets the operation handler for the add cell operation
@@ -260,6 +268,8 @@ type ConfigManagerAPI struct {
 	KeypairFindKeypairByCustomerHandler keypair.FindKeypairByCustomerHandler
 	// CellGetCellByIDHandler sets the operation handler for the get cell by Id operation
 	CellGetCellByIDHandler cell.GetCellByIDHandler
+	// ComponentGetCellComponentHandler sets the operation handler for the get cell component operation
+	ComponentGetCellComponentHandler component.GetCellComponentHandler
 	// CellGetCellFullByIDHandler sets the operation handler for the get cell full by Id operation
 	CellGetCellFullByIDHandler cell.GetCellFullByIDHandler
 	// HostgroupGetComponentHostgroupByIDHandler sets the operation handler for the get component hostgroup by ID operation
@@ -365,6 +375,10 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "hostgroup.AddComponentHostgroupHandler")
 	}
 
+	if o.HostgroupDeleteComponentHostgroupHandler == nil {
+		unregistered = append(unregistered, "hostgroup.DeleteComponentHostgroupHandler")
+	}
+
 	if o.HostgroupUpdateComponentHostgroupHandler == nil {
 		unregistered = append(unregistered, "hostgroup.UpdateComponentHostgroupHandler")
 	}
@@ -463,6 +477,10 @@ func (o *ConfigManagerAPI) Validate() error {
 
 	if o.CellGetCellByIDHandler == nil {
 		unregistered = append(unregistered, "cell.GetCellByIDHandler")
+	}
+
+	if o.ComponentGetCellComponentHandler == nil {
+		unregistered = append(unregistered, "component.GetCellComponentHandler")
 	}
 
 	if o.CellGetCellFullByIDHandler == nil {
@@ -628,6 +646,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	}
 	o.handlers["POST"]["/cell/{cell_id}/component/{component_id}/hostgroup"] = hostgroup.NewAddComponentHostgroup(o.context, o.HostgroupAddComponentHostgroupHandler)
 
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/cell/{cell_id}/component/{component_id}/hostgroup/{hostgroup_id}"] = hostgroup.NewDeleteComponentHostgroup(o.context, o.HostgroupDeleteComponentHostgroupHandler)
+
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
@@ -752,6 +775,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/cell/{cell_id}"] = cell.NewGetCellByID(o.context, o.CellGetCellByIDHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/cell/{cell_id}/component/{component_id}"] = component.NewGetCellComponent(o.context, o.ComponentGetCellComponentHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

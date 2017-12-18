@@ -868,6 +868,44 @@ paths:
           schema:
             $ref: "#definitions/ApiResponse"
 
+  /cell/{cell_id}/component/{component_id}:
+    get:
+      tags:
+      - "component"
+      summary: "Get Component"
+      operationId: "getCellComponent"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that needs to be updated"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "component_id"
+        in: "path"
+        description: "ID of component that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Component"
+        400:
+          description: "Invalid cell id or component id"
+        404:
+          description: "component not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+
+
   /cell/{cell_id}/hosts:
     get:
       tags:
@@ -1121,9 +1159,47 @@ paths:
           schema:
             $ref: "#definitions/ApiResponse"
         404:
-          description: "Role does not exists"
-        409:
-          description: "Role does not exists"
+          description: "Hostgroup does not exists"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+    delete:
+      tags:
+      - "hostgroup"
+      summary: "Deletes a hostgroup from component"
+      description: ""
+      operationId: "DeleteComponentHostgroup"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "component_id"
+        in: "path"
+        description: "ID of component that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "hostgroup_id"
+        in: "path"
+        description: "hostgroup that will be deleted"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+        400:
+          description: "Invalid cell id, component id or hostgroup id"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        404:
+          description: "Hostgroup does not exists"
         500:
           description: "Internal error"
           schema:
@@ -1488,6 +1564,9 @@ definitions:
         type: "string"
       component:
         type: "string"
+      order:
+        type: integer
+        default: 99
       roles:
         type: array
         items:
@@ -1623,6 +1702,8 @@ definitions:
     type: "object"
     properties:
       name:
+        type: "string"
+      customer_name:
         type: "string"
       provider:
         $ref: "#/definitions/Provider"

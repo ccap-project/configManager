@@ -22,7 +22,8 @@ func AddComponentHostgroup(params hostgroup.AddComponentHostgroupParams, princip
 								username: {hostgroup_username},
 								bootstrap_command: {hostgroup_bootstrap_command},
 								count: {hostgroup_count},
-								network: {hostgroup_network} } )
+								network: {hostgroup_network},
+								order: {hostgroup_order} } )
 								RETURN id(hostgroup) as id`
 
 	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
@@ -43,6 +44,10 @@ func AddComponentHostgroup(params hostgroup.AddComponentHostgroupParams, princip
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
+	if params.Body.Order == nil {
+		params.Body.Order = swag.Int64(99)
+	}
+
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"customer_name":               swag.StringValue(principal.Name),
 		"cell_id":                     params.CellID,
@@ -53,7 +58,8 @@ func AddComponentHostgroup(params hostgroup.AddComponentHostgroupParams, princip
 		"hostgroup_username":          swag.StringValue(params.Body.Username),
 		"hostgroup_bootstrap_command": swag.StringValue(&params.Body.BootstrapCommand),
 		"hostgroup_count":             swag.Int64Value(params.Body.Count),
-		"hostgroup_network":           swag.StringValue(params.Body.Network)})
+		"hostgroup_network":           swag.StringValue(params.Body.Network),
+		"hostgroup_order":             params.Body.Order})
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
@@ -75,16 +81,16 @@ func AddComponentHostgroup(params hostgroup.AddComponentHostgroupParams, princip
 	return hostgroup.NewAddComponentHostgroupCreated().WithPayload(output[0].(int64))
 }
 
-/*
-
 func DeleteComponentHostgroup(params hostgroup.DeleteComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:PROVIDES]->(component:Component)-[:USE]->(hostgroup:Hostgroup {name: {hostgroup_name}})
-							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
+							(cell:Cell)-[:PROVIDES]->(component:Component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
+							WHERE id(cell) = {cell_id}
+								AND id(component) = {component_id}
+								AND id(hostgroup) = {hostgroup_id}
 							DETACH DELETE hostgroup`
 
-	if getComponentHostgroupByName(principal.Name, params.CellID, params.ComponentID, &params.HostgroupName) == nil {
+	if getComponentHostgroupByID(principal.Name, params.CellID, params.ComponentID, params.HostgroupID) == nil {
 		log.Println("hostgroup does not exists !")
 		return hostgroup.NewDeleteComponentHostgroupNotFound()
 	}
@@ -108,16 +114,19 @@ func DeleteComponentHostgroup(params hostgroup.DeleteComponentHostgroupParams, p
 		"customer_name": swag.StringValue(principal.Name),
 		"cell_id":       params.CellID,
 		"component_id":  params.ComponentID,
-		"hostgroup_name":     params.HostgroupName})
+		"hostgroup_id":  params.HostgroupID})
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
+	//if res.Count.(int) <= 0 {
+	//	return hostgroup.NewDeleteComponentHostgroupNotFound()
+	//}
+
 	return hostgroup.NewDeleteComponentHostgroupOK()
 }
-*/
 
 func GetComponentHostgroupByID(params hostgroup.GetComponentHostgroupByIDParams, principal *models.Customer) middleware.Responder {
 
@@ -131,6 +140,19 @@ func GetComponentHostgroupByID(params hostgroup.GetComponentHostgroupByIDParams,
 
 func FindComponentHostgroups(params hostgroup.FindComponentHostgroupsParams, principal *models.Customer) middleware.Responder {
 
+	data, err := _FindComponentHostgroups(principal.Name, params.CellID, params.ComponentID)
+
+	log.Printf("= data(%#v)", data)
+
+	if err != nil {
+		return err
+	}
+
+	return hostgroup.NewFindComponentHostgroupsOK().WithPayload(data)
+}
+
+func _FindComponentHostgroups(customerName *string, CellID int64, ComponentID int64) ([]*models.Hostgroup, middleware.Responder) {
+
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell)-[:PROVIDES]->(component:Component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
 							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
@@ -141,30 +163,36 @@ func FindComponentHostgroups(params hostgroup.FindComponentHostgroupsParams, pri
 												hostgroup.username as username,
 												hostgroup.bootstrap_command as bootstrap_command,
 												hostgroup.count as count,
-												hostgroup.network as network`
+												hostgroup.network as network,
+												hostgroup.order as order`
 
 	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
-		return hostgroup.NewFindComponentHostgroupsInternalServerError()
+		return nil, hostgroup.NewFindComponentHostgroupsInternalServerError()
 	}
 	defer db.Close()
 
+	log.Println(" customerName =>>>>>", *customerName)
+
 	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
-		"customer_name": swag.StringValue(principal.Name),
-		"cell_id":       params.CellID,
-		"component_id":  params.ComponentID})
+		"customer_name": *customerName,
+		"cell_id":       CellID,
+		"component_id":  ComponentID})
 
 	log.Printf("= data(%#v)", data)
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
-		return hostgroup.NewFindComponentHostgroupsInternalServerError()
+		return nil, hostgroup.NewFindComponentHostgroupsInternalServerError()
 	}
 
 	res := make([]*models.Hostgroup, len(data))
 
 	for idx, row := range data {
+
+		var _order int64
+
 		_name := row[1].(string)
 		_image := row[2].(string)
 		_flavor := row[3].(string)
@@ -172,6 +200,12 @@ func FindComponentHostgroups(params hostgroup.FindComponentHostgroupsParams, pri
 		_bootstrap_command := ""
 		_count := row[6].(int64)
 		_network := row[7].(string)
+
+		if row[8] == nil {
+			_order = 99
+		} else {
+			_order = row[8].(int64)
+		}
 
 		if row[5] != nil {
 			_bootstrap_command = row[5].(string)
@@ -185,9 +219,10 @@ func FindComponentHostgroups(params hostgroup.FindComponentHostgroupsParams, pri
 			Flavor:           &_flavor,
 			Username:         &_username,
 			BootstrapCommand: _bootstrap_command,
-			Network:          &_network}
+			Network:          &_network,
+			Order:            &_order}
 	}
-	return hostgroup.NewFindComponentHostgroupsOK().WithPayload(res)
+	return res, nil
 }
 
 func UpdateComponentHostgroup(params hostgroup.UpdateComponentHostgroupParams, principal *models.Customer) middleware.Responder {
@@ -201,7 +236,8 @@ func UpdateComponentHostgroup(params hostgroup.UpdateComponentHostgroupParams, p
 									hostgroup.username={hostgroup_username},
 									hostgroup.bootstrap_command={hostgroup_bootstrap_command},
 									hostgroup.count={hostgroup_count},
-									hostgroup.network={hostgroup_network}`
+									hostgroup.network={hostgroup_network},
+									hostgroup.order={hostgroup_order}`
 
 	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
 	if err != nil {
@@ -226,6 +262,10 @@ func UpdateComponentHostgroup(params hostgroup.UpdateComponentHostgroupParams, p
 		swag.StringValue(params.Body.Image),
 		swag.StringValue(params.Body.Flavor))
 
+	if params.Body.Order == nil {
+		params.Body.Order = swag.Int64(99)
+	}
+
 	_, err = stmt.ExecNeo(map[string]interface{}{
 		"customer_name":               swag.StringValue(principal.Name),
 		"cell_id":                     params.CellID,
@@ -237,7 +277,8 @@ func UpdateComponentHostgroup(params hostgroup.UpdateComponentHostgroupParams, p
 		"hostgroup_username":          swag.StringValue(params.Body.Username),
 		"hostgroup_bootstrap_command": swag.StringValue(&params.Body.BootstrapCommand),
 		"hostgroup_count":             swag.Int64Value(params.Body.Count),
-		"hostgroup_network":           swag.StringValue(params.Body.Network)})
+		"hostgroup_network":           swag.StringValue(params.Body.Network),
+		"hostgroup_order":             swag.Int64Value(params.Body.Order)})
 
 	if err != nil {
 		log.Printf("-> An error occurred querying Neo: %s", err)
@@ -254,7 +295,9 @@ func getComponentHostgroupByID(customer *string, cellID int64, componentID int64
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell)-[:PROVIDES]->(component:Component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
-							WHERE id(cell) = {cell_id} AND id(component) = {component_id} AND id(hostgroup) = {hostgroup_id}
+							WHERE id(cell) = {cell_id}
+								AND id(component) = {component_id}
+								AND id(hostgroup) = {hostgroup_id}
 							RETURN id(hostgroup) as id,
 											hostgroup.name as name,
 											hostgroup.image as image,
@@ -262,7 +305,8 @@ func getComponentHostgroupByID(customer *string, cellID int64, componentID int64
 											hostgroup.username as username,
 											hostgroup.bootstrap_command as bootstrap_command,
 											hostgroup.count as count,
-											hostgroup.network as network`
+											hostgroup.network as network,
+											hostgroup.order as order`
 
 	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
 	if err != nil {
@@ -302,6 +346,14 @@ func getComponentHostgroupByID(customer *string, cellID int64, componentID int64
 	_count := output[6].(int64)
 	_network := output[7].(string)
 
+	var _order int64
+
+	if output[8].(int64) <= 0 {
+		_order = 99
+	} else {
+		_order = output[8].(int64)
+	}
+
 	if output[5] != nil {
 		_bootstrap_command = output[5].(string)
 	}
@@ -314,7 +366,8 @@ func getComponentHostgroupByID(customer *string, cellID int64, componentID int64
 		Flavor:           &_flavor,
 		Username:         &_username,
 		BootstrapCommand: _bootstrap_command,
-		Network:          &_network}
+		Network:          &_network,
+		Order:            &_order}
 
 	log.Printf("here => (%#v)", hostgroup)
 

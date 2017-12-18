@@ -46,6 +46,9 @@ type Hostgroup struct {
 	// Required: true
 	Network *string `json:"network"`
 
+	// order
+	Order *int64 `json:"order,omitempty"`
+
 	// roles
 	Roles []*Role `json:"roles"`
 

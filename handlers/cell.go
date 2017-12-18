@@ -362,17 +362,7 @@ func getCellFull(customerName *string, cellID int64) *models.FullCell {
 							OPTIONAL MATCH (component)-->(hostgroup:Hostgroup)
 							OPTIONAL MATCH (cell)-->(host)-->(option:Option)
 							RETURN *`
-	/*
-		cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell)
-								WHERE id(cell) = {cell_id}
-								MATCH (cell)-[:DEPLOY_WITH]->(keypair:Keypair)
-								MATCH (cell)-[:USE]->(provider:Provider)
-								MATCH (provider)-[:PROVIDER_IS]->(provider_type:ProviderType)
-								MATCH (cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role)
-								OPTIONAL MATCH (role)-->(parameter:Parameter)
-								OPTIONAL MATCH (component)-->(hostgroup:Hostgroup)
-								return *`
-	*/
+
 	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
@@ -394,10 +384,12 @@ func getCellFull(customerName *string, cellID int64) *models.FullCell {
 	log.Printf("res(%v)", res)
 
 	res.CustomerName = *customerName
-	res.Keypair = new(models.Keypair)
+	//res.Keypair = new(models.Keypair)
 	res.Provider = new(models.Provider)
 
 	for _, row := range data {
+
+		var cellID int64
 		if len(res.Name) == 0 {
 			cellNode := getNodeByLabel(row, "Cell")
 
@@ -406,17 +398,20 @@ func getCellFull(customerName *string, cellID int64) *models.FullCell {
 			}
 		}
 
-		if res.Keypair.Name == nil {
-			keypairNode := getNodeByLabel(row, "Keypair")
+		res.Keypair = getCellKeypair(customerName, cellID)
+		/*
+			if res.Keypair.Name == nil {
+				keypairNode := getNodeByLabel(row, "Keypair")
 
-			if len(keypairNode) > 0 {
-				res.Keypair.Name = new(string)
-				res.Keypair.PublicKey = new(string)
+				if len(keypairNode) > 0 {
+					res.Keypair.Name = new(string)
+					res.Keypair.PublicKey = new(string)
 
-				*res.Keypair.Name = keypairNode["name"].(string)
-				*res.Keypair.PublicKey = keypairNode["public_key"].(string)
+					*res.Keypair.Name = keypairNode["name"].(string)
+					*res.Keypair.PublicKey = keypairNode["public_key"].(string)
+				}
 			}
-		}
+		*/
 
 		if res.Provider.Name == nil {
 			providerNode := getNodeByLabel(row, "Provider")
@@ -434,83 +429,92 @@ func getCellFull(customerName *string, cellID int64) *models.FullCell {
 		}
 
 		// Component
-		componentNode := getNodeByLabel(row, "Component")
+		C, err := findCellComponents(customerName, cellID)
+		res.Components = C
+		log.Printf(">>>>>>>>>>>>>>>>> %#v<<<<<<  %v<<<<<<<<<<<<", C, err)
+		//componentNode := getNodeByLabel(row, "Component")
+		/*
+			if len(componentNode) > 0 {
+				var component *models.Component
 
-		if len(componentNode) > 0 {
-			var component *models.Component
+				component = _getComponentByName(res.Components, componentNode["name"].(string))
 
-			component = _getComponentByName(res.Components, componentNode["name"].(string))
+				if component == nil {
+					component = new(models.Component)
 
-			if component == nil {
-				component = new(models.Component)
+					component.Name = copyString(componentNode["name"])
 
-				component.Name = copyString(componentNode["name"])
+					log.Printf("-------->>>>> %#v", componentNode)
 
-				res.Components = append(res.Components, component)
-			}
-			// Hostgroup
-			hostgroupNode := getNodeByLabel(row, "Hostgroup")
-
-			if len(hostgroupNode) > 0 {
-
-				var hg *models.Hostgroup
-
-				hg = getHostgroupByName(component.Hostgroups, hostgroupNode["name"].(string))
-
-				if hg == nil {
-					hg = new(models.Hostgroup)
-
-					hg.Flavor = copyString(hostgroupNode["flavor"])
-					hg.Image = copyString(hostgroupNode["image"])
-					hg.Name = copyString(hostgroupNode["name"])
-					hg.Network = copyString(hostgroupNode["network"])
-					hg.Username = copyString(hostgroupNode["username"])
-					hg.BootstrapCommand = *copyString(hostgroupNode["bootstrap_command"])
-
-					hg.Count = new(int64)
-
-					*hg.Count = hostgroupNode["count"].(int64)
-
-					component.Hostgroups = append(component.Hostgroups, hg)
+					res.Components = append(res.Components, component)
 				}
-			}
+				// Hostgroup
+				hostgroupNode := getNodeByLabel(row, "Hostgroup")
 
-			// Roles
-			roleNode := getNodeByLabel(row, "Role")
+				if len(hostgroupNode) > 0 {
 
-			if len(roleNode) > 0 {
+					component.Hostgroups, _ = _FindComponentHostgroups(&res.CustomerName, cellID, componentNode["id"].(int64))
+					/*
+						var hg *models.Hostgroup
 
-				var role *models.Role
+						hg = getHostgroupByName(component.Hostgroups, hostgroupNode["name"].(string))
 
-				role = getRoleByName(component.Roles, roleNode["name"].(string))
+						if hg == nil {
+							hg = new(models.Hostgroup)
 
-				if role == nil {
-					role = new(models.Role)
+							hg.Flavor = copyString(hostgroupNode["flavor"])
+							hg.Image = copyString(hostgroupNode["image"])
+							hg.Name = copyString(hostgroupNode["name"])
+							hg.Network = copyString(hostgroupNode["network"])
+							hg.Username = copyString(hostgroupNode["username"])
+							hg.BootstrapCommand = *copyString(hostgroupNode["bootstrap_command"])
 
-					role.Name = copyString(roleNode["name"])
-					role.URL = copyString(roleNode["url"])
-					role.Version = copyString(roleNode["version"])
+							hg.Count = new(int64)
 
-					component.Roles = append(component.Roles, role)
+							*hg.Count = hostgroupNode["count"].(int64)
+
+							//component.Hostgroups = append(component.Hostgroups, hg)
+							component.Hostgroups = handlers.
+						}
 				}
 
-				parameterNode := getNodeByLabel(row, "Parameter")
+				// Roles
+				roleNode := getNodeByLabel(row, "Role")
 
-				if parameterNode != nil {
-					var parameter *models.Parameter
-					parameter = getParameterByName(role.Params, parameterNode["name"].(string))
+				if len(roleNode) > 0 {
 
-					if parameter == nil {
-						parameter = new(models.Parameter)
+					var role *models.Role
 
-						parameter.Name = copyString(parameterNode["name"])
-						parameter.Value = copyString(parameterNode["value"])
+					role = getRoleByName(component.Roles, roleNode["name"].(string))
 
-						role.Params = append(role.Params, parameter)
+					if role == nil {
+						role = new(models.Role)
+
+						role.Name = copyString(roleNode["name"])
+						role.URL = copyString(roleNode["url"])
+						role.Version = copyString(roleNode["version"])
+
+						component.Roles = append(component.Roles, role)
+					}
+
+					parameterNode := getNodeByLabel(row, "Parameter")
+
+					if parameterNode != nil {
+						var parameter *models.Parameter
+						parameter = getParameterByName(role.Params, parameterNode["name"].(string))
+
+						if parameter == nil {
+							parameter = new(models.Parameter)
+
+							parameter.Name = copyString(parameterNode["name"])
+							parameter.Value = copyString(parameterNode["value"])
+
+							role.Params = append(role.Params, parameter)
+						}
 					}
 				}
 			}
-		}
+		*/
 	}
 
 	return (res)

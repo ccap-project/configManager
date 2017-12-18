@@ -130,6 +130,19 @@ func DeleteComponentRole(params role.DeleteComponentRoleParams, principal *model
 
 func FindComponentRoles(params role.FindComponentRolesParams, principal *models.Customer) middleware.Responder {
 
+	res, err := _FindComponentRoles(params.CellID, params.ComponentID, principal)
+
+	if err != nil {
+		return err
+	}
+
+	log.Printf("= Res(%#v)", res)
+
+	return role.NewFindComponentRolesOK().WithPayload(res)
+}
+
+func _FindComponentRoles(CellID int64, ComponentID int64, principal *models.Customer) ([]*models.Role, middleware.Responder) {
+
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role)
 							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
@@ -142,20 +155,18 @@ func FindComponentRoles(params role.FindComponentRolesParams, principal *models.
 	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
-		return role.NewFindComponentRolesInternalServerError()
+		return nil, role.NewFindComponentRolesInternalServerError()
 	}
 	defer db.Close()
 
 	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
 		"customer_name": swag.StringValue(principal.Name),
-		"cell_id":       params.CellID,
-		"component_id":  params.ComponentID})
-
-	log.Printf("= data(%#v)", data)
+		"cell_id":       CellID,
+		"component_id":  ComponentID})
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
-		return role.NewFindComponentRolesInternalServerError()
+		return nil, role.NewFindComponentRolesInternalServerError()
 
 	}
 
@@ -189,9 +200,7 @@ func FindComponentRoles(params role.FindComponentRolesParams, principal *models.
 			Order:   &_order}
 	}
 
-	log.Printf("= Res(%#v)", res)
-
-	return role.NewFindComponentRolesOK().WithPayload(res)
+	return res, nil
 }
 
 func UpdateComponentRole(params role.UpdateComponentRoleParams, principal *models.Customer) middleware.Responder {

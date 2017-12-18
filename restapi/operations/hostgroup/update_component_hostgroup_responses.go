@@ -77,7 +77,7 @@ func (o *UpdateComponentHostgroupBadRequest) WriteResponse(rw http.ResponseWrite
 // UpdateComponentHostgroupNotFoundCode is the HTTP code returned for type UpdateComponentHostgroupNotFound
 const UpdateComponentHostgroupNotFoundCode int = 404
 
-/*UpdateComponentHostgroupNotFound Role does not exists
+/*UpdateComponentHostgroupNotFound Hostgroup does not exists
 
 swagger:response updateComponentHostgroupNotFound
 */
@@ -93,27 +93,6 @@ func NewUpdateComponentHostgroupNotFound() *UpdateComponentHostgroupNotFound {
 func (o *UpdateComponentHostgroupNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(404)
-}
-
-// UpdateComponentHostgroupConflictCode is the HTTP code returned for type UpdateComponentHostgroupConflict
-const UpdateComponentHostgroupConflictCode int = 409
-
-/*UpdateComponentHostgroupConflict Role does not exists
-
-swagger:response updateComponentHostgroupConflict
-*/
-type UpdateComponentHostgroupConflict struct {
-}
-
-// NewUpdateComponentHostgroupConflict creates UpdateComponentHostgroupConflict with default headers values
-func NewUpdateComponentHostgroupConflict() *UpdateComponentHostgroupConflict {
-	return &UpdateComponentHostgroupConflict{}
-}
-
-// WriteResponse to the client
-func (o *UpdateComponentHostgroupConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(409)
 }
 
 // UpdateComponentHostgroupInternalServerErrorCode is the HTTP code returned for type UpdateComponentHostgroupInternalServerError

@@ -99,10 +99,12 @@ func configureAPI(api *operations.ConfigManagerAPI) http.Handler {
 
 	// Component
 	api.ComponentAddComponentHandler = component.AddComponentHandlerFunc(handlers.AddCellComponent)
+	api.ComponentGetCellComponentHandler = component.GetCellComponentHandlerFunc(handlers.GetCellComponent)
 	api.ComponentFindCellComponentsHandler = component.FindCellComponentsHandlerFunc(handlers.FindCellComponents)
 
 	// Hostgroup
 	api.HostgroupAddComponentHostgroupHandler = hostgroup.AddComponentHostgroupHandlerFunc(handlers.AddComponentHostgroup)
+	api.HostgroupDeleteComponentHostgroupHandler = hostgroup.DeleteComponentHostgroupHandlerFunc(handlers.DeleteComponentHostgroup)
 	api.HostgroupFindComponentHostgroupsHandler = hostgroup.FindComponentHostgroupsHandlerFunc(handlers.FindComponentHostgroups)
 	api.HostgroupGetComponentHostgroupByIDHandler = hostgroup.GetComponentHostgroupByIDHandlerFunc(handlers.GetComponentHostgroupByID)
 	api.HostgroupUpdateComponentHostgroupHandler = hostgroup.UpdateComponentHostgroupHandlerFunc(handlers.UpdateComponentHostgroup)

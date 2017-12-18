@@ -276,6 +276,61 @@ func init() {
         }
       }
     },
+    "/cell/{cell_id}/component/{component_id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "component"
+        ],
+        "summary": "Get Component",
+        "operationId": "getCellComponent",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell that needs to be updated",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of component that will be used",
+            "name": "component_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Component"
+            }
+          },
+          "400": {
+            "description": "Invalid cell id or component id"
+          },
+          "404": {
+            "description": "component not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
     "/cell/{cell_id}/component/{component_id}/hostgroup": {
       "post": {
         "consumes": [
@@ -477,10 +532,65 @@ func init() {
             }
           },
           "404": {
-            "description": "Role does not exists"
+            "description": "Hostgroup does not exists"
           },
-          "409": {
-            "description": "Role does not exists"
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "hostgroup"
+        ],
+        "summary": "Deletes a hostgroup from component",
+        "operationId": "DeleteComponentHostgroup",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell that will be used",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of component that will be used",
+            "name": "component_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "hostgroup that will be deleted",
+            "name": "hostgroup_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid cell id, component id or hostgroup id",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "404": {
+            "description": "Hostgroup does not exists"
           },
           "500": {
             "description": "Internal error",
@@ -2190,6 +2300,9 @@ func init() {
             "$ref": "#/definitions/Component"
           }
         },
+        "customer_name": {
+          "type": "string"
+        },
         "keypair": {
           "$ref": "#/definitions/Keypair"
         },
@@ -2255,6 +2368,10 @@ func init() {
         },
         "network": {
           "type": "string"
+        },
+        "order": {
+          "type": "integer",
+          "default": 99
         },
         "roles": {
           "type": "array",

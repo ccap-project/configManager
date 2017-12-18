@@ -19,6 +19,9 @@ type FullCell struct {
 	// components
 	Components []*Component `json:"components"`
 
+	// customer name
+	CustomerName string `json:"customer_name,omitempty"`
+
 	// keypair
 	Keypair *Keypair `json:"keypair,omitempty"`
 
