@@ -3,8 +3,8 @@ package handlers
 import (
 	"log"
 
-	"../models"
-	"../restapi/operations/hostgroup"
+	"configManager/models"
+	"configManager/restapi/operations/hostgroup"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"

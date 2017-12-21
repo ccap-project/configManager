@@ -4,8 +4,8 @@ import (
 	"log"
 	"strings"
 
-	"../models"
-	"../restapi/operations/role"
+	"configManager/models"
+	"configManager/restapi/operations/role"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"

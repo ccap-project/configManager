@@ -4,8 +4,8 @@ import (
 	"log"
 	"strings"
 
-	"../models"
-	"../restapi/operations/providertype"
+	"configManager/models"
+	"configManager/restapi/operations/providertype"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"

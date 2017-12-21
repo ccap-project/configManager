@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strings"
 
-	"../models"
-	"../restapi/operations/cell"
+	"configManager/models"
+	"configManager/restapi/operations/cell"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
