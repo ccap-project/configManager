@@ -2126,6 +2126,12 @@ func init() {
           },
           "404": {
             "description": "Provider not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
           }
         }
       },

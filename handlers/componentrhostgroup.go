@@ -4,11 +4,11 @@ import (
 	"log"
 
 	"configManager/models"
+	"configManager/neo4j"
 	"configManager/restapi/operations/hostgroup"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	driver "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 )
 
 func AddComponentHostgroup(params hostgroup.AddComponentHostgroupParams, principal *models.Customer) middleware.Responder {
@@ -26,7 +26,8 @@ func AddComponentHostgroup(params hostgroup.AddComponentHostgroupParams, princip
 								order: {hostgroup_order} } )
 								RETURN id(hostgroup) as id`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
+
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -95,7 +96,7 @@ func DeleteComponentHostgroup(params hostgroup.DeleteComponentHostgroupParams, p
 		return hostgroup.NewDeleteComponentHostgroupNotFound()
 	}
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return hostgroup.NewDeleteComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -166,7 +167,7 @@ func _FindComponentHostgroups(customerName *string, CellID int64, ComponentID in
 												hostgroup.network as network,
 												hostgroup.order as order`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return nil, hostgroup.NewFindComponentHostgroupsInternalServerError()
@@ -239,7 +240,7 @@ func UpdateComponentHostgroup(params hostgroup.UpdateComponentHostgroupParams, p
 									hostgroup.network={hostgroup_network},
 									hostgroup.order={hostgroup_order}`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -308,7 +309,7 @@ func getComponentHostgroupByID(customer *string, cellID int64, componentID int64
 											hostgroup.network as network,
 											hostgroup.order as order`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return hostgroup

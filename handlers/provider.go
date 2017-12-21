@@ -4,11 +4,11 @@ import (
 	"log"
 
 	"configManager/models"
+	"configManager/neo4j"
 	"configManager/restapi/operations/provider"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	driver "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 )
 
 func AddCellProvider(params provider.AddProviderParams, principal *models.Customer) middleware.Responder {
@@ -34,7 +34,7 @@ func AddCellProvider(params provider.AddProviderParams, principal *models.Custom
 		return provider.NewAddProviderConflict().WithPayload(models.APIResponse{Message: "provider already exists"})
 	}
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return provider.NewAddProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -106,7 +106,7 @@ func getProvider(customerName *string, CellID int64) *models.Provider {
 												provider.password as password,
 												provider_type.name as provider_type_name`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return provider
@@ -181,7 +181,7 @@ func UpdateCellProvider(params provider.UpdateProviderParams, principal *models.
 		return provider.NewUpdateProviderNotFound().WithPayload(models.APIResponse{Message: "provider does not exists"})
 	}
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return provider.NewUpdateProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})

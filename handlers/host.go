@@ -4,11 +4,11 @@ import (
 	"log"
 
 	"configManager/models"
+	"configManager/neo4j"
 	"configManager/restapi/operations/host"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	driver "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 )
 
 func AddCellHost(params host.AddCellHostParams, principal *models.Customer) middleware.Responder {
@@ -23,7 +23,7 @@ func AddCellHost(params host.AddCellHostParams, principal *models.Customer) midd
 		return host.NewAddCellHostConflict().WithPayload(models.APIResponse{Message: "host already exists"})
 	}
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return host.NewAddCellHostInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -79,7 +79,7 @@ func FindCellHosts(params host.FindCellHostsParams, principal *models.Customer) 
 								RETURN id(host) as id,
 												host.name as name`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return host.NewFindCellHostsInternalServerError()
@@ -113,7 +113,7 @@ func FindCellHosts(params host.FindCellHostsParams, principal *models.Customer) 
 	return host.NewFindCellHostsOK().WithPayload(res)
 }
 
-func addCellHostOptions(customer *string, cellID int64, hostName *string, options []*models.Parameter, db driver.Conn) error {
+func addCellHostOptions(customer *string, cellID int64, hostName *string, options []*models.Parameter, db neo4j.Conn) error {
 
 	log.Printf("= Output(%#v)", options)
 
@@ -160,7 +160,7 @@ func getCellHostByName(customer *string, cellID int64, hostName *string) *models
 								RETURN ID(host) as id,
 												host.name as name`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return host

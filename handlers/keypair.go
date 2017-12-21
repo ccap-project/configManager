@@ -4,11 +4,11 @@ import (
 	"log"
 
 	"configManager/models"
+	"configManager/neo4j"
 	"configManager/restapi/operations/keypair"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	driver "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 )
 
 func AddCellKeypair(params keypair.AddCellKeypairParams, principal *models.Customer) middleware.Responder {
@@ -30,7 +30,7 @@ func AddCellKeypair(params keypair.AddCellKeypairParams, principal *models.Custo
 		return keypair.NewAddCellKeypairNotFound()
 	}
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return keypair.NewAddCellKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -79,7 +79,7 @@ func AddKeypair(params keypair.AddKeypairParams, principal *models.Customer) mid
 		return keypair.NewAddKeypairConflict().WithPayload(models.APIResponse{Message: "keypair already exists"})
 	}
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return keypair.NewAddKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -123,7 +123,7 @@ func GetKeypairByID(params keypair.GetKeypairByIDParams, principal *models.Custo
 												k.name as name,
 												k.public_key as public_key`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return keypair.NewGetKeypairByIDInternalServerError()
@@ -166,7 +166,7 @@ func FindKeypairByCustomer(params keypair.FindKeypairByCustomerParams, principal
 												k.name as name,
 												k.public_key as public_key`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return keypair.NewFindKeypairByCustomerInternalServerError()
@@ -211,7 +211,7 @@ func getCellKeypair(customerName *string, CellID int64) *models.Keypair {
 								RETURN ID(keypair) as id,
 									keypair.name as name`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return keypair
@@ -261,7 +261,7 @@ func getKeypairByName(customerName *string, keypairName *string) *models.Keypair
 												c.name as name,
 												k.public_key as public_key`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return keypair

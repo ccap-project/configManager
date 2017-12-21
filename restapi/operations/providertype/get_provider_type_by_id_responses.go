@@ -101,3 +101,45 @@ func (o *GetProviderTypeByIDNotFound) WriteResponse(rw http.ResponseWriter, prod
 
 	rw.WriteHeader(404)
 }
+
+// GetProviderTypeByIDInternalServerErrorCode is the HTTP code returned for type GetProviderTypeByIDInternalServerError
+const GetProviderTypeByIDInternalServerErrorCode int = 500
+
+/*GetProviderTypeByIDInternalServerError Internal error
+
+swagger:response getProviderTypeByIdInternalServerError
+*/
+type GetProviderTypeByIDInternalServerError struct {
+
+	/*
+	  In: Body
+	*/
+	Payload models.APIResponse `json:"body,omitempty"`
+}
+
+// NewGetProviderTypeByIDInternalServerError creates GetProviderTypeByIDInternalServerError with default headers values
+func NewGetProviderTypeByIDInternalServerError() *GetProviderTypeByIDInternalServerError {
+	return &GetProviderTypeByIDInternalServerError{}
+}
+
+// WithPayload adds the payload to the get provider type by Id internal server error response
+func (o *GetProviderTypeByIDInternalServerError) WithPayload(payload models.APIResponse) *GetProviderTypeByIDInternalServerError {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get provider type by Id internal server error response
+func (o *GetProviderTypeByIDInternalServerError) SetPayload(payload models.APIResponse) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetProviderTypeByIDInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(500)
+	payload := o.Payload
+	if err := producer.Produce(rw, payload); err != nil {
+		panic(err) // let the recovery middleware deal with this
+	}
+
+}

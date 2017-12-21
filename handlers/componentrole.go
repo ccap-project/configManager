@@ -5,11 +5,11 @@ import (
 	"strings"
 
 	"configManager/models"
+	"configManager/neo4j"
 	"configManager/restapi/operations/role"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	driver "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 )
 
 func AddComponentRole(params role.AddComponentRoleParams, principal *models.Customer) middleware.Responder {
@@ -26,7 +26,7 @@ func AddComponentRole(params role.AddComponentRoleParams, principal *models.Cust
 		return role.NewAddComponentRoleConflict().WithPayload(models.APIResponse{Message: "role already exists"})
 	}
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -99,7 +99,7 @@ func DeleteComponentRole(params role.DeleteComponentRoleParams, principal *model
 		return role.NewDeleteComponentRoleNotFound()
 	}
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return role.NewDeleteComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -152,7 +152,7 @@ func _FindComponentRoles(CellID int64, ComponentID int64, principal *models.Cust
 												role.version as version,
 												role.order as order`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return nil, role.NewFindComponentRolesInternalServerError()
@@ -224,7 +224,7 @@ func UpdateComponentRole(params role.UpdateComponentRoleParams, principal *model
 		return role.NewUpdateComponentRoleConflict()
 	}
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -275,7 +275,7 @@ func UpdateComponentRole(params role.UpdateComponentRoleParams, principal *model
 	return role.NewUpdateComponentRoleOK()
 }
 
-func addComponentRoleParameters(customer *string, cellID int64, componentID int64, roleName *string, params []*models.Parameter, db driver.Conn) error {
+func addComponentRoleParameters(customer *string, cellID int64, componentID int64, roleName *string, params []*models.Parameter, db neo4j.Conn) error {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role{name: {role_name}})
@@ -324,7 +324,7 @@ func getComponentRoleByName(customer *string, cellID int64, componentID int64, r
 												role.version as version,
 												role.order as order`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return role

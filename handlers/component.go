@@ -4,11 +4,11 @@ import (
 	"log"
 
 	"configManager/models"
+	"configManager/neo4j"
 	"configManager/restapi/operations/component"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	driver "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 )
 
 func AddCellComponent(params component.AddComponentParams, principal *models.Customer) middleware.Responder {
@@ -24,7 +24,8 @@ func AddCellComponent(params component.AddComponentParams, principal *models.Cus
 		return component.NewAddComponentConflict().WithPayload(models.APIResponse{Message: "component already exists"})
 	}
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
+
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return component.NewAddComponentInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -92,7 +93,8 @@ func findCellComponents(customerName *string, CellID int64) ([]*models.Component
 								RETURN ID(component) as id,
 												component.name as name`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
+
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return nil, err
@@ -138,7 +140,8 @@ func getCellComponent(customerName *string, CellID int64, ComponentID int64) (*m
 								RETURN ID(component) as id,
 												component.name as name`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
+
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return component, err
@@ -189,7 +192,8 @@ func getComponentByName(customerName *string, CellID int64, componentName *strin
 								RETURN ID(component) as id,
 												component.name as name`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
+
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return component

@@ -8,11 +8,11 @@ import (
 	"strings"
 
 	"configManager/models"
+	"configManager/neo4j"
 	"configManager/restapi/operations/cell"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	driver "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 )
 
@@ -28,7 +28,7 @@ func AddCell(params cell.AddCellParams, principal *models.Customer) middleware.R
 		return cell.NewAddCellConflict().WithPayload(models.APIResponse{Message: "cell already exists"})
 	}
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return cell.NewAddCellInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -166,7 +166,8 @@ func GetCellByID(params cell.GetCellByIDParams, principal *models.Customer) midd
 												k.name as name,
 												k.public_key as public_key`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
+
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return cell.NewGetCellByIDInternalServerError()
@@ -223,14 +224,16 @@ func FindCellByCustomer(params cell.FindCellByCustomerParams, principal *models.
 								RETURN ID(cell) as id,
 												cell.name as name`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
+
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return cell.NewFindCellByCustomerInternalServerError()
 	}
 	defer db.Close()
 
-	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{"name": swag.StringValue(principal.Name)})
+	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
+		"name": swag.StringValue(principal.Name)})
 
 	log.Printf("= data(%#v)", data)
 
@@ -267,7 +270,8 @@ func getCellByName(customerName *string, cellName *string) *models.Cell {
 								RETURN ID(cell) as id,
 												cell.name as name`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
+
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return cell
@@ -312,7 +316,8 @@ func getCellByID(customerName *string, cellID int64) *models.Cell {
 								RETURN ID(cell) as id,
 												cell.name as name`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
+
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return cell
@@ -363,7 +368,8 @@ func getCellFull(customerName *string, cellID int64) *models.FullCell {
 							OPTIONAL MATCH (cell)-->(host)-->(option:Option)
 							RETURN *`
 
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
+
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return nil
@@ -549,7 +555,8 @@ func getCellRecursive(customerName *string, cellID int64) *models.EntireCell {
 								RETURN *
 								ORDER BY component.name, role.order`
 	*/
-	db, err := driver.NewDriver().OpenNeo("bolt://192.168.20.54:7687")
+	db, err := neo4j.Connect("")
+
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return nil
