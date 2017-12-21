@@ -27,10 +27,28 @@
 			"revisionTime": "2017-01-27T09:51:30Z"
 		},
 		{
+			"checksumSHA1": "AaypQHdtie5Ixoky6qfWvlRgruw=",
+			"path": "github.com/go-openapi/analysis",
+			"revision": "2bbaa248df987bc6fbd0210da05071e111dec40c",
+			"revisionTime": "2017-12-15T05:51:14Z"
+		},
+		{
 			"checksumSHA1": "AAX5tBzDR6WdqmgEZ6swh+jivjA=",
 			"path": "github.com/go-openapi/errors",
 			"revision": "03cfca65330da08a5a440053faf994a3c682b5bf",
 			"revisionTime": "2017-04-26T15:11:06Z"
+		},
+		{
+			"checksumSHA1": "6dTGC5A1Y1xnv+JSi9z8S6JfnH0=",
+			"path": "github.com/go-openapi/jsonpointer",
+			"revision": "779f45308c19820f1a69e9a4cd965f496e0da10f",
+			"revisionTime": "2017-01-02T17:42:23Z"
+		},
+		{
+			"checksumSHA1": "YMNc0I/ifBw9TsnF13NTpIN9yu4=",
+			"path": "github.com/go-openapi/jsonreference",
+			"revision": "36d33bfe519efae5632669801b180bf1a245da3b",
+			"revisionTime": "2016-11-05T16:21:50Z"
 		},
 		{
 			"checksumSHA1": "/oFo9KvmEya8z8F4I0d4/ayBWdQ=",
@@ -85,6 +103,24 @@
 			"path": "github.com/go-openapi/runtime/security",
 			"revision": "a76104f379d3c5041f2a56e69db3ad8404ce4826",
 			"revisionTime": "2017-12-19T22:33:54Z"
+		},
+		{
+			"checksumSHA1": "pnKoTgVa49QZduizS3t/oiI5sdM=",
+			"path": "github.com/go-openapi/spec",
+			"revision": "fa03337d7da5735229ee8f5e9d5d0b996014b7f8",
+			"revisionTime": "2017-12-19T19:54:06Z"
+		},
+		{
+			"checksumSHA1": "VTAZ08x4EszDDzjlZl2JpCgrsrI=",
+			"path": "github.com/go-openapi/strfmt",
+			"revision": "a764d2ed0f5c5b9208d6864f3581f80b7516fb1c",
+			"revisionTime": "2017-12-19T20:54:56Z"
+		},
+		{
+			"checksumSHA1": "HRYo8m84A8bVp3YuP6pgmHK7bck=",
+			"path": "github.com/go-openapi/swag",
+			"revision": "cf0bdb963811675a4d7e74901cefc7411a1df939",
+			"revisionTime": "2017-11-11T21:44:37Z"
 		},
 		{
 			"checksumSHA1": "5zXqaeFDlJ2kjmgUDADLmd8W9Eg=",
@@ -151,6 +187,24 @@
 			"path": "github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/messages",
 			"revision": "1108d6e66ccf2c8e68ab26b5f64e6c0a2ad00899",
 			"revisionTime": "2017-12-18T14:36:11Z"
+		},
+		{
+			"checksumSHA1": "T8soMJArSZrYnhmdpAnq1bVxQ6Q=",
+			"path": "github.com/mailru/easyjson/buffer",
+			"revision": "32fa128f234d041f196a9f3e0fea5ac9772c08e1",
+			"revisionTime": "2017-11-20T08:03:33Z"
+		},
+		{
+			"checksumSHA1": "QA+9yav6Xzq7LmuZUREeOX1hfjk=",
+			"path": "github.com/mailru/easyjson/jlexer",
+			"revision": "32fa128f234d041f196a9f3e0fea5ac9772c08e1",
+			"revisionTime": "2017-11-20T08:03:33Z"
+		},
+		{
+			"checksumSHA1": "svJ32su8itWtutcMkP+RzoMsIfw=",
+			"path": "github.com/mailru/easyjson/jwriter",
+			"revision": "32fa128f234d041f196a9f3e0fea5ac9772c08e1",
+			"revisionTime": "2017-11-20T08:03:33Z"
 		},
 		{
 			"checksumSHA1": "gILp4IL+xwXLH6tJtRLrnZ56F24=",
@@ -225,6 +279,12 @@
 			"revisionTime": "2016-08-18T02:01:20Z"
 		},
 		{
+			"checksumSHA1": "YsB2DChSV9HxdzHaKATllAUKWSI=",
+			"path": "gopkg.in/mgo.v2/bson",
+			"revision": "3f83fa5005286a7fe593b055f0d7771a7dce4655",
+			"revisionTime": "2016-08-18T02:01:20Z"
+		},
+		{
 			"checksumSHA1": "XQsrqoNT1U0KzLxOFcAZVvqhLfk=",
 			"path": "gopkg.in/mgo.v2/internal/json",
 			"revision": "3f83fa5005286a7fe593b055f0d7771a7dce4655",
@@ -241,6 +301,12 @@
 			"path": "gopkg.in/mgo.v2/internal/scram",
 			"revision": "3f83fa5005286a7fe593b055f0d7771a7dce4655",
 			"revisionTime": "2016-08-18T02:01:20Z"
+		},
+		{
+			"checksumSHA1": "fRgp9UZPllOlkPssv7frzQx4z9A=",
+			"path": "gopkg.in/yaml.v2",
+			"revision": "287cf08546ab5e7e37d55a84f7ed3fd1db036de5",
+			"revisionTime": "2017-11-16T09:02:43Z"
 		}
 	],
 	"rootPath": "configManager"
