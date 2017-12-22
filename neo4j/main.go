@@ -11,7 +11,7 @@ type Conn driver.Conn
 
 func GetConnectionString() string {
 
-	url := os.Getenv("FOO")
+	url := os.Getenv("CONFIGMANAGER_DB_HOST")
 
 	if len(url) <= 0 {
 		url = "bolt://192.168.20.54:7687"
