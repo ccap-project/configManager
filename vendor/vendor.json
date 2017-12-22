@@ -135,18 +135,6 @@
 			"revisionTime": "2017-09-26T14:47:05Z"
 		},
 		{
-			"checksumSHA1": "QmAzbypFddS3Tl/HDca0X0zXZ/M=",
-			"path": "github.com/jmoiron/sqlx",
-			"revision": "de8647470aafe4854c976707c431dbe1eb2822c6",
-			"revisionTime": "2017-12-11T23:49:05Z"
-		},
-		{
-			"checksumSHA1": "bXFrevmVL5Q2EwYlRHlPihxvAJA=",
-			"path": "github.com/jmoiron/sqlx/reflectx",
-			"revision": "de8647470aafe4854c976707c431dbe1eb2822c6",
-			"revisionTime": "2017-12-11T23:49:05Z"
-		},
-		{
 			"checksumSHA1": "TsX+LuxHhV9GFmua8C1nxflFcTA=",
 			"path": "github.com/johnnadratowski/golang-neo4j-bolt-driver",
 			"revision": "1108d6e66ccf2c8e68ab26b5f64e6c0a2ad00899",
