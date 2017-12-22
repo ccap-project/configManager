@@ -15,7 +15,9 @@ func AddCustomer(params customer.AddCustomerParams) middleware.Responder {
 
 	cypher := `create(c:Customer { name: {name} }) RETURN ID(c)`
 
-	if len(swag.StringValue(getCustomerByName(swag.StringValue(params.Body.Name)).Name)) > 0 {
+	//if len(swag.StringValue(getCustomerByName(swag.StringValue(params.Body.Name)).Name)) > 0 {
+
+	if getCustomerByName(params.Body.Name) != nil {
 		log.Println("customer already exists !")
 		return customer.NewAddCustomerConflict().WithPayload(models.APIResponse{Message: "customer already exists"})
 	}
@@ -54,7 +56,7 @@ func AddCustomer(params customer.AddCustomerParams) middleware.Responder {
 
 func GetCustomerByName(params customer.FindCustomerByNameParams) middleware.Responder {
 
-	Customer := getCustomerByName(params.CustomerName)
+	Customer := getCustomerByName(&params.CustomerName)
 
 	if len(swag.StringValue(Customer.Name)) <= 0 {
 		return customer.NewFindCustomerByNameNotFound()
@@ -63,7 +65,7 @@ func GetCustomerByName(params customer.FindCustomerByNameParams) middleware.Resp
 	return customer.NewFindCustomerByNameOK().WithPayload(Customer)
 }
 
-func getCustomerByName(customerName string) *models.Customer {
+func getCustomerByName(customerName *string) *models.Customer {
 
 	var customer *models.Customer
 

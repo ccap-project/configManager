@@ -1584,7 +1584,7 @@ func init() {
               "type": "integer"
             }
           },
-          "405": {
+          "400": {
             "description": "Invalid input"
           },
           "409": {

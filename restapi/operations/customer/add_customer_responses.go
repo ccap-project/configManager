@@ -55,27 +55,27 @@ func (o *AddCustomerCreated) WriteResponse(rw http.ResponseWriter, producer runt
 
 }
 
-// AddCustomerMethodNotAllowedCode is the HTTP code returned for type AddCustomerMethodNotAllowed
-const AddCustomerMethodNotAllowedCode int = 405
+// AddCustomerBadRequestCode is the HTTP code returned for type AddCustomerBadRequest
+const AddCustomerBadRequestCode int = 400
 
-/*AddCustomerMethodNotAllowed Invalid input
+/*AddCustomerBadRequest Invalid input
 
-swagger:response addCustomerMethodNotAllowed
+swagger:response addCustomerBadRequest
 */
-type AddCustomerMethodNotAllowed struct {
+type AddCustomerBadRequest struct {
 }
 
-// NewAddCustomerMethodNotAllowed creates AddCustomerMethodNotAllowed with default headers values
-func NewAddCustomerMethodNotAllowed() *AddCustomerMethodNotAllowed {
-	return &AddCustomerMethodNotAllowed{}
+// NewAddCustomerBadRequest creates AddCustomerBadRequest with default headers values
+func NewAddCustomerBadRequest() *AddCustomerBadRequest {
+	return &AddCustomerBadRequest{}
 }
 
 // WriteResponse to the client
-func (o *AddCustomerMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *AddCustomerBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
 
-	rw.WriteHeader(405)
+	rw.WriteHeader(400)
 }
 
 // AddCustomerConflictCode is the HTTP code returned for type AddCustomerConflict

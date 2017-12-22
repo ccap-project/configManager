@@ -52,7 +52,7 @@ paths:
           description: "Created"
           schema:
             type: integer
-        405:
+        400:
           description: "Invalid input"
         409:
           description: "Already exists"
