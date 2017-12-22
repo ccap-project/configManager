@@ -89,7 +89,7 @@ func getCustomerByName(customerName *string) *models.Customer {
 	}
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
-		"customer_name": customerName})
+		"customer_name": swag.StringValue(customerName)})
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)

@@ -26,6 +26,8 @@ func Connect(connStr string) (driver.Conn, error) {
 		connStr = GetConnectionString()
 	}
 
+	log.Printf("Connecting to %s", connStr)
+
 	db, err := driver.NewDriver().OpenNeo(connStr)
 
 	if err != nil {
