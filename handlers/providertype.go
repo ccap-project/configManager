@@ -170,6 +170,7 @@ func GetProviderTypeByName(providertypeName string) models.ProviderType {
 
 	if err != nil {
 		log.Printf("An error occurred getting next row: %s", err)
+		log.Printf("%#v", row)
 		return providerType
 	}
 
@@ -240,7 +241,7 @@ func addProviderType(name string, fields []string) error {
 		return nil
 	}
 
-	createTmpl := `Create (p:ProviderType { %s: '%s', %s })`
+	createTmpl := `Create (p:ProviderType { name: '%s', %s })`
 
 	lastField := len(fields)
 
@@ -257,7 +258,7 @@ func addProviderType(name string, fields []string) error {
 
 	allFields = append(allFields, fmt.Sprintf("%s: '%s'", fields[lastField], fields[lastField]))
 
-	create := fmt.Sprintf(createTmpl, name, name, strings.Join(allFields, ""))
+	create := fmt.Sprintf(createTmpl, name, strings.Join(allFields, ""))
 
 	db, err := neo4j.Connect("")
 	if err != nil {
