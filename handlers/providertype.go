@@ -223,6 +223,9 @@ func ListProviderTypes(params providertype.ListProviderTypesParams) middleware.R
 }
 
 func InitProviderType() {
+
+	log.Printf("Checking provider types...")
+
 	if err := addProviderType("Openstack", []string{"auth_url", "domain_name", "username", "password"}); err != nil {
 		log.Println("Error Initializing provider types, ", err)
 	}
