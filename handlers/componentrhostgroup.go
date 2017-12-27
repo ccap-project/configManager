@@ -46,8 +46,10 @@ func AddComponentHostgroup(params hostgroup.AddComponentHostgroupParams, princip
 	}
 
 	if params.Body.Order == nil {
-		params.Body.Order = swag.Int64(99)
+		*params.Body.Order = 99
 	}
+
+	log.Println("Count: ", swag.Int64Value(params.Body.Count))
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"customer_name":               swag.StringValue(principal.Name),
@@ -60,7 +62,7 @@ func AddComponentHostgroup(params hostgroup.AddComponentHostgroupParams, princip
 		"hostgroup_bootstrap_command": swag.StringValue(&params.Body.BootstrapCommand),
 		"hostgroup_count":             swag.Int64Value(params.Body.Count),
 		"hostgroup_network":           swag.StringValue(params.Body.Network),
-		"hostgroup_order":             params.Body.Order})
+		"hostgroup_order":             swag.Int64Value(params.Body.Order)})
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
