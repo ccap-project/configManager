@@ -252,7 +252,6 @@ func addProviderType(name string, fields []string) error {
 	}
 
 	for i := 0; i < lastField; i++ {
-		log.Println(fields[i])
 		allFields = append(allFields, fmt.Sprintf("%s: '%s', ", fields[i], fields[i]))
 	}
 
