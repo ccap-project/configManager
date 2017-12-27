@@ -46,6 +46,7 @@ func AddComponentHostgroup(params hostgroup.AddComponentHostgroupParams, princip
 	}
 
 	if params.Body.Order == nil {
+		params.Body.Order = new(int64)
 		*params.Body.Order = 99
 	}
 
