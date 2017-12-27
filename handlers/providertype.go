@@ -233,14 +233,13 @@ func addProviderType(name string, fields []string) error {
 	var allFields []string
 
 	if len(GetProviderTypeByName(name).Name) > 0 {
+		log.Printf("Provider %s already exists", name)
 		return nil
 	}
 
 	createTmpl := `Create (p:ProviderType { %s: '%s', %s })`
 
 	lastField := len(fields)
-
-	log.Println(lastField)
 
 	if lastField <= 0 {
 		return fmt.Errorf("No fields specified !")
@@ -275,6 +274,8 @@ func addProviderType(name string, fields []string) error {
 	if err != nil {
 		return fmt.Errorf("An error occurred querying Neo: %s", err)
 	}
+
+	log.Printf("Provider %s has been created", name)
 
 	return nil
 }
