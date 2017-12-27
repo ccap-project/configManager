@@ -9,6 +9,7 @@ import (
 	loads "github.com/go-openapi/loads"
 	flags "github.com/jessevdk/go-flags"
 
+	"configManager/handlers"
 	"configManager/restapi"
 	"configManager/restapi/operations"
 )
@@ -48,6 +49,9 @@ func main() {
 		}
 		os.Exit(code)
 	}
+
+	// Create initial data
+	handlers.InitProviderType()
 
 	server.ConfigureAPI()
 

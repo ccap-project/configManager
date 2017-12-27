@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
+	"strings"
 
 	"configManager/models"
 	"configManager/neo4j"
@@ -218,4 +220,61 @@ func ListProviderTypes(params providertype.ListProviderTypesParams) middleware.R
 	}
 
 	return providertype.NewListProviderTypesOK().WithPayload(res)
+}
+
+func InitProviderType() {
+	if err := addProviderType("Openstack", []string{"auth_url", "domain_name", "username", "password"}); err != nil {
+		log.Println("Error Initializing provider types, ", err)
+	}
+}
+
+func addProviderType(name string, fields []string) error {
+
+	var allFields []string
+
+	if len(GetProviderTypeByName(name).Name) > 0 {
+		return nil
+	}
+
+	createTmpl := `Create (p:ProviderType { %s: '%s', %s })`
+
+	lastField := len(fields)
+
+	log.Println(lastField)
+
+	if lastField <= 0 {
+		return fmt.Errorf("No fields specified !")
+	} else {
+		lastField -= 1
+	}
+
+	for i := 0; i < lastField; i++ {
+		log.Println(fields[i])
+		allFields = append(allFields, fmt.Sprintf("%s: '%s', ", fields[i], fields[i]))
+	}
+
+	allFields = append(allFields, fmt.Sprintf("%s: '%s'", fields[lastField], fields[lastField]))
+
+	create := fmt.Sprintf(createTmpl, name, name, strings.Join(allFields, ""))
+
+	db, err := neo4j.Connect("")
+	if err != nil {
+		return fmt.Errorf("error connecting to neo4j:", err)
+	}
+	defer db.Close()
+
+	stmt, err := db.PrepareNeo(create)
+	if err != nil {
+		return fmt.Errorf("An error occurred preparing statement: %s", err)
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.QueryNeo(nil)
+
+	if err != nil {
+		return fmt.Errorf("An error occurred querying Neo: %s", err)
+	}
+
+	return nil
 }
