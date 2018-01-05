@@ -238,7 +238,8 @@ func getCellKeypair(customerName *string, CellID int64) *models.Keypair {
 	cypher := `MATCH (c:Customer {name: {customer_name} })-[:OWN]->(cell:Cell)-[:DEPLOY_WITH]->(keypair)
 							WHERE id(cell) = {cell_id}
 								RETURN ID(keypair) as id,
-									keypair.name as name`
+									keypair.name as name,
+									keypair.public_key as public_key`
 
 	db, err := neo4j.Connect("")
 	if err != nil {
@@ -267,10 +268,12 @@ func getCellKeypair(customerName *string, CellID int64) *models.Keypair {
 		return keypair
 	}
 	_name := output[1].(string)
+	_public_key := output[2].(string)
 
 	keypair = &models.Keypair{
-		ID:   output[0].(int64),
-		Name: &_name}
+		ID:        output[0].(int64),
+		Name:      &_name,
+		PublicKey: &_public_key}
 
 	stmt.Close()
 

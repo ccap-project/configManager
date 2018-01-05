@@ -44,7 +44,7 @@ func AddCellComponent(params component.AddComponentParams, principal *models.Cus
 
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)
 							WHERE id(cell) = {cell_id}
-							CREATE (cell)-[:PROVIDES]->(component:Component { name: {component_name} })
+							CREATE (cell)-[:PROVIDES]->(component:Component { name: {component_name}, order: {component_order} })
 							RETURN	id(component) AS id,
 											component.name AS name`
 
@@ -67,9 +67,14 @@ func AddCellComponent(params component.AddComponentParams, principal *models.Cus
 		return component.NewAddComponentInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
+	if params.Body.Order == nil {
+		params.Body.Order = swag.Int64(99)
+	}
+
 	rows, err := stmt.QueryNeo(map[string]interface{}{"name": swag.StringValue(principal.Name),
-		"cell_id":        params.CellID,
-		"component_name": swag.StringValue(params.Body.Name)})
+		"cell_id":         params.CellID,
+		"component_name":  swag.StringValue(params.Body.Name),
+		"component_order": swag.Int64Value(params.Body.Order)})
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)

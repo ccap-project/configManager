@@ -2274,6 +2274,10 @@ func init() {
         "name": {
           "type": "string"
         },
+        "order": {
+          "type": "integer",
+          "default": 99
+        },
         "roles": {
           "type": "array",
           "items": {

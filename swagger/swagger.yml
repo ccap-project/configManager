@@ -1525,6 +1525,9 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/Role"
+      order:
+        type: integer
+        default: 99
 
   Host:
     type: "object"

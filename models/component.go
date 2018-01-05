@@ -53,6 +53,9 @@ type Component struct {
 	// Required: true
 	Name *string `json:"name"`
 
+	// order
+	Order *int64 `json:"order,omitempty"`
+
 	// roles
 	Roles ComponentRoles `json:"roles"`
 }

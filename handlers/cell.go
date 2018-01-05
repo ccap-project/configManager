@@ -424,7 +424,6 @@ func getCellFull(customerName *string, cellID int64) *models.FullCell {
 
 	for _, row := range data {
 
-		var cellID int64
 		if len(res.Name) == 0 {
 			cellNode := getNodeByLabel(row, "Cell")
 
@@ -569,7 +568,7 @@ func getCellRecursive(customerName *string, cellID int64) *models.EntireCell {
 							OPTIONAL MATCH (component)-->(hostgroup:Hostgroup)
 							OPTIONAL MATCH (cell)-->(host)-->(option:Option)
 							RETURN *
-							ORDER BY component.name, role.order`
+							ORDER BY component.order, hostgroup.order, role.order`
 	/*
 		cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell)
 								WHERE id(cell) = {cell_id}
@@ -709,6 +708,17 @@ func getCellRecursive(customerName *string, cellID int64) *models.EntireCell {
 				hg.BootstrapCommand = *copyString(hostgroupNode["bootstrap_command"])
 				hg.Component = *copyString(componentNode["name"])
 				hg.Count = new(int64)
+
+				// give ordering precedence to component value
+				if (hostgroupNode["order"] == nil && componentNode["order"] != nil) ||
+					(componentNode["order"] != nil && componentNode["order"].(int64) <= hostgroupNode["order"].(int64)) {
+					hg.Order = new(int64)
+					*hg.Order = componentNode["order"].(int64)
+
+				} else if hostgroupNode["order"] != nil {
+					hg.Order = new(int64)
+					*hg.Order = hostgroupNode["order"].(int64)
+				}
 
 				*hg.Count = hostgroupNode["count"].(int64)
 
