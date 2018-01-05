@@ -202,11 +202,13 @@ func getCellComponent(customerName *string, CellID int64, ComponentID int64) (*m
 
 	_name := output[1].(string)
 	_hostgroups, _ := _FindComponentHostgroups(customerName, CellID, ComponentID)
+	_roles, _ := findComponentRoles(ComponentID)
 
 	component = &models.Component{
 		ID:         output[0].(int64),
 		Name:       &_name,
-		Hostgroups: _hostgroups}
+		Hostgroups: _hostgroups,
+		Roles:      _roles}
 
 	return component, nil
 }
