@@ -159,7 +159,7 @@ func DeleteComponentRole(params role.DeleteComponentRoleParams, principal *model
 
 func FindComponentRoles(params role.FindComponentRolesParams, principal *models.Customer) middleware.Responder {
 
-	res, err := _FindComponentRoles(params.CellID, params.ComponentID, principal)
+	res, err := findComponentRoles(params.ComponentID)
 
 	if err != nil {
 		return err
@@ -170,11 +170,10 @@ func FindComponentRoles(params role.FindComponentRolesParams, principal *models.
 	return role.NewFindComponentRolesOK().WithPayload(res)
 }
 
-func _FindComponentRoles(CellID int64, ComponentID int64, principal *models.Customer) ([]*models.Role, middleware.Responder) {
+func findComponentRoles(ComponentID int64) ([]*models.Role, middleware.Responder) {
 
-	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role)
-							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
+	cypher := `MATCH (component:Component)-[:USE]->(role:Role)
+							WHERE id(component) = {component_id}
 								RETURN id(role) as id,
 												role.name as name,
 												role.url as url,
@@ -189,9 +188,7 @@ func _FindComponentRoles(CellID int64, ComponentID int64, principal *models.Cust
 	defer db.Close()
 
 	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
-		"customer_name": swag.StringValue(principal.Name),
-		"cell_id":       CellID,
-		"component_id":  ComponentID})
+		"component_id": ComponentID})
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
@@ -221,12 +218,15 @@ func _FindComponentRoles(CellID int64, ComponentID int64, principal *models.Cust
 			_order = row[4].(int64)
 		}
 
+		_params, _ := findComponentRoleParameters(row[0].(int64))
+
 		res[idx] = &models.Role{
 			ID:      row[0].(int64),
 			Name:    &_name,
 			Version: &_version,
 			URL:     &_url,
-			Order:   &_order}
+			Order:   &_order,
+			Params:  _params}
 	}
 
 	return res, nil
@@ -337,6 +337,48 @@ func addComponentRoleParameters(customer *string, cellID int64, componentID int6
 	}
 
 	return nil
+}
+
+func findComponentRoleParameters(roleID int64) ([]*models.Parameter, middleware.Responder) {
+
+	cypher := `MATCH (role:Role)-[:PARAM]->(param:Parameter)
+							WHERE id(role) = {role_id}
+							RETURN id(param) as id,
+											param.name as name,
+											param.value as value`
+
+	db, err := neo4j.Connect("")
+	if err != nil {
+		log.Println("error connecting to neo4j:", err)
+		return nil, role.NewFindComponentRolesInternalServerError()
+	}
+	defer db.Close()
+
+	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
+		"role_id": roleID})
+
+	if err != nil {
+		log.Printf("An error occurred querying Neo: %s", err)
+		return nil, role.NewFindComponentRolesInternalServerError()
+
+	}
+
+	res := make([]*models.Parameter, len(data))
+
+	for idx, row := range data {
+		_name := row[1].(string)
+		_value := ""
+
+		if row[2] != nil {
+			_value = row[2].(string)
+		}
+
+		res[idx] = &models.Parameter{
+			ID:    row[0].(int64),
+			Name:  &_name,
+			Value: &_value}
+	}
+	return res, nil
 }
 
 func getComponentRoleByName(customer *string, cellID int64, componentID int64, roleName *string) *models.Role {
