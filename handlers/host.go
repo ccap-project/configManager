@@ -32,6 +32,7 @@ package handlers
 import (
 	"log"
 
+	"configManager"
 	"configManager/models"
 	"configManager/neo4j"
 	"configManager/restapi/operations/host"
@@ -40,19 +41,27 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-func AddCellHost(params host.AddCellHostParams, principal *models.Customer) middleware.Responder {
+func NewAddCellHost(rt *configManager.Runtime) host.AddCellHostHandler {
+	return &addCellHost{rt: rt}
+}
+
+type addCellHost struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *addCellHost) Handle(params host.AddCellHostParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->(cell:Cell)
 							WHERE id(cell) = {cell_id}
 							CREATE (cell)-[:HAS]->(host:Host {name: {host_name}} )
 								RETURN id(host) as id`
 
-	if getCellHostByName(principal.Name, params.CellID, params.Body.Name) != nil {
+	if getCellHostByName(ctx.rt.DB(), principal.Name, params.CellID, params.Body.Name) != nil {
 		log.Println("host already exists !")
 		return host.NewAddCellHostConflict().WithPayload(models.APIResponse{Message: "host already exists"})
 	}
 
-	db, err := neo4j.Connect("")
+	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return host.NewAddCellHostInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -178,7 +187,7 @@ func addCellHostOptions(customer *string, cellID int64, hostName *string, option
 	return nil
 }
 
-func getCellHostByName(customer *string, cellID int64, hostName *string) *models.Host {
+func getCellHostByName(conn neo4j.ConnPool, customer *string, cellID int64, hostName *string) *models.Host {
 
 	var host *models.Host
 	host = nil
@@ -189,7 +198,7 @@ func getCellHostByName(customer *string, cellID int64, hostName *string) *models
 								RETURN ID(host) as id,
 												host.name as name`
 
-	db, err := neo4j.Connect("")
+	db, err := conn.OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return host

@@ -30,12 +30,14 @@
 package neo4j
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	driver "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 )
 
+type ConnPool driver.DriverPool
 type Conn driver.Conn
 
 func GetConnectionString() string {
@@ -49,11 +51,26 @@ func GetConnectionString() string {
 	return url
 }
 
-func Connect(connStr string) (driver.Conn, error) {
+/*
+func Connect(host string, port string, user string, passwd string) (driver.Conn, error) {
 
-	if len(connStr) <= 0 {
-		connStr = GetConnectionString()
+	var connStr string
+
+	if len(host) <= 0 {
+		port = "127.0.0.1"
 	}
+	if len(port) <= 0 {
+		port = "7687"
+	}
+
+	if len(user) <= 0 {
+		connStr = fmt.Sprintf("bolt://%s:%s", host, port)
+	} else {
+		connStr = fmt.Sprintf("bolt://%s:%s@%s:%s", user, passwd, host, port)
+	}
+*/
+
+func Connect(connStr string) (driver.Conn, error) {
 
 	log.Printf("Connecting to %s", connStr)
 
@@ -65,4 +82,36 @@ func Connect(connStr string) (driver.Conn, error) {
 	}
 
 	return db, err
+}
+func Pool(host string, port string, user string, passwd string, max_conn int) (driver.DriverPool, error) {
+
+	var connStr string
+
+	if len(host) <= 0 {
+		port = "127.0.0.1"
+	}
+	if len(port) <= 0 {
+		port = "7687"
+	}
+
+	if max_conn <= 0 {
+		max_conn = 10
+	}
+
+	if len(user) <= 0 {
+		connStr = fmt.Sprintf("bolt://%s:%s", host, port)
+	} else {
+		connStr = fmt.Sprintf("bolt://%s:%s@%s:%s", user, passwd, host, port)
+	}
+
+	log.Printf("Connecting to %s", connStr)
+
+	pool, err := driver.NewDriverPool(connStr, max_conn)
+
+	if err != nil {
+		log.Println("error creating neo4j connection pool:", err)
+		return nil, err
+	}
+
+	return pool, err
 }

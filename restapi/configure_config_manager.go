@@ -35,22 +35,11 @@ import (
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
 	//"github.com/go-swagger/go-swagger/examples/authenticaticonfigManager/models"
 	graceful "github.com/tylerb/graceful"
 
-	"configManager/handlers"
 	"configManager/models"
 	"configManager/restapi/operations"
-	"configManager/restapi/operations/cell"
-	"configManager/restapi/operations/component"
-	"configManager/restapi/operations/customer"
-	"configManager/restapi/operations/host"
-	"configManager/restapi/operations/hostgroup"
-	"configManager/restapi/operations/keypair"
-	"configManager/restapi/operations/provider"
-	"configManager/restapi/operations/providertype"
-	"configManager/restapi/operations/role"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten
@@ -88,77 +77,6 @@ func configureAPI(api *operations.ConfigManagerAPI) http.Handler {
 		return Customer, nil
 		return nil, errors.NotImplemented("api key auth (APIKeyHeader) x-api-token from header param [x-api-token] has not yet been implemented")
 	}
-
-	// Provider Type
-	api.ProvidertypeAddProviderTypeHandler = providertype.AddProviderTypeHandlerFunc(handlers.AddProviderType)
-	api.ProvidertypeDeleteProviderTypeHandler = providertype.DeleteProviderTypeHandlerFunc(func(params providertype.DeleteProviderTypeParams) middleware.Responder {
-		return middleware.NotImplemented("operation providertype.DeleteProviderType has not yet been implemented")
-	})
-	api.ProvidertypeGetProviderTypeByIDHandler = providertype.GetProviderTypeByIDHandlerFunc(handlers.GetProviderTypeByID)
-	api.ProvidertypeListProviderTypesHandler = providertype.ListProviderTypesHandlerFunc(handlers.ListProviderTypes)
-
-	// Customer
-	api.CustomerAddCustomerHandler = customer.AddCustomerHandlerFunc(handlers.AddCustomer)
-	api.CustomerDeleteCustomerHandler = customer.DeleteCustomerHandlerFunc(func(params customer.DeleteCustomerParams) middleware.Responder {
-		return middleware.NotImplemented("operation customer.DeleteCustomer has not yet been implemented")
-	})
-	api.CustomerFindCustomerByNameHandler = customer.FindCustomerByNameHandlerFunc(handlers.GetCustomerByName)
-	api.CustomerGetCustomerByIDHandler = customer.GetCustomerByIDHandlerFunc(func(params customer.GetCustomerByIDParams) middleware.Responder {
-		return middleware.NotImplemented("operation customer.GetCustomerByID has not yet been implemented")
-	})
-
-	// Key Pair
-	api.KeypairAddKeypairHandler = keypair.AddKeypairHandlerFunc(handlers.AddKeypair)
-	api.KeypairGetKeypairByIDHandler = keypair.GetKeypairByIDHandlerFunc(handlers.GetKeypairByID)
-	api.KeypairFindKeypairByCustomerHandler = keypair.FindKeypairByCustomerHandlerFunc(handlers.FindKeypairByCustomer)
-	api.KeypairAddCellKeypairHandler = keypair.AddCellKeypairHandlerFunc(handlers.AddCellKeypair)
-
-	// Cell
-	api.CellAddCellHandler = cell.AddCellHandlerFunc(handlers.AddCell)
-	api.CellFindCellByCustomerHandler = cell.FindCellByCustomerHandlerFunc(handlers.FindCellByCustomer)
-	api.CellGetCellByIDHandler = cell.GetCellByIDHandlerFunc(handlers.GetCellByID)
-	api.CellGetCellFullByIDHandler = cell.GetCellFullByIDHandlerFunc(handlers.GetCellFullByID)
-
-	// Host
-	api.HostAddCellHostHandler = host.AddCellHostHandlerFunc(handlers.AddCellHost)
-
-	// Deploy
-	api.CellDeployCellByIDHandler = cell.DeployCellByIDHandlerFunc(handlers.DeployCell)
-	api.CellDeployCellAppByIDHandler = cell.DeployCellAppByIDHandlerFunc(handlers.DeployCellApp)
-
-	// Component
-	api.ComponentAddComponentHandler = component.AddComponentHandlerFunc(handlers.AddCellComponent)
-	api.ComponentGetCellComponentHandler = component.GetCellComponentHandlerFunc(handlers.GetCellComponent)
-	api.ComponentFindCellComponentsHandler = component.FindCellComponentsHandlerFunc(handlers.FindCellComponents)
-
-	// Hostgroup
-	api.HostgroupAddComponentHostgroupHandler = hostgroup.AddComponentHostgroupHandlerFunc(handlers.AddComponentHostgroup)
-	api.HostgroupDeleteComponentHostgroupHandler = hostgroup.DeleteComponentHostgroupHandlerFunc(handlers.DeleteComponentHostgroup)
-	api.HostgroupFindComponentHostgroupsHandler = hostgroup.FindComponentHostgroupsHandlerFunc(handlers.FindComponentHostgroups)
-	api.HostgroupGetComponentHostgroupByIDHandler = hostgroup.GetComponentHostgroupByIDHandlerFunc(handlers.GetComponentHostgroupByID)
-	api.HostgroupUpdateComponentHostgroupHandler = hostgroup.UpdateComponentHostgroupHandlerFunc(handlers.UpdateComponentHostgroup)
-
-	// Roles
-	api.RoleAddComponentRoleHandler = role.AddComponentRoleHandlerFunc(handlers.AddComponentRole)
-	api.RoleDeleteComponentRoleHandler = role.DeleteComponentRoleHandlerFunc(handlers.DeleteComponentRole)
-	api.RoleFindComponentRolesHandler = role.FindComponentRolesHandlerFunc(handlers.FindComponentRoles)
-	api.RoleUpdateComponentRoleHandler = role.UpdateComponentRoleHandlerFunc(handlers.UpdateComponentRole)
-
-	//api.RoleAddRoleHandler = role.AddRoleHandlerFunc(handlers.AddRole)
-	//api.RoleGetRoleByIDHandler = role.GetRoleByIDHandlerFunc(handlers.GetRoleByID)
-	//api.RoleFindRolesHandler = role.FindRolesHandlerFunc(handlers.FindRoles)
-
-	// Provider
-	api.ProviderAddProviderHandler = provider.AddProviderHandlerFunc(handlers.AddCellProvider)
-	api.ProviderGetProviderHandler = provider.GetProviderHandlerFunc(handlers.GetCellProvider)
-	api.ProviderUpdateProviderHandler = provider.UpdateProviderHandlerFunc(handlers.UpdateCellProvider)
-
-	api.CustomerUpdateCustomerHandler = customer.UpdateCustomerHandlerFunc(func(params customer.UpdateCustomerParams) middleware.Responder {
-		return middleware.NotImplemented("operation customer.UpdateCustomer has not yet been implemented")
-	})
-	api.CustomerUpdateCustomerWithFormHandler = customer.UpdateCustomerWithFormHandlerFunc(func(params customer.UpdateCustomerWithFormParams) middleware.Responder {
-		return middleware.NotImplemented("operation customer.UpdateCustomerWithForm has not yet been implemented")
-	})
 
 	api.ServerShutdown = func() {}
 

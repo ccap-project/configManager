@@ -36,6 +36,7 @@ import (
 	"net/http"
 	"strings"
 
+	"configManager"
 	"configManager/models"
 	"configManager/neo4j"
 	"configManager/restapi/operations/cell"
@@ -45,19 +46,27 @@ import (
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
 )
 
-func AddCell(params cell.AddCellParams, principal *models.Customer) middleware.Responder {
+func NewAddCell(rt *configManager.Runtime) cell.AddCellHandler {
+	return &addCell{rt: rt}
+}
+
+type addCell struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *addCell) Handle(params cell.AddCellParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (c:Customer {name: {name} })
 							CREATE (c)-[:OWN]->(cell:Cell { name: {cell_name} })
 							RETURN	id(cell) AS id,
 											cell.name AS name`
 
-	if getCellByName(principal.Name, params.Body.Name) != nil {
+	if getCellByName(ctx.rt.DB(), principal.Name, params.Body.Name) != nil {
 		log.Println("cell already exists !")
 		return cell.NewAddCellConflict().WithPayload(models.APIResponse{Message: "cell already exists"})
 	}
 
-	db, err := neo4j.Connect("")
+	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return cell.NewAddCellInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -91,16 +100,24 @@ func AddCell(params cell.AddCellParams, principal *models.Customer) middleware.R
 	return cell.NewAddCellCreated().WithPayload(output[0].(int64))
 }
 
-func DeployCell(params cell.DeployCellByIDParams, principal *models.Customer) middleware.Responder {
+func NewDeployCellByID(rt *configManager.Runtime) cell.DeployCellByIDHandler {
+	return &deployCellByID{rt: rt}
+}
 
-	Cell := getCellByID(principal.Name, params.CellID)
+type deployCellByID struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *deployCellByID) Handle(params cell.DeployCellByIDParams, principal *models.Customer) middleware.Responder {
+
+	Cell := _getCellByID(ctx.rt.DB(), principal.Name, params.CellID)
 
 	if Cell == nil {
 		log.Println("cell does not exists !")
 		return cell.NewDeployCellByIDNotFound()
 	}
 
-	EntireCell := getCellRecursive(principal.Name, params.CellID)
+	EntireCell := getCellRecursive(ctx.rt.DB(), principal.Name, params.CellID)
 
 	log.Printf("DeployCell(%#v)", EntireCell)
 
@@ -140,16 +157,24 @@ func DeployCell(params cell.DeployCellByIDParams, principal *models.Customer) mi
 	return response
 }
 
-func DeployCellApp(params cell.DeployCellAppByIDParams, principal *models.Customer) middleware.Responder {
+func NewDeployCellAppByID(rt *configManager.Runtime) cell.DeployCellAppByIDHandler {
+	return &deployCellAppByID{rt: rt}
+}
 
-	Cell := getCellByID(principal.Name, params.CellID)
+type deployCellAppByID struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *deployCellAppByID) Handle(params cell.DeployCellAppByIDParams, principal *models.Customer) middleware.Responder {
+
+	Cell := _getCellByID(ctx.rt.DB(), principal.Name, params.CellID)
 
 	if Cell == nil {
 		log.Println("cell does not exists !")
 		return cell.NewDeployCellAppByIDNotFound()
 	}
 
-	EntireCell := getCellRecursive(principal.Name, params.CellID)
+	EntireCell := getCellRecursive(ctx.rt.DB(), principal.Name, params.CellID)
 
 	if EntireCell == nil {
 		log.Print("cell is empty")
@@ -187,7 +212,15 @@ func DeployCellApp(params cell.DeployCellAppByIDParams, principal *models.Custom
 	return response
 }
 
-func GetCellByID(params cell.GetCellByIDParams, principal *models.Customer) middleware.Responder {
+func NewGetCellByID(rt *configManager.Runtime) cell.GetCellByIDHandler {
+	return &getCellByID{rt: rt}
+}
+
+type getCellByID struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *getCellByID) Handle(params cell.GetCellByIDParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (c:Customer {name: {name} })-[:HAS]->(k:Cell)
 								WHERE ID(k) = {kid}
@@ -195,13 +228,11 @@ func GetCellByID(params cell.GetCellByIDParams, principal *models.Customer) midd
 												k.name as name,
 												k.public_key as public_key`
 
-	db, err := neo4j.Connect("")
-
+	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
-		return cell.NewGetCellByIDInternalServerError()
+		return cell.NewAddCellInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
-	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
@@ -229,16 +260,24 @@ func GetCellByID(params cell.GetCellByIDParams, principal *models.Customer) midd
 	return cell.NewGetCellByIDOK().WithPayload(_cell)
 }
 
-func GetCellFullByID(params cell.GetCellFullByIDParams, principal *models.Customer) middleware.Responder {
+func NewGetCellFullByID(rt *configManager.Runtime) cell.GetCellFullByIDHandler {
+	return &getCellFullByID{rt: rt}
+}
 
-	Cell := getCellByID(principal.Name, params.CellID)
+type getCellFullByID struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *getCellFullByID) Handle(params cell.GetCellFullByIDParams, principal *models.Customer) middleware.Responder {
+
+	Cell := _getCellByID(ctx.rt.DB(), principal.Name, params.CellID)
 
 	if Cell == nil {
 		log.Println("cell does not exists !")
 		return cell.NewDeployCellByIDNotFound()
 	}
 
-	FullCell := getCellFull(principal.Name, params.CellID)
+	FullCell := getCellFull(ctx.rt.DB(), principal.Name, params.CellID)
 
 	if FullCell == nil {
 		log.Print("cell is empty")
@@ -248,12 +287,21 @@ func GetCellFullByID(params cell.GetCellFullByIDParams, principal *models.Custom
 	return cell.NewGetCellFullByIDOK().WithPayload(FullCell)
 }
 
-func FindCellByCustomer(params cell.FindCellByCustomerParams, principal *models.Customer) middleware.Responder {
+func NewFindCellByCustomer(rt *configManager.Runtime) cell.FindCellByCustomerHandler {
+	return &findCellByCustomer{rt: rt}
+}
+
+type findCellByCustomer struct {
+	rt *configManager.Runtime
+}
+
+//func FindCellByCustomer(params cell.FindCellByCustomerParams, principal *models.Customer) middleware.Responder {
+func (ctx *findCellByCustomer) Handle(params cell.FindCellByCustomerParams, principal *models.Customer) middleware.Responder {
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)
 								RETURN ID(cell) as id,
 												cell.name as name`
 
-	db, err := neo4j.Connect("")
+	db, err := ctx.rt.DB().OpenPool()
 
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
@@ -289,7 +337,7 @@ func FindCellByCustomer(params cell.FindCellByCustomerParams, principal *models.
 	return cell.NewFindCellByCustomerOK().WithPayload(res)
 }
 
-func getCellByName(customerName *string, cellName *string) *models.Cell {
+func getCellByName(conn neo4j.ConnPool, customerName *string, cellName *string) *models.Cell {
 
 	var cell *models.Cell
 	cell = nil
@@ -299,8 +347,7 @@ func getCellByName(customerName *string, cellName *string) *models.Cell {
 								RETURN ID(cell) as id,
 												cell.name as name`
 
-	db, err := neo4j.Connect("")
-
+	db, err := conn.OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return cell
@@ -335,7 +382,7 @@ func getCellByName(customerName *string, cellName *string) *models.Cell {
 	return cell
 }
 
-func getCellByID(customerName *string, cellID int64) *models.Cell {
+func _getCellByID(conn neo4j.ConnPool, customerName *string, cellID int64) *models.Cell {
 
 	var cell *models.Cell
 	cell = nil
@@ -345,7 +392,7 @@ func getCellByID(customerName *string, cellID int64) *models.Cell {
 								RETURN ID(cell) as id,
 												cell.name as name`
 
-	db, err := neo4j.Connect("")
+	db, err := conn.OpenPool()
 
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
@@ -385,7 +432,7 @@ func getCellByID(customerName *string, cellID int64) *models.Cell {
 /*
  * Return cell structure in ui format
  */
-func getCellFull(customerName *string, cellID int64) *models.FullCell {
+func getCellFull(conn neo4j.ConnPool, customerName *string, cellID int64) *models.FullCell {
 	cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell)
 							WHERE id(cell) = {cell_id}
 							MATCH (cell)-[:DEPLOY_WITH]->(keypair:Keypair),
@@ -397,7 +444,7 @@ func getCellFull(customerName *string, cellID int64) *models.FullCell {
 							OPTIONAL MATCH (cell)-->(host)-->(option:Option)
 							RETURN *`
 
-	db, err := neo4j.Connect("")
+	db, err := conn.OpenPool()
 
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
@@ -432,20 +479,7 @@ func getCellFull(customerName *string, cellID int64) *models.FullCell {
 			}
 		}
 
-		res.Keypair = getCellKeypair(customerName, cellID)
-		/*
-			if res.Keypair.Name == nil {
-				keypairNode := getNodeByLabel(row, "Keypair")
-
-				if len(keypairNode) > 0 {
-					res.Keypair.Name = new(string)
-					res.Keypair.PublicKey = new(string)
-
-					*res.Keypair.Name = keypairNode["name"].(string)
-					*res.Keypair.PublicKey = keypairNode["public_key"].(string)
-				}
-			}
-		*/
+		res.Keypair = getCellKeypair(conn, customerName, cellID)
 
 		if res.Provider.Name == nil {
 			providerNode := getNodeByLabel(row, "Provider")
@@ -463,92 +497,11 @@ func getCellFull(customerName *string, cellID int64) *models.FullCell {
 		}
 
 		// Component
-		C, err := findCellComponents(customerName, cellID)
+		C, err := _findCellComponents(conn, customerName, cellID)
 		res.Components = C
 		log.Printf(">>>>>>>>>>>>>>>>> %#v<<<<<<  %v<<<<<<<<<<<<", C, err)
 		//componentNode := getNodeByLabel(row, "Component")
-		/*
-			if len(componentNode) > 0 {
-				var component *models.Component
 
-				component = _getComponentByName(res.Components, componentNode["name"].(string))
-
-				if component == nil {
-					component = new(models.Component)
-
-					component.Name = copyString(componentNode["name"])
-
-					log.Printf("-------->>>>> %#v", componentNode)
-
-					res.Components = append(res.Components, component)
-				}
-				// Hostgroup
-				hostgroupNode := getNodeByLabel(row, "Hostgroup")
-
-				if len(hostgroupNode) > 0 {
-
-					component.Hostgroups, _ = _FindComponentHostgroups(&res.CustomerName, cellID, componentNode["id"].(int64))
-					/*
-						var hg *models.Hostgroup
-
-						hg = getHostgroupByName(component.Hostgroups, hostgroupNode["name"].(string))
-
-						if hg == nil {
-							hg = new(models.Hostgroup)
-
-							hg.Flavor = copyString(hostgroupNode["flavor"])
-							hg.Image = copyString(hostgroupNode["image"])
-							hg.Name = copyString(hostgroupNode["name"])
-							hg.Network = copyString(hostgroupNode["network"])
-							hg.Username = copyString(hostgroupNode["username"])
-							hg.BootstrapCommand = *copyString(hostgroupNode["bootstrap_command"])
-
-							hg.Count = new(int64)
-
-							*hg.Count = hostgroupNode["count"].(int64)
-
-							//component.Hostgroups = append(component.Hostgroups, hg)
-							component.Hostgroups = handlers.
-						}
-				}
-
-				// Roles
-				roleNode := getNodeByLabel(row, "Role")
-
-				if len(roleNode) > 0 {
-
-					var role *models.Role
-
-					role = getRoleByName(component.Roles, roleNode["name"].(string))
-
-					if role == nil {
-						role = new(models.Role)
-
-						role.Name = copyString(roleNode["name"])
-						role.URL = copyString(roleNode["url"])
-						role.Version = copyString(roleNode["version"])
-
-						component.Roles = append(component.Roles, role)
-					}
-
-					parameterNode := getNodeByLabel(row, "Parameter")
-
-					if parameterNode != nil {
-						var parameter *models.Parameter
-						parameter = getParameterByName(role.Params, parameterNode["name"].(string))
-
-						if parameter == nil {
-							parameter = new(models.Parameter)
-
-							parameter.Name = copyString(parameterNode["name"])
-							parameter.Value = copyString(parameterNode["value"])
-
-							role.Params = append(role.Params, parameter)
-						}
-					}
-				}
-			}
-		*/
 	}
 
 	return (res)
@@ -557,7 +510,7 @@ func getCellFull(customerName *string, cellID int64) *models.FullCell {
 /*
  * Return cell structure in deploy format
  */
-func getCellRecursive(customerName *string, cellID int64) *models.EntireCell {
+func getCellRecursive(conn neo4j.ConnPool, customerName *string, cellID int64) *models.EntireCell {
 	cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell)
 							WHERE id(cell) = {cell_id}
 							MATCH (cell)-[:DEPLOY_WITH]->(keypair:Keypair),
@@ -583,7 +536,7 @@ func getCellRecursive(customerName *string, cellID int64) *models.EntireCell {
 								RETURN *
 								ORDER BY component.name, role.order`
 	*/
-	db, err := neo4j.Connect("")
+	db, err := conn.OpenPool()
 
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
@@ -785,6 +738,7 @@ func getNodeByLabel(row []interface{}, nodeName string) map[string]interface{} {
 	return res
 }
 
+/*
 func _getComponentByName(components []*models.Component, componentName string) *models.Component {
 	for _, component := range components {
 		if strings.Compare(componentName, *component.Name) == 0 {
@@ -794,6 +748,7 @@ func _getComponentByName(components []*models.Component, componentName string) *
 
 	return nil
 }
+*/
 
 func getHostByName(hosts []*models.Host, hostName string) *models.Host {
 	for _, host := range hosts {
