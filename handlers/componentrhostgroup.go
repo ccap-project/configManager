@@ -32,6 +32,7 @@ package handlers
 import (
 	"log"
 
+	"configManager"
 	"configManager/models"
 	"configManager/neo4j"
 	"configManager/restapi/operations/hostgroup"
@@ -40,7 +41,15 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-func AddComponentHostgroup(params hostgroup.AddComponentHostgroupParams, principal *models.Customer) middleware.Responder {
+func NewAddComponentHostgroup(rt *configManager.Runtime) hostgroup.AddComponentHostgroupHandler {
+	return &addComponentHostgroup{rt: rt}
+}
+
+type addComponentHostgroup struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->(cell:Cell)-[:PROVIDES]->(component:Component)
 							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
@@ -55,8 +64,7 @@ func AddComponentHostgroup(params hostgroup.AddComponentHostgroupParams, princip
 								order: {hostgroup_order} } )
 								RETURN id(hostgroup) as id`
 
-	db, err := neo4j.Connect("")
-
+	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -114,7 +122,15 @@ func AddComponentHostgroup(params hostgroup.AddComponentHostgroupParams, princip
 	return hostgroup.NewAddComponentHostgroupCreated().WithPayload(output[0].(int64))
 }
 
-func DeleteComponentHostgroup(params hostgroup.DeleteComponentHostgroupParams, principal *models.Customer) middleware.Responder {
+func NewDeleteComponentHostgroup(rt *configManager.Runtime) hostgroup.DeleteComponentHostgroupHandler {
+	return &deleteComponentHostgroup{rt: rt}
+}
+
+type deleteComponentHostgroup struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *deleteComponentHostgroup) Handle(params hostgroup.DeleteComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell)-[:PROVIDES]->(component:Component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
@@ -123,12 +139,12 @@ func DeleteComponentHostgroup(params hostgroup.DeleteComponentHostgroupParams, p
 								AND id(hostgroup) = {hostgroup_id}
 							DETACH DELETE hostgroup`
 
-	if getComponentHostgroupByID(principal.Name, params.CellID, params.ComponentID, params.HostgroupID) == nil {
+	if _getComponentHostgroupByID(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, params.HostgroupID) == nil {
 		log.Println("hostgroup does not exists !")
 		return hostgroup.NewDeleteComponentHostgroupNotFound()
 	}
 
-	db, err := neo4j.Connect("")
+	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return hostgroup.NewDeleteComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -161,9 +177,17 @@ func DeleteComponentHostgroup(params hostgroup.DeleteComponentHostgroupParams, p
 	return hostgroup.NewDeleteComponentHostgroupOK()
 }
 
-func GetComponentHostgroupByID(params hostgroup.GetComponentHostgroupByIDParams, principal *models.Customer) middleware.Responder {
+func NewGetComponentHostgroupByID(rt *configManager.Runtime) hostgroup.GetComponentHostgroupByIDHandler {
+	return &getComponentHostgroupByID{rt: rt}
+}
 
-	Hostgroup := getComponentHostgroupByID(principal.Name, params.CellID, params.ComponentID, params.HostgroupID)
+type getComponentHostgroupByID struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *getComponentHostgroupByID) Handle(params hostgroup.GetComponentHostgroupByIDParams, principal *models.Customer) middleware.Responder {
+
+	Hostgroup := _getComponentHostgroupByID(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, params.HostgroupID)
 	if Hostgroup == nil {
 		return hostgroup.NewGetComponentHostgroupByIDNotFound()
 	}
@@ -171,9 +195,17 @@ func GetComponentHostgroupByID(params hostgroup.GetComponentHostgroupByIDParams,
 	return hostgroup.NewGetComponentHostgroupByIDOK().WithPayload(Hostgroup)
 }
 
-func FindComponentHostgroups(params hostgroup.FindComponentHostgroupsParams, principal *models.Customer) middleware.Responder {
+func NewFindComponentHostgroups(rt *configManager.Runtime) hostgroup.FindComponentHostgroupsHandler {
+	return &findComponentHostgroups{rt: rt}
+}
 
-	data, err := _FindComponentHostgroups(principal.Name, params.CellID, params.ComponentID)
+type findComponentHostgroups struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *findComponentHostgroups) Handle(params hostgroup.FindComponentHostgroupsParams, principal *models.Customer) middleware.Responder {
+
+	data, err := _FindComponentHostgroups(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID)
 
 	log.Printf("= data(%#v)", data)
 
@@ -184,7 +216,7 @@ func FindComponentHostgroups(params hostgroup.FindComponentHostgroupsParams, pri
 	return hostgroup.NewFindComponentHostgroupsOK().WithPayload(data)
 }
 
-func _FindComponentHostgroups(customerName *string, CellID int64, ComponentID int64) ([]*models.Hostgroup, middleware.Responder) {
+func _FindComponentHostgroups(conn neo4j.ConnPool, customerName *string, CellID int64, ComponentID int64) ([]*models.Hostgroup, middleware.Responder) {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell)-[:PROVIDES]->(component:Component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
@@ -199,7 +231,7 @@ func _FindComponentHostgroups(customerName *string, CellID int64, ComponentID in
 												hostgroup.network as network,
 												hostgroup.order as order`
 
-	db, err := neo4j.Connect("")
+	db, err := conn.OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return nil, hostgroup.NewFindComponentHostgroupsInternalServerError()
@@ -258,7 +290,15 @@ func _FindComponentHostgroups(customerName *string, CellID int64, ComponentID in
 	return res, nil
 }
 
-func UpdateComponentHostgroup(params hostgroup.UpdateComponentHostgroupParams, principal *models.Customer) middleware.Responder {
+func NewUpdateComponentHostgroup(rt *configManager.Runtime) hostgroup.UpdateComponentHostgroupHandler {
+	return &updateComponentHostgroup{rt: rt}
+}
+
+type updateComponentHostgroup struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *updateComponentHostgroup) Handle(params hostgroup.UpdateComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 								(cell:Cell)-[:PROVIDES]->(component:Component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
@@ -272,7 +312,7 @@ func UpdateComponentHostgroup(params hostgroup.UpdateComponentHostgroupParams, p
 									hostgroup.network={hostgroup_network},
 									hostgroup.order={hostgroup_order}`
 
-	db, err := neo4j.Connect("")
+	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -321,7 +361,7 @@ func UpdateComponentHostgroup(params hostgroup.UpdateComponentHostgroupParams, p
 	return hostgroup.NewUpdateComponentHostgroupOK()
 }
 
-func getComponentHostgroupByID(customer *string, cellID int64, componentID int64, hostgroupID int64) *models.Hostgroup {
+func _getComponentHostgroupByID(conn neo4j.ConnPool, customer *string, cellID int64, componentID int64, hostgroupID int64) *models.Hostgroup {
 
 	var hostgroup *models.Hostgroup
 	hostgroup = nil
@@ -341,7 +381,7 @@ func getComponentHostgroupByID(customer *string, cellID int64, componentID int64
 											hostgroup.network as network,
 											hostgroup.order as order`
 
-	db, err := neo4j.Connect("")
+	db, err := conn.OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return hostgroup

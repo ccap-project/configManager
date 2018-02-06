@@ -29,22 +29,47 @@
 package main
 
 import (
-	"log"
 	"os"
 
-	loads "github.com/go-openapi/loads"
-	flags "github.com/jessevdk/go-flags"
+	"configManager"
 
 	"configManager/handlers"
+	"configManager/models"
 	"configManager/restapi"
 	"configManager/restapi/operations"
+
+	"github.com/Sirupsen/logrus"
+	app "github.com/casualjim/go-app"
+	"github.com/casualjim/middlewares"
+	"github.com/go-openapi/errors"
+	loads "github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	flags "github.com/jessevdk/go-flags"
+	"github.com/justinas/alice"
 )
 
-func init() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-}
-
 func main() {
+
+	app, err := app.New("configManager")
+	if err != nil {
+		logrus.Fatalln(err)
+	}
+
+	log := app.Logger()
+	cfg := app.Config()
+
+	//log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	cfg.SetDefault("db.Host", "127.0.0.1")
+	cfg.SetDefault("db.Port", "7687")
+	cfg.SetDefault("db.MaxConn", "20")
+	cfg.SetDefault("service.Host", "127.0.0.1")
+	cfg.SetDefault("service.Port", "8081")
+
+	rt, err := configManager.NewRuntime(app)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
@@ -54,6 +79,9 @@ func main() {
 	api := operations.NewConfigManagerAPI(swaggerSpec)
 	server := restapi.NewServer(api)
 	defer server.Shutdown()
+
+	server.Host = app.Config().GetString("service.Host")
+	server.Port = app.Config().GetInt("service.Port")
 
 	parser := flags.NewParser(server, flags.Default)
 	parser.ShortDescription = "configManager"
@@ -77,12 +105,94 @@ func main() {
 		os.Exit(code)
 	}
 
+	/*
+	 * App Handlers
+	 */
+
+	// Cell
+	api.CellAddCellHandler = handlers.NewAddCell(rt)
+	api.CellFindCellByCustomerHandler = handlers.NewFindCellByCustomer(rt)
+	api.CellGetCellByIDHandler = handlers.NewGetCellByID(rt)
+	api.CellGetCellFullByIDHandler = handlers.NewGetCellFullByID(rt)
+
+	// Component
+	api.ComponentAddComponentHandler = handlers.NewAddCellComponent(rt)
+	api.ComponentGetCellComponentHandler = handlers.NewGetCellComponent(rt)
+	api.ComponentFindCellComponentsHandler = handlers.NewFindCellComponents(rt)
+
+	// Customer
+	api.CustomerAddCustomerHandler = handlers.NewAddCustomer(rt)
+	api.CustomerFindCustomerByNameHandler = handlers.NewFindCustomerByName(rt)
+
+	// Deploy
+	api.CellDeployCellByIDHandler = handlers.NewDeployCellByID(rt)
+	api.CellDeployCellAppByIDHandler = handlers.NewDeployCellAppByID(rt)
+
+	// Host
+	api.HostAddCellHostHandler = handlers.NewAddCellHost(rt)
+
+	// Hostgroup
+	api.HostgroupAddComponentHostgroupHandler = handlers.NewAddComponentHostgroup(rt)
+	api.HostgroupDeleteComponentHostgroupHandler = handlers.NewDeleteComponentHostgroup(rt)
+	api.HostgroupFindComponentHostgroupsHandler = handlers.NewFindComponentHostgroups(rt)
+	api.HostgroupGetComponentHostgroupByIDHandler = handlers.NewGetComponentHostgroupByID(rt)
+	api.HostgroupUpdateComponentHostgroupHandler = handlers.NewUpdateComponentHostgroup(rt)
+
+	// Key Pair
+	api.KeypairAddKeypairHandler = handlers.NewAddKeypair(rt)
+	api.KeypairGetKeypairByIDHandler = handlers.NewGetKeypairByID(rt)
+	api.KeypairFindKeypairByCustomerHandler = handlers.NewFindKeypairByCustomer(rt)
+	api.KeypairAddCellKeypairHandler = handlers.NewAddCellKeypair(rt)
+
+	// Provider
+	api.ProviderAddProviderHandler = handlers.NewAddProvider(rt)
+	api.ProviderGetProviderHandler = handlers.NewGetProvider(rt)
+	api.ProviderUpdateProviderHandler = handlers.NewUpdateProvider(rt)
+
+	// Provider Type
+	api.ProvidertypeAddProviderTypeHandler = handlers.NewAddProviderType(rt)
+	api.ProvidertypeGetProviderTypeByIDHandler = handlers.NewGetProviderTypeByID(rt)
+	api.ProvidertypeListProviderTypesHandler = handlers.NewListProviderTypes(rt)
+
+	// Roles
+	api.RoleAddComponentRoleHandler = handlers.NewAddComponentRole(rt)
+	api.RoleDeleteComponentRoleHandler = handlers.NewDeleteComponentRole(rt)
+	api.RoleFindComponentRolesHandler = handlers.NewFindComponentRoles(rt)
+	api.RoleUpdateComponentRoleHandler = handlers.NewUpdateComponentRole(rt)
+
+	// Other Handlers
+	api.JSONConsumer = runtime.JSONConsumer()
+
+	api.UrlformConsumer = runtime.DiscardConsumer
+
+	api.JSONProducer = runtime.JSONProducer()
+
+	// Applies when the "x-api-token" header is set
+	api.APIKeyHeaderAuth = func(token string) (*models.Customer, error) {
+
+		Customer := new(models.Customer)
+		Customer.Name = new(string)
+		*Customer.Name = "customer1"
+		Customer.ID = 84
+
+		return Customer, nil
+		return nil, errors.NotImplemented("api key auth (APIKeyHeader) x-api-token from header param [x-api-token] has not yet been implemented")
+	}
+
 	// Create initial data
-	handlers.InitProviderType()
-	server.ConfigureAPI()
+	handlers.InitProviderType(rt)
+	//server.ConfigureAPI()
+
+	handler := alice.New(
+		middlewares.NewRecoveryMW(app.Info().Name, log),
+		middlewares.NewAuditMW(app.Info(), log),
+		middlewares.NewProfiler,
+		middlewares.NewHealthChecksMW(app.Info().BasePath),
+	).Then(api.Serve(nil))
+
+	server.SetHandler(handler)
 
 	if err := server.Serve(); err != nil {
 		log.Fatalln(err)
 	}
-
 }

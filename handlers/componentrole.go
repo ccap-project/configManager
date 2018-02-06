@@ -33,6 +33,7 @@ import (
 	"log"
 	"strings"
 
+	"configManager"
 	"configManager/models"
 	"configManager/neo4j"
 	"configManager/restapi/operations/role"
@@ -41,21 +42,29 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-func AddComponentRole(params role.AddComponentRoleParams, principal *models.Customer) middleware.Responder {
+func NewAddComponentRole(rt *configManager.Runtime) role.AddComponentRoleHandler {
+	return &addComponentRole{rt: rt}
+}
+
+type addComponentRole struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *addComponentRole) Handle(params role.AddComponentRoleParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->(cell:Cell)-[:PROVIDES]->(component:Component)
 							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
 							CREATE (component)-[:USE]->(role:Role {name: {role_name}, url: {role_url}, version: {role_version}, order: {role_order}} )
 								RETURN id(role) as id`
 
-	log.Printf("= getRoleByName(%s), (%#v)", params.Body.Name, getComponentRoleByName(principal.Name, params.CellID, params.ComponentID, params.Body.Name))
+	//log.Printf("= getRoleByName(%s), (%#v)", params.Body.Name, _getComponentRoleByName(principal.Name, params.CellID, params.ComponentID, params.Body.Name))
 
-	if getComponentRoleByName(principal.Name, params.CellID, params.ComponentID, params.Body.Name) != nil {
+	if _getComponentRoleByName(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, params.Body.Name) != nil {
 		log.Println("role already exists !")
 		return role.NewAddComponentRoleConflict().WithPayload(models.APIResponse{Message: "role already exists"})
 	}
 
-	db, err := neo4j.Connect("")
+	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -105,7 +114,7 @@ func AddComponentRole(params role.AddComponentRoleParams, principal *models.Cust
 
 	stmt.Close()
 
-	err = addComponentRoleParameters(principal.Name, params.CellID, params.ComponentID, params.Body.Name, params.Body.Params, db)
+	err = addComponentRoleParameters(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, params.Body.Name, params.Body.Params)
 	if err != nil {
 		log.Printf("An error occurred adding Role parameters: %s", err)
 		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -115,7 +124,15 @@ func AddComponentRole(params role.AddComponentRoleParams, principal *models.Cust
 	return role.NewAddComponentRoleCreated().WithPayload(output[0].(int64))
 }
 
-func DeleteComponentRole(params role.DeleteComponentRoleParams, principal *models.Customer) middleware.Responder {
+func NewDeleteComponentRole(rt *configManager.Runtime) role.DeleteComponentRoleHandler {
+	return &deleteComponentRole{rt: rt}
+}
+
+type deleteComponentRole struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *deleteComponentRole) Handle(params role.DeleteComponentRoleParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role {name: {role_name}})
@@ -123,12 +140,12 @@ func DeleteComponentRole(params role.DeleteComponentRoleParams, principal *model
 							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
 							DETACH DELETE role, r, p`
 
-	if getComponentRoleByName(principal.Name, params.CellID, params.ComponentID, &params.RoleName) == nil {
+	if _getComponentRoleByName(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, &params.RoleName) == nil {
 		log.Println("role does not exists !")
 		return role.NewDeleteComponentRoleNotFound()
 	}
 
-	db, err := neo4j.Connect("")
+	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return role.NewDeleteComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -157,9 +174,17 @@ func DeleteComponentRole(params role.DeleteComponentRoleParams, principal *model
 	return role.NewDeleteComponentRoleOK()
 }
 
-func FindComponentRoles(params role.FindComponentRolesParams, principal *models.Customer) middleware.Responder {
+func NewFindComponentRoles(rt *configManager.Runtime) role.FindComponentRolesHandler {
+	return &findComponentRoles{rt: rt}
+}
 
-	res, err := findComponentRoles(params.ComponentID)
+type findComponentRoles struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *findComponentRoles) Handle(params role.FindComponentRolesParams, principal *models.Customer) middleware.Responder {
+
+	res, err := _findComponentRoles(ctx.rt.DB(), params.ComponentID)
 
 	if err != nil {
 		return err
@@ -170,69 +195,15 @@ func FindComponentRoles(params role.FindComponentRolesParams, principal *models.
 	return role.NewFindComponentRolesOK().WithPayload(res)
 }
 
-func findComponentRoles(ComponentID int64) ([]*models.Role, middleware.Responder) {
-
-	cypher := `MATCH (component:Component)-[:USE]->(role:Role)
-							WHERE id(component) = {component_id}
-								RETURN id(role) as id,
-												role.name as name,
-												role.url as url,
-												role.version as version,
-												role.order as order`
-
-	db, err := neo4j.Connect("")
-	if err != nil {
-		log.Println("error connecting to neo4j:", err)
-		return nil, role.NewFindComponentRolesInternalServerError()
-	}
-	defer db.Close()
-
-	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
-		"component_id": ComponentID})
-
-	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
-		return nil, role.NewFindComponentRolesInternalServerError()
-
-	}
-
-	res := make([]*models.Role, len(data))
-
-	for idx, row := range data {
-		_name := row[1].(string)
-		_url := ""
-		_version := ""
-
-		var _order int64
-		_order = 99
-
-		if row[2] != nil {
-			_url = row[2].(string)
-		}
-
-		if row[3] != nil {
-			_version = row[3].(string)
-		}
-
-		if row[4] != nil {
-			_order = row[4].(int64)
-		}
-
-		_params, _ := findComponentRoleParameters(row[0].(int64))
-
-		res[idx] = &models.Role{
-			ID:      row[0].(int64),
-			Name:    &_name,
-			Version: &_version,
-			URL:     &_url,
-			Order:   &_order,
-			Params:  _params}
-	}
-
-	return res, nil
+func NewUpdateComponentRole(rt *configManager.Runtime) role.UpdateComponentRoleHandler {
+	return &updateComponentRole{rt: rt}
 }
 
-func UpdateComponentRole(params role.UpdateComponentRoleParams, principal *models.Customer) middleware.Responder {
+type updateComponentRole struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *updateComponentRole) Handle(params role.UpdateComponentRoleParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role{name: {role_current_name}})-[:PARAM]->(param:Parameter)
@@ -240,20 +211,20 @@ func UpdateComponentRole(params role.UpdateComponentRoleParams, principal *model
 							SET role.name={role_new_name}, role.url={role_url}, role.version={role_version}, role.order={role_order}
 							DETACH DELETE param`
 
-	log.Printf("= getRoleByName(%s), (%v)", params.Body.Name, getComponentRoleByName(principal.Name, params.CellID, params.ComponentID, params.Body.Name))
+	//log.Printf("= getRoleByName(%s), (%v)", params.Body.Name, _getComponentRoleByName(principal.Name, params.CellID, params.ComponentID, params.Body.Name))
 
-	if getComponentRoleByName(principal.Name, params.CellID, params.ComponentID, &params.RoleName) == nil {
+	if _getComponentRoleByName(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, &params.RoleName) == nil {
 		log.Println("role does not exists !")
 		return role.NewUpdateComponentRoleNotFound()
 	}
 
 	if strings.Compare(params.RoleName, *params.Body.Name) != 0 &&
-		getComponentRoleByName(principal.Name, params.CellID, params.ComponentID, params.Body.Name) != nil {
+		_getComponentRoleByName(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, params.Body.Name) != nil {
 		log.Println("role target name already exists !")
 		return role.NewUpdateComponentRoleConflict()
 	}
 
-	db, err := neo4j.Connect("")
+	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -292,7 +263,7 @@ func UpdateComponentRole(params role.UpdateComponentRoleParams, principal *model
 	stmt.Close()
 
 	if len(params.Body.Params) > 0 {
-		err = addComponentRoleParameters(principal.Name, params.CellID, params.ComponentID, params.Body.Name, params.Body.Params, db)
+		err = addComponentRoleParameters(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, params.Body.Name, params.Body.Params)
 		if err != nil {
 			log.Printf("An error occurred adding Role parameters: %s", err)
 			return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -304,13 +275,20 @@ func UpdateComponentRole(params role.UpdateComponentRoleParams, principal *model
 	return role.NewUpdateComponentRoleOK()
 }
 
-func addComponentRoleParameters(customer *string, cellID int64, componentID int64, roleName *string, params []*models.Parameter, db neo4j.Conn) error {
+func addComponentRoleParameters(conn neo4j.ConnPool, customer *string, cellID int64, componentID int64, roleName *string, params []*models.Parameter) error {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role{name: {role_name}})
 							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
 							CREATE (role)-[:PARAM]->(param:Parameter {name: {param_name}, value: {param_val}} )
 								RETURN id(param) as id`
+
+	db, err := conn.OpenPool()
+	if err != nil {
+		log.Println("error connecting to neo4j:", err)
+		return err
+	}
+	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
@@ -339,7 +317,69 @@ func addComponentRoleParameters(customer *string, cellID int64, componentID int6
 	return nil
 }
 
-func findComponentRoleParameters(roleID int64) ([]*models.Parameter, middleware.Responder) {
+func _findComponentRoles(conn neo4j.ConnPool, ComponentID int64) ([]*models.Role, middleware.Responder) {
+
+	cypher := `MATCH (component:Component)-[:USE]->(role:Role)
+							WHERE id(component) = {component_id}
+								RETURN id(role) as id,
+												role.name as name,
+												role.url as url,
+												role.version as version,
+												role.order as order`
+
+	db, err := conn.OpenPool()
+	if err != nil {
+		log.Println("error connecting to neo4j:", err)
+		return nil, role.NewFindComponentRolesInternalServerError()
+	}
+	defer db.Close()
+
+	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
+		"component_id": ComponentID})
+
+	if err != nil {
+		log.Printf("An error occurred querying Neo: %s", err)
+		return nil, role.NewFindComponentRolesInternalServerError()
+
+	}
+
+	res := make([]*models.Role, len(data))
+
+	for idx, row := range data {
+		_name := row[1].(string)
+		_url := ""
+		_version := ""
+
+		var _order int64
+		_order = 99
+
+		if row[2] != nil {
+			_url = row[2].(string)
+		}
+
+		if row[3] != nil {
+			_version = row[3].(string)
+		}
+
+		if row[4] != nil {
+			_order = row[4].(int64)
+		}
+
+		_params, _ := findComponentRoleParameters(conn, row[0].(int64))
+
+		res[idx] = &models.Role{
+			ID:      row[0].(int64),
+			Name:    &_name,
+			Version: &_version,
+			URL:     &_url,
+			Order:   &_order,
+			Params:  _params}
+	}
+
+	return res, nil
+}
+
+func findComponentRoleParameters(conn neo4j.ConnPool, roleID int64) ([]*models.Parameter, middleware.Responder) {
 
 	cypher := `MATCH (role:Role)-[:PARAM]->(param:Parameter)
 							WHERE id(role) = {role_id}
@@ -347,7 +387,7 @@ func findComponentRoleParameters(roleID int64) ([]*models.Parameter, middleware.
 											param.name as name,
 											param.value as value`
 
-	db, err := neo4j.Connect("")
+	db, err := conn.OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return nil, role.NewFindComponentRolesInternalServerError()
@@ -381,7 +421,7 @@ func findComponentRoleParameters(roleID int64) ([]*models.Parameter, middleware.
 	return res, nil
 }
 
-func getComponentRoleByName(customer *string, cellID int64, componentID int64, roleName *string) *models.Role {
+func _getComponentRoleByName(conn neo4j.ConnPool, customer *string, cellID int64, componentID int64, roleName *string) *models.Role {
 
 	var role *models.Role
 	role = nil
@@ -395,7 +435,7 @@ func getComponentRoleByName(customer *string, cellID int64, componentID int64, r
 												role.version as version,
 												role.order as order`
 
-	db, err := neo4j.Connect("")
+	db, err := conn.OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return role

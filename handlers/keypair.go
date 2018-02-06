@@ -32,6 +32,7 @@ package handlers
 import (
 	"log"
 
+	"configManager"
 	"configManager/models"
 	"configManager/neo4j"
 	"configManager/restapi/operations/keypair"
@@ -40,7 +41,15 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-func AddCellKeypair(params keypair.AddCellKeypairParams, principal *models.Customer) middleware.Responder {
+func NewAddCellKeypair(rt *configManager.Runtime) keypair.AddCellKeypairHandler {
+	return &addCellKeypair{rt: rt}
+}
+
+type addCellKeypair struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *addCellKeypair) Handle(params keypair.AddCellKeypairParams, principal *models.Customer) middleware.Responder {
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	cypher := `MATCH (c:Customer {name: {customer_name}})-[:OWN]->(cell:Cell),
@@ -49,17 +58,17 @@ func AddCellKeypair(params keypair.AddCellKeypairParams, principal *models.Custo
 							CREATE (cell)-[:DEPLOY_WITH]->(keypair)
 							RETURN	id(keypair) AS id`
 
-	if getKeypairByName(principal.Name, &params.KeypairName) == nil {
+	if getKeypairByName(ctx.rt.DB(), principal.Name, &params.KeypairName) == nil {
 		log.Println("keypair does not exists !")
 		return keypair.NewAddCellKeypairConflict()
 	}
 
-	if getCellKeypair(principal.Name, params.CellID) != nil {
+	if getCellKeypair(ctx.rt.DB(), principal.Name, params.CellID) != nil {
 		log.Println("This Cell already has a keypair")
 		return keypair.NewAddCellKeypairNotFound()
 	}
 
-	db, err := neo4j.Connect("")
+	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return keypair.NewAddCellKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -95,7 +104,15 @@ func AddCellKeypair(params keypair.AddCellKeypairParams, principal *models.Custo
 	return keypair.NewAddCellKeypairCreated().WithPayload(output[0].(int64))
 }
 
-func AddKeypair(params keypair.AddKeypairParams, principal *models.Customer) middleware.Responder {
+func NewAddKeypair(rt *configManager.Runtime) keypair.AddKeypairHandler {
+	return &addKeypair{rt: rt}
+}
+
+type addKeypair struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *addKeypair) Handle(params keypair.AddKeypairParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (c:Customer {name: {name} })
 							CREATE (c)-[:HAS]->(k:Keypair { name: {kname}, public_key: {public_key} })
@@ -103,12 +120,12 @@ func AddKeypair(params keypair.AddKeypairParams, principal *models.Customer) mid
 											k.name AS name,
 											k.public_key AS public_key`
 
-	if getKeypairByName(principal.Name, params.Body.Name) != nil {
+	if getKeypairByName(ctx.rt.DB(), principal.Name, params.Body.Name) != nil {
 		log.Println("keypair already exists !")
 		return keypair.NewAddKeypairConflict().WithPayload(models.APIResponse{Message: "keypair already exists"})
 	}
 
-	db, err := neo4j.Connect("")
+	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return keypair.NewAddKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -144,7 +161,15 @@ func AddKeypair(params keypair.AddKeypairParams, principal *models.Customer) mid
 	return keypair.NewAddKeypairCreated().WithPayload(output[0].(int64))
 }
 
-func GetKeypairByID(params keypair.GetKeypairByIDParams, principal *models.Customer) middleware.Responder {
+func NewGetKeypairByID(rt *configManager.Runtime) keypair.GetKeypairByIDHandler {
+	return &getKeypairByID{rt: rt}
+}
+
+type getKeypairByID struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *getKeypairByID) Handle(params keypair.GetKeypairByIDParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (c:Customer {name: {name} })-[:HAS]->(k:Keypair)
 								WHERE ID(k) = {kid}
@@ -152,7 +177,7 @@ func GetKeypairByID(params keypair.GetKeypairByIDParams, principal *models.Custo
 												k.name as name,
 												k.public_key as public_key`
 
-	db, err := neo4j.Connect("")
+	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return keypair.NewGetKeypairByIDInternalServerError()
@@ -189,13 +214,21 @@ func GetKeypairByID(params keypair.GetKeypairByIDParams, principal *models.Custo
 	return keypair.NewGetKeypairByIDOK().WithPayload(_keypair)
 }
 
-func FindKeypairByCustomer(params keypair.FindKeypairByCustomerParams, principal *models.Customer) middleware.Responder {
+func NewFindKeypairByCustomer(rt *configManager.Runtime) keypair.FindKeypairByCustomerHandler {
+	return &findKeypairByCustomer{rt: rt}
+}
+
+type findKeypairByCustomer struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *findKeypairByCustomer) Handle(params keypair.FindKeypairByCustomerParams, principal *models.Customer) middleware.Responder {
 	cypher := `MATCH (c:Customer {name: {name} })-[:HAS]->(k:Keypair)
 								RETURN ID(c) as id,
 												k.name as name,
 												k.public_key as public_key`
 
-	db, err := neo4j.Connect("")
+	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return keypair.NewFindKeypairByCustomerInternalServerError()
@@ -228,7 +261,7 @@ func FindKeypairByCustomer(params keypair.FindKeypairByCustomerParams, principal
 	return keypair.NewFindKeypairByCustomerOK().WithPayload(res)
 }
 
-func getCellKeypair(customerName *string, CellID int64) *models.Keypair {
+func getCellKeypair(conn neo4j.ConnPool, customerName *string, CellID int64) *models.Keypair {
 
 	var keypair *models.Keypair
 	keypair = nil
@@ -241,7 +274,7 @@ func getCellKeypair(customerName *string, CellID int64) *models.Keypair {
 									keypair.name as name,
 									keypair.public_key as public_key`
 
-	db, err := neo4j.Connect("")
+	db, err := conn.OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return keypair
@@ -282,7 +315,7 @@ func getCellKeypair(customerName *string, CellID int64) *models.Keypair {
 	return keypair
 }
 
-func getKeypairByName(customerName *string, keypairName *string) *models.Keypair {
+func getKeypairByName(conn neo4j.ConnPool, customerName *string, keypairName *string) *models.Keypair {
 
 	var keypair *models.Keypair
 	keypair = nil
@@ -293,7 +326,7 @@ func getKeypairByName(customerName *string, keypairName *string) *models.Keypair
 												c.name as name,
 												k.public_key as public_key`
 
-	db, err := neo4j.Connect("")
+	db, err := conn.OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return keypair

@@ -32,6 +32,7 @@ package handlers
 import (
 	"log"
 
+	"configManager"
 	"configManager/models"
 	"configManager/neo4j"
 	"configManager/restapi/operations/customer"
@@ -40,18 +41,26 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-func AddCustomer(params customer.AddCustomerParams) middleware.Responder {
+func NewAddCustomer(rt *configManager.Runtime) customer.AddCustomerHandler {
+	return &addCustomer{rt: rt}
+}
+
+type addCustomer struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *addCustomer) Handle(params customer.AddCustomerParams) middleware.Responder {
 
 	cypher := `create(c:Customer { name: {name} }) RETURN ID(c)`
 
 	//if len(swag.StringValue(getCustomerByName(swag.StringValue(params.Body.Name)).Name)) > 0 {
 
-	if getCustomerByName(params.Body.Name) != nil {
+	if _getCustomerByName(ctx.rt.DB(), params.Body.Name) != nil {
 		log.Println("customer already exists !")
 		return customer.NewAddCustomerConflict().WithPayload(models.APIResponse{Message: "customer already exists"})
 	}
 
-	db, err := neo4j.Connect("")
+	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return customer.NewAddCustomerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -83,9 +92,17 @@ func AddCustomer(params customer.AddCustomerParams) middleware.Responder {
 	return customer.NewAddCustomerCreated().WithPayload(output[0].(int64))
 }
 
-func GetCustomerByName(params customer.FindCustomerByNameParams) middleware.Responder {
+func NewFindCustomerByName(rt *configManager.Runtime) customer.FindCustomerByNameHandler {
+	return &getCustomerByName{rt: rt}
+}
 
-	Customer := getCustomerByName(&params.CustomerName)
+type getCustomerByName struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *getCustomerByName) Handle(params customer.FindCustomerByNameParams) middleware.Responder {
+
+	Customer := _getCustomerByName(ctx.rt.DB(), &params.CustomerName)
 
 	if len(swag.StringValue(Customer.Name)) <= 0 {
 		return customer.NewFindCustomerByNameNotFound()
@@ -94,7 +111,7 @@ func GetCustomerByName(params customer.FindCustomerByNameParams) middleware.Resp
 	return customer.NewFindCustomerByNameOK().WithPayload(Customer)
 }
 
-func getCustomerByName(customerName *string) *models.Customer {
+func _getCustomerByName(conn neo4j.ConnPool, customerName *string) *models.Customer {
 
 	var customer *models.Customer
 
@@ -103,7 +120,7 @@ func getCustomerByName(customerName *string) *models.Customer {
 							RETURN ID(c) as id,
 											c.name as name`
 
-	db, err := neo4j.Connect("")
+	db, err := conn.OpenPool()
 
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)

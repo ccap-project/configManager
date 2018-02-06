@@ -32,6 +32,7 @@ package handlers
 import (
 	"log"
 
+	"configManager"
 	"configManager/models"
 	"configManager/neo4j"
 	"configManager/restapi/operations/provider"
@@ -40,7 +41,15 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-func AddCellProvider(params provider.AddProviderParams, principal *models.Customer) middleware.Responder {
+func NewAddProvider(rt *configManager.Runtime) provider.AddProviderHandler {
+	return &addCellProvider{rt: rt}
+}
+
+type addCellProvider struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *addCellProvider) Handle(params provider.AddProviderParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell),
 										(providertype:ProviderType {name: {providertype}})
@@ -55,7 +64,7 @@ func AddCellProvider(params provider.AddProviderParams, principal *models.Custom
 							RETURN	id(provider) AS id,
 											provider.name AS name`
 
-	Provider := getProvider(principal.Name, params.CellID)
+	Provider := getProvider(ctx.rt.DB(), principal.Name, params.CellID)
 	log.Printf("Here =>>>> %#v\n", Provider)
 
 	if Provider != nil {
@@ -63,7 +72,7 @@ func AddCellProvider(params provider.AddProviderParams, principal *models.Custom
 		return provider.NewAddProviderConflict().WithPayload(models.APIResponse{Message: "provider already exists"})
 	}
 
-	db, err := neo4j.Connect("")
+	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return provider.NewAddProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -105,9 +114,17 @@ func AddCellProvider(params provider.AddProviderParams, principal *models.Custom
 	return provider.NewAddProviderCreated().WithPayload(output[0].(int64))
 }
 
-func GetCellProvider(params provider.GetProviderParams, principal *models.Customer) middleware.Responder {
+func NewGetProvider(rt *configManager.Runtime) provider.GetProviderHandler {
+	return &getCellProvider{rt: rt}
+}
 
-	Provider := getProvider(principal.Name, params.CellID)
+type getCellProvider struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *getCellProvider) Handle(params provider.GetProviderParams, principal *models.Customer) middleware.Responder {
+
+	Provider := getProvider(ctx.rt.DB(), principal.Name, params.CellID)
 
 	if Provider == nil {
 		log.Println("provider does not exists !")
@@ -117,7 +134,7 @@ func GetCellProvider(params provider.GetProviderParams, principal *models.Custom
 	return provider.NewGetProviderOK().WithPayload(Provider)
 }
 
-func getProvider(customerName *string, CellID int64) *models.Provider {
+func getProvider(conn neo4j.ConnPool, customerName *string, CellID int64) *models.Provider {
 
 	var provider *models.Provider
 	provider = nil
@@ -135,7 +152,7 @@ func getProvider(customerName *string, CellID int64) *models.Provider {
 												provider.password as password,
 												provider_type.name as provider_type_name`
 
-	db, err := neo4j.Connect("")
+	db, err := conn.OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return provider
@@ -184,7 +201,15 @@ func getProvider(customerName *string, CellID int64) *models.Provider {
 	return provider
 }
 
-func UpdateCellProvider(params provider.UpdateProviderParams, principal *models.Customer) middleware.Responder {
+func NewUpdateProvider(rt *configManager.Runtime) provider.UpdateProviderHandler {
+	return &updateCellProvider{rt: rt}
+}
+
+type updateCellProvider struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *updateCellProvider) Handle(params provider.UpdateProviderParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell)-[rel:USE]->(provider:Provider)-[rel2:PROVIDER_IS]->(provider_type:ProviderType)
@@ -202,7 +227,7 @@ func UpdateCellProvider(params provider.UpdateProviderParams, principal *models.
 							CREATE (cell)-[:USE]->(provider)-[:PROVIDER_IS]->(newProviderType)
 							return provider`
 
-	Provider := getProvider(principal.Name, params.CellID)
+	Provider := getProvider(ctx.rt.DB(), principal.Name, params.CellID)
 	log.Printf("UpdateCellProvider =>>>> %#v\n", Provider)
 
 	if Provider == nil {
@@ -210,7 +235,7 @@ func UpdateCellProvider(params provider.UpdateProviderParams, principal *models.
 		return provider.NewUpdateProviderNotFound().WithPayload(models.APIResponse{Message: "provider does not exists"})
 	}
 
-	db, err := neo4j.Connect("")
+	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
 		return provider.NewUpdateProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
