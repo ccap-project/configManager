@@ -224,7 +224,7 @@ type findKeypairByCustomer struct {
 
 func (ctx *findKeypairByCustomer) Handle(params keypair.FindKeypairByCustomerParams, principal *models.Customer) middleware.Responder {
 	cypher := `MATCH (c:Customer {name: {name} })-[:HAS]->(k:Keypair)
-								RETURN ID(c) as id,
+								RETURN ID(k) as id,
 												k.name as name,
 												k.public_key as public_key`
 
