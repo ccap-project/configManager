@@ -687,6 +687,334 @@ func init() {
         }
       }
     },
+    "/cell/{cell_id}/component/{component_id}/listener": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "listener"
+        ],
+        "summary": "Add a new listener to a component",
+        "operationId": "AddComponentListener",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell that will be used",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of component that will be used",
+            "name": "component_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Component object that needs to be added",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Listener"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          "405": {
+            "description": "Invalid input",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "409": {
+            "description": "Already exists",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/cell/{cell_id}/component/{component_id}/listener/{listener_id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "listener"
+        ],
+        "summary": "Get component listener",
+        "operationId": "getComponentListenerByID",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell that will be used",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of component that will be used",
+            "name": "component_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of listener that will be used",
+            "name": "listener_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Listener"
+            }
+          },
+          "400": {
+            "description": "Invalid cell id or component id",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "404": {
+            "description": "hostgroup does not exists"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "listener"
+        ],
+        "summary": "Update an existing listener",
+        "operationId": "UpdateComponentListener",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell that will be used",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of component that will be used",
+            "name": "component_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "Listener that will be updated",
+            "name": "listener_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Listener object that needs to be updated",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Listener"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid cell id or listener id",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "404": {
+            "description": "Hostgroup does not exists"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "listener"
+        ],
+        "summary": "Deletes a listener from component",
+        "operationId": "DeleteComponentListener",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell that will be used",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of component that will be used",
+            "name": "component_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "listener that will be deleted",
+            "name": "listener_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid cell id, component id or listener id",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "404": {
+            "description": "Hostgroup does not exists"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/cell/{cell_id}/component/{component_id}/listeners": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "listener"
+        ],
+        "summary": "List component listeners",
+        "operationId": "findComponentListeners",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell that will be used",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of component that will be used",
+            "name": "component_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Listener"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid cell id",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
     "/cell/{cell_id}/component/{component_id}/role": {
       "post": {
         "consumes": [
@@ -2440,6 +2768,28 @@ func init() {
         }
       }
     },
+    "Listener": {
+      "type": "object",
+      "required": [
+        "name",
+        "port",
+        "protocol"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "protocol": {
+          "type": "string"
+        }
+      }
+    },
     "Parameter": {
       "type": "object",
       "required": [
@@ -2582,6 +2932,9 @@ func init() {
     },
     {
       "name": "keypair"
+    },
+    {
+      "name": "listener"
     },
     {
       "name": "provider"

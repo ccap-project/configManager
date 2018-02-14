@@ -52,6 +52,7 @@ import (
 	"configManager/restapi/operations/host"
 	"configManager/restapi/operations/hostgroup"
 	"configManager/restapi/operations/keypair"
+	"configManager/restapi/operations/listener"
 	"configManager/restapi/operations/provider"
 	"configManager/restapi/operations/providertype"
 	"configManager/restapi/operations/role"
@@ -76,11 +77,20 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		HostgroupAddComponentHostgroupHandler: hostgroup.AddComponentHostgroupHandlerFunc(func(params hostgroup.AddComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupAddComponentHostgroup has not yet been implemented")
 		}),
+		ListenerAddComponentListenerHandler: listener.AddComponentListenerHandlerFunc(func(params listener.AddComponentListenerParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation ListenerAddComponentListener has not yet been implemented")
+		}),
 		HostgroupDeleteComponentHostgroupHandler: hostgroup.DeleteComponentHostgroupHandlerFunc(func(params hostgroup.DeleteComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupDeleteComponentHostgroup has not yet been implemented")
 		}),
+		ListenerDeleteComponentListenerHandler: listener.DeleteComponentListenerHandlerFunc(func(params listener.DeleteComponentListenerParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation ListenerDeleteComponentListener has not yet been implemented")
+		}),
 		HostgroupUpdateComponentHostgroupHandler: hostgroup.UpdateComponentHostgroupHandlerFunc(func(params hostgroup.UpdateComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupUpdateComponentHostgroup has not yet been implemented")
+		}),
+		ListenerUpdateComponentListenerHandler: listener.UpdateComponentListenerHandlerFunc(func(params listener.UpdateComponentListenerParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation ListenerUpdateComponentListener has not yet been implemented")
 		}),
 		CellAddCellHandler: cell.AddCellHandlerFunc(func(params cell.AddCellParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation CellAddCell has not yet been implemented")
@@ -142,6 +152,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		HostgroupFindComponentHostgroupsHandler: hostgroup.FindComponentHostgroupsHandlerFunc(func(params hostgroup.FindComponentHostgroupsParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupFindComponentHostgroups has not yet been implemented")
 		}),
+		ListenerFindComponentListenersHandler: listener.FindComponentListenersHandlerFunc(func(params listener.FindComponentListenersParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation ListenerFindComponentListeners has not yet been implemented")
+		}),
 		RoleFindComponentRolesHandler: role.FindComponentRolesHandlerFunc(func(params role.FindComponentRolesParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation RoleFindComponentRoles has not yet been implemented")
 		}),
@@ -162,6 +175,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		}),
 		HostgroupGetComponentHostgroupByIDHandler: hostgroup.GetComponentHostgroupByIDHandlerFunc(func(params hostgroup.GetComponentHostgroupByIDParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupGetComponentHostgroupByID has not yet been implemented")
+		}),
+		ListenerGetComponentListenerByIDHandler: listener.GetComponentListenerByIDHandlerFunc(func(params listener.GetComponentListenerByIDParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation ListenerGetComponentListenerByID has not yet been implemented")
 		}),
 		CustomerGetCustomerByIDHandler: customer.GetCustomerByIDHandlerFunc(func(params customer.GetCustomerByIDParams) middleware.Responder {
 			return middleware.NotImplemented("operation CustomerGetCustomerByID has not yet been implemented")
@@ -250,10 +266,16 @@ type ConfigManagerAPI struct {
 
 	// HostgroupAddComponentHostgroupHandler sets the operation handler for the add component hostgroup operation
 	HostgroupAddComponentHostgroupHandler hostgroup.AddComponentHostgroupHandler
+	// ListenerAddComponentListenerHandler sets the operation handler for the add component listener operation
+	ListenerAddComponentListenerHandler listener.AddComponentListenerHandler
 	// HostgroupDeleteComponentHostgroupHandler sets the operation handler for the delete component hostgroup operation
 	HostgroupDeleteComponentHostgroupHandler hostgroup.DeleteComponentHostgroupHandler
+	// ListenerDeleteComponentListenerHandler sets the operation handler for the delete component listener operation
+	ListenerDeleteComponentListenerHandler listener.DeleteComponentListenerHandler
 	// HostgroupUpdateComponentHostgroupHandler sets the operation handler for the update component hostgroup operation
 	HostgroupUpdateComponentHostgroupHandler hostgroup.UpdateComponentHostgroupHandler
+	// ListenerUpdateComponentListenerHandler sets the operation handler for the update component listener operation
+	ListenerUpdateComponentListenerHandler listener.UpdateComponentListenerHandler
 	// CellAddCellHandler sets the operation handler for the add cell operation
 	CellAddCellHandler cell.AddCellHandler
 	// HostAddCellHostHandler sets the operation handler for the add cell host operation
@@ -294,6 +316,8 @@ type ConfigManagerAPI struct {
 	HostFindCellHostsHandler host.FindCellHostsHandler
 	// HostgroupFindComponentHostgroupsHandler sets the operation handler for the find component hostgroups operation
 	HostgroupFindComponentHostgroupsHandler hostgroup.FindComponentHostgroupsHandler
+	// ListenerFindComponentListenersHandler sets the operation handler for the find component listeners operation
+	ListenerFindComponentListenersHandler listener.FindComponentListenersHandler
 	// RoleFindComponentRolesHandler sets the operation handler for the find component roles operation
 	RoleFindComponentRolesHandler role.FindComponentRolesHandler
 	// CustomerFindCustomerByNameHandler sets the operation handler for the find customer by name operation
@@ -308,6 +332,8 @@ type ConfigManagerAPI struct {
 	CellGetCellFullByIDHandler cell.GetCellFullByIDHandler
 	// HostgroupGetComponentHostgroupByIDHandler sets the operation handler for the get component hostgroup by ID operation
 	HostgroupGetComponentHostgroupByIDHandler hostgroup.GetComponentHostgroupByIDHandler
+	// ListenerGetComponentListenerByIDHandler sets the operation handler for the get component listener by ID operation
+	ListenerGetComponentListenerByIDHandler listener.GetComponentListenerByIDHandler
 	// CustomerGetCustomerByIDHandler sets the operation handler for the get customer by Id operation
 	CustomerGetCustomerByIDHandler customer.GetCustomerByIDHandler
 	// KeypairGetKeypairByIDHandler sets the operation handler for the get keypair by Id operation
@@ -409,12 +435,24 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "hostgroup.AddComponentHostgroupHandler")
 	}
 
+	if o.ListenerAddComponentListenerHandler == nil {
+		unregistered = append(unregistered, "listener.AddComponentListenerHandler")
+	}
+
 	if o.HostgroupDeleteComponentHostgroupHandler == nil {
 		unregistered = append(unregistered, "hostgroup.DeleteComponentHostgroupHandler")
 	}
 
+	if o.ListenerDeleteComponentListenerHandler == nil {
+		unregistered = append(unregistered, "listener.DeleteComponentListenerHandler")
+	}
+
 	if o.HostgroupUpdateComponentHostgroupHandler == nil {
 		unregistered = append(unregistered, "hostgroup.UpdateComponentHostgroupHandler")
+	}
+
+	if o.ListenerUpdateComponentListenerHandler == nil {
+		unregistered = append(unregistered, "listener.UpdateComponentListenerHandler")
 	}
 
 	if o.CellAddCellHandler == nil {
@@ -497,6 +535,10 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "hostgroup.FindComponentHostgroupsHandler")
 	}
 
+	if o.ListenerFindComponentListenersHandler == nil {
+		unregistered = append(unregistered, "listener.FindComponentListenersHandler")
+	}
+
 	if o.RoleFindComponentRolesHandler == nil {
 		unregistered = append(unregistered, "role.FindComponentRolesHandler")
 	}
@@ -523,6 +565,10 @@ func (o *ConfigManagerAPI) Validate() error {
 
 	if o.HostgroupGetComponentHostgroupByIDHandler == nil {
 		unregistered = append(unregistered, "hostgroup.GetComponentHostgroupByIDHandler")
+	}
+
+	if o.ListenerGetComponentListenerByIDHandler == nil {
+		unregistered = append(unregistered, "listener.GetComponentListenerByIDHandler")
 	}
 
 	if o.CustomerGetCustomerByIDHandler == nil {
@@ -687,15 +733,30 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	}
 	o.handlers["POST"]["/cell/{cell_id}/component/{component_id}/hostgroup"] = hostgroup.NewAddComponentHostgroup(o.context, o.HostgroupAddComponentHostgroupHandler)
 
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/cell/{cell_id}/component/{component_id}/listener"] = listener.NewAddComponentListener(o.context, o.ListenerAddComponentListenerHandler)
+
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/cell/{cell_id}/component/{component_id}/hostgroup/{hostgroup_id}"] = hostgroup.NewDeleteComponentHostgroup(o.context, o.HostgroupDeleteComponentHostgroupHandler)
 
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/cell/{cell_id}/component/{component_id}/listener/{listener_id}"] = listener.NewDeleteComponentListener(o.context, o.ListenerDeleteComponentListenerHandler)
+
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/cell/{cell_id}/component/{component_id}/hostgroup/{hostgroup_id}"] = hostgroup.NewUpdateComponentHostgroup(o.context, o.HostgroupUpdateComponentHostgroupHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/cell/{cell_id}/component/{component_id}/listener/{listener_id}"] = listener.NewUpdateComponentListener(o.context, o.ListenerUpdateComponentListenerHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
@@ -800,6 +861,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/cell/{cell_id}/component/{component_id}/listeners"] = listener.NewFindComponentListeners(o.context, o.ListenerFindComponentListenersHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/cell/{cell_id}/component/{component_id}/roles"] = role.NewFindComponentRoles(o.context, o.RoleFindComponentRolesHandler)
 
 	if o.handlers["GET"] == nil {
@@ -831,6 +897,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/cell/{cell_id}/component/{component_id}/hostgroup/{hostgroup_id}"] = hostgroup.NewGetComponentHostgroupByID(o.context, o.HostgroupGetComponentHostgroupByIDHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/cell/{cell_id}/component/{component_id}/listener/{listener_id}"] = listener.NewGetComponentListenerByID(o.context, o.ListenerGetComponentListenerByIDHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

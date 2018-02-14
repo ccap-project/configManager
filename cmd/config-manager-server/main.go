@@ -144,6 +144,13 @@ func main() {
 	api.KeypairFindKeypairByCustomerHandler = handlers.NewFindKeypairByCustomer(rt)
 	api.KeypairAddCellKeypairHandler = handlers.NewAddCellKeypair(rt)
 
+	// Listener
+	api.ListenerAddComponentListenerHandler = handlers.NewAddComponentListener(rt)
+	api.ListenerDeleteComponentListenerHandler = handlers.NewDeleteComponentListener(rt)
+	api.ListenerFindComponentListenersHandler = handlers.NewFindComponentListeners(rt)
+	api.ListenerGetComponentListenerByIDHandler = handlers.NewGetComponentListenerByID(rt)
+	api.ListenerUpdateComponentListenerHandler = handlers.NewUpdateComponentListener(rt)
+
 	// Provider
 	api.ProviderAddProviderHandler = handlers.NewAddProvider(rt)
 	api.ProviderGetProviderHandler = handlers.NewGetProvider(rt)
