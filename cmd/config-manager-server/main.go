@@ -151,6 +151,11 @@ func main() {
 	api.ListenerGetComponentListenerByIDHandler = handlers.NewGetComponentListenerByID(rt)
 	api.ListenerUpdateComponentListenerHandler = handlers.NewUpdateComponentListener(rt)
 
+	// Loadbalancer
+	api.LoadbalancerAddLoadbalancerHandler = handlers.NewAddCellLoadbalancer(rt)
+	api.LoadbalancerGetCellLoadbalancerHandler = handlers.NewGetCellLoadbalancer(rt)
+	api.LoadbalancerFindCellLoadbalancersHandler = handlers.NewFindCellLoadbalancers(rt)
+
 	// Provider
 	api.ProviderAddProviderHandler = handlers.NewAddProvider(rt)
 	api.ProviderGetProviderHandler = handlers.NewGetProvider(rt)

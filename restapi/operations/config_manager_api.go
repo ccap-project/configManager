@@ -53,6 +53,7 @@ import (
 	"configManager/restapi/operations/hostgroup"
 	"configManager/restapi/operations/keypair"
 	"configManager/restapi/operations/listener"
+	"configManager/restapi/operations/loadbalancer"
 	"configManager/restapi/operations/provider"
 	"configManager/restapi/operations/providertype"
 	"configManager/restapi/operations/role"
@@ -113,6 +114,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		KeypairAddKeypairHandler: keypair.AddKeypairHandlerFunc(func(params keypair.AddKeypairParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation KeypairAddKeypair has not yet been implemented")
 		}),
+		LoadbalancerAddLoadbalancerHandler: loadbalancer.AddLoadbalancerHandlerFunc(func(params loadbalancer.AddLoadbalancerParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation LoadbalancerAddLoadbalancer has not yet been implemented")
+		}),
 		ProviderAddProviderHandler: provider.AddProviderHandlerFunc(func(params provider.AddProviderParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation ProviderAddProvider has not yet been implemented")
 		}),
@@ -149,6 +153,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		HostFindCellHostsHandler: host.FindCellHostsHandlerFunc(func(params host.FindCellHostsParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostFindCellHosts has not yet been implemented")
 		}),
+		LoadbalancerFindCellLoadbalancersHandler: loadbalancer.FindCellLoadbalancersHandlerFunc(func(params loadbalancer.FindCellLoadbalancersParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation LoadbalancerFindCellLoadbalancers has not yet been implemented")
+		}),
 		HostgroupFindComponentHostgroupsHandler: hostgroup.FindComponentHostgroupsHandlerFunc(func(params hostgroup.FindComponentHostgroupsParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupFindComponentHostgroups has not yet been implemented")
 		}),
@@ -172,6 +179,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		}),
 		CellGetCellFullByIDHandler: cell.GetCellFullByIDHandlerFunc(func(params cell.GetCellFullByIDParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation CellGetCellFullByID has not yet been implemented")
+		}),
+		LoadbalancerGetCellLoadbalancerHandler: loadbalancer.GetCellLoadbalancerHandlerFunc(func(params loadbalancer.GetCellLoadbalancerParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation LoadbalancerGetCellLoadbalancer has not yet been implemented")
 		}),
 		HostgroupGetComponentHostgroupByIDHandler: hostgroup.GetComponentHostgroupByIDHandlerFunc(func(params hostgroup.GetComponentHostgroupByIDParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupGetComponentHostgroupByID has not yet been implemented")
@@ -290,6 +300,8 @@ type ConfigManagerAPI struct {
 	CustomerAddCustomerHandler customer.AddCustomerHandler
 	// KeypairAddKeypairHandler sets the operation handler for the add keypair operation
 	KeypairAddKeypairHandler keypair.AddKeypairHandler
+	// LoadbalancerAddLoadbalancerHandler sets the operation handler for the add loadbalancer operation
+	LoadbalancerAddLoadbalancerHandler loadbalancer.AddLoadbalancerHandler
 	// ProviderAddProviderHandler sets the operation handler for the add provider operation
 	ProviderAddProviderHandler provider.AddProviderHandler
 	// ProvidertypeAddProviderTypeHandler sets the operation handler for the add provider type operation
@@ -314,6 +326,8 @@ type ConfigManagerAPI struct {
 	ComponentFindCellComponentsHandler component.FindCellComponentsHandler
 	// HostFindCellHostsHandler sets the operation handler for the find cell hosts operation
 	HostFindCellHostsHandler host.FindCellHostsHandler
+	// LoadbalancerFindCellLoadbalancersHandler sets the operation handler for the find cell loadbalancers operation
+	LoadbalancerFindCellLoadbalancersHandler loadbalancer.FindCellLoadbalancersHandler
 	// HostgroupFindComponentHostgroupsHandler sets the operation handler for the find component hostgroups operation
 	HostgroupFindComponentHostgroupsHandler hostgroup.FindComponentHostgroupsHandler
 	// ListenerFindComponentListenersHandler sets the operation handler for the find component listeners operation
@@ -330,6 +344,8 @@ type ConfigManagerAPI struct {
 	ComponentGetCellComponentHandler component.GetCellComponentHandler
 	// CellGetCellFullByIDHandler sets the operation handler for the get cell full by Id operation
 	CellGetCellFullByIDHandler cell.GetCellFullByIDHandler
+	// LoadbalancerGetCellLoadbalancerHandler sets the operation handler for the get cell loadbalancer operation
+	LoadbalancerGetCellLoadbalancerHandler loadbalancer.GetCellLoadbalancerHandler
 	// HostgroupGetComponentHostgroupByIDHandler sets the operation handler for the get component hostgroup by ID operation
 	HostgroupGetComponentHostgroupByIDHandler hostgroup.GetComponentHostgroupByIDHandler
 	// ListenerGetComponentListenerByIDHandler sets the operation handler for the get component listener by ID operation
@@ -483,6 +499,10 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "keypair.AddKeypairHandler")
 	}
 
+	if o.LoadbalancerAddLoadbalancerHandler == nil {
+		unregistered = append(unregistered, "loadbalancer.AddLoadbalancerHandler")
+	}
+
 	if o.ProviderAddProviderHandler == nil {
 		unregistered = append(unregistered, "provider.AddProviderHandler")
 	}
@@ -531,6 +551,10 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "host.FindCellHostsHandler")
 	}
 
+	if o.LoadbalancerFindCellLoadbalancersHandler == nil {
+		unregistered = append(unregistered, "loadbalancer.FindCellLoadbalancersHandler")
+	}
+
 	if o.HostgroupFindComponentHostgroupsHandler == nil {
 		unregistered = append(unregistered, "hostgroup.FindComponentHostgroupsHandler")
 	}
@@ -561,6 +585,10 @@ func (o *ConfigManagerAPI) Validate() error {
 
 	if o.CellGetCellFullByIDHandler == nil {
 		unregistered = append(unregistered, "cell.GetCellFullByIDHandler")
+	}
+
+	if o.LoadbalancerGetCellLoadbalancerHandler == nil {
+		unregistered = append(unregistered, "loadbalancer.GetCellLoadbalancerHandler")
 	}
 
 	if o.HostgroupGetComponentHostgroupByIDHandler == nil {
@@ -796,6 +824,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
+	o.handlers["POST"]["/cell/{cell_id}/loadbalancer"] = loadbalancer.NewAddLoadbalancer(o.context, o.LoadbalancerAddLoadbalancerHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
 	o.handlers["POST"]["/cell/{cell_id}/provider"] = provider.NewAddProvider(o.context, o.ProviderAddProviderHandler)
 
 	if o.handlers["POST"] == nil {
@@ -856,6 +889,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/cell/{cell_id}/loadbalancers"] = loadbalancer.NewFindCellLoadbalancers(o.context, o.LoadbalancerFindCellLoadbalancersHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/cell/{cell_id}/component/{component_id}/hostgroups"] = hostgroup.NewFindComponentHostgroups(o.context, o.HostgroupFindComponentHostgroupsHandler)
 
 	if o.handlers["GET"] == nil {
@@ -892,6 +930,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/cell/{cell_id}/full"] = cell.NewGetCellFullByID(o.context, o.CellGetCellFullByIDHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/cell/{cell_id}/loadbalancer/{loadbalancer_id}"] = loadbalancer.NewGetCellLoadbalancer(o.context, o.LoadbalancerGetCellLoadbalancerHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

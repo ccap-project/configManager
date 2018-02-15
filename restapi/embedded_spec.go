@@ -1673,6 +1673,176 @@ func init() {
         }
       }
     },
+    "/cell/{cell_id}/loadbalancer": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "loadbalancer"
+        ],
+        "summary": "Add a new loadbalancer",
+        "operationId": "addLoadbalancer",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell that will be used",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Loadbalancer object that needs to be added",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Loadbalancer"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          "405": {
+            "description": "Invalid input",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "409": {
+            "description": "Already exists",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/cell/{cell_id}/loadbalancer/{loadbalancer_id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "loadbalancer"
+        ],
+        "summary": "Get Loadbalancer",
+        "operationId": "getCellLoadbalancer",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell that needs to be updated",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of loadbalancer that will be used",
+            "name": "loadbalancer_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Loadbalancer"
+            }
+          },
+          "400": {
+            "description": "Invalid cell id or loadbalancer id"
+          },
+          "404": {
+            "description": "loadbalancer not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/cell/{cell_id}/loadbalancers": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "loadbalancer"
+        ],
+        "summary": "Finds Loadbalancers by Cell",
+        "operationId": "findCellLoadbalancers",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell that needs to be updated",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Loadbalancer"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid cell id"
+          },
+          "404": {
+            "description": "loadbalancer not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
     "/cell/{cell_id}/provider": {
       "get": {
         "description": "Returns cell's provider",
@@ -2790,6 +2960,41 @@ func init() {
         }
       }
     },
+    "Loadbalancer": {
+      "type": "object",
+      "required": [
+        "name",
+        "port",
+        "protocol",
+        "algorithm"
+      ],
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "connection_drain": {
+          "type": "string"
+        },
+        "connection_idle_timeout": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "protocol": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
     "Parameter": {
       "type": "object",
       "required": [
@@ -2935,6 +3140,9 @@ func init() {
     },
     {
       "name": "listener"
+    },
+    {
+      "name": "loadbalancer"
     },
     {
       "name": "provider"

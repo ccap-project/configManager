@@ -18,6 +18,7 @@ tags:
 - name: "host"
 - name: "keypair"
 - name: "listener"
+- name: "loadbalancer"
 - name: "provider"
 - name: "providertype"
 - name: "role"
@@ -1614,6 +1615,123 @@ paths:
           schema:
             $ref: "#definitions/ApiResponse"
 
+
+  /cell/{cell_id}/loadbalancers:
+    get:
+      tags:
+      - "loadbalancer"
+      summary: "Finds Loadbalancers by Cell"
+      operationId: "findCellLoadbalancers"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that needs to be updated"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Loadbalancer"
+        400:
+          description: "Invalid cell id"
+        404:
+          description: "loadbalancer not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+  /cell/{cell_id}/loadbalancer:
+    post:
+      tags:
+      - "loadbalancer"
+      summary: "Add a new loadbalancer"
+      description: ""
+      operationId: "addLoadbalancer"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "body"
+        description: "Loadbalancer object that needs to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/Loadbalancer"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            type: integer
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        409:
+          description: "Already exists"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+
+  /cell/{cell_id}/loadbalancer/{loadbalancer_id}:
+    get:
+      tags:
+      - "loadbalancer"
+      summary: "Get Loadbalancer"
+      operationId: "getCellLoadbalancer"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that needs to be updated"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "loadbalancer_id"
+        in: "path"
+        description: "ID of loadbalancer that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Loadbalancer"
+        400:
+          description: "Invalid cell id or loadbalancer id"
+        404:
+          description: "loadbalancer not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+
+
+
+
   /cell/{cell_id}/provider:
     get:
       tags:
@@ -1924,6 +2042,31 @@ definitions:
         type: "integer"
       protocol:
         type: "string"
+
+  Loadbalancer:
+    type: "object"
+    required:
+      - name
+      - port
+      - protocol
+      - algorithm
+    properties:
+      id:
+        type: integer
+      name:
+        type: "string"
+      port:
+        type: "integer"
+      protocol:
+        type: "string"
+      algorithm:
+        type: "string"
+      type:
+        type: "string"
+      connection_drain:
+        type: "string"
+      connection_idle_timeout:
+        type: "integer"
 
   EntireCell:
     type: "object"
