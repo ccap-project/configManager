@@ -87,6 +87,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		ListenerDeleteComponentListenerHandler: listener.DeleteComponentListenerHandlerFunc(func(params listener.DeleteComponentListenerParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation ListenerDeleteComponentListener has not yet been implemented")
 		}),
+		ComponentDeleteComponentRelationshipHandler: component.DeleteComponentRelationshipHandlerFunc(func(params component.DeleteComponentRelationshipParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation ComponentDeleteComponentRelationship has not yet been implemented")
+		}),
 		HostgroupUpdateComponentHostgroupHandler: hostgroup.UpdateComponentHostgroupHandlerFunc(func(params hostgroup.UpdateComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupUpdateComponentHostgroup has not yet been implemented")
 		}),
@@ -104,6 +107,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		}),
 		ComponentAddComponentHandler: component.AddComponentHandlerFunc(func(params component.AddComponentParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation ComponentAddComponent has not yet been implemented")
+		}),
+		ComponentAddComponentRelationshipHandler: component.AddComponentRelationshipHandlerFunc(func(params component.AddComponentRelationshipParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation ComponentAddComponentRelationship has not yet been implemented")
 		}),
 		RoleAddComponentRoleHandler: role.AddComponentRoleHandlerFunc(func(params role.AddComponentRoleParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation RoleAddComponentRole has not yet been implemented")
@@ -282,6 +288,8 @@ type ConfigManagerAPI struct {
 	HostgroupDeleteComponentHostgroupHandler hostgroup.DeleteComponentHostgroupHandler
 	// ListenerDeleteComponentListenerHandler sets the operation handler for the delete component listener operation
 	ListenerDeleteComponentListenerHandler listener.DeleteComponentListenerHandler
+	// ComponentDeleteComponentRelationshipHandler sets the operation handler for the delete component relationship operation
+	ComponentDeleteComponentRelationshipHandler component.DeleteComponentRelationshipHandler
 	// HostgroupUpdateComponentHostgroupHandler sets the operation handler for the update component hostgroup operation
 	HostgroupUpdateComponentHostgroupHandler hostgroup.UpdateComponentHostgroupHandler
 	// ListenerUpdateComponentListenerHandler sets the operation handler for the update component listener operation
@@ -294,6 +302,8 @@ type ConfigManagerAPI struct {
 	KeypairAddCellKeypairHandler keypair.AddCellKeypairHandler
 	// ComponentAddComponentHandler sets the operation handler for the add component operation
 	ComponentAddComponentHandler component.AddComponentHandler
+	// ComponentAddComponentRelationshipHandler sets the operation handler for the add component relationship operation
+	ComponentAddComponentRelationshipHandler component.AddComponentRelationshipHandler
 	// RoleAddComponentRoleHandler sets the operation handler for the add component role operation
 	RoleAddComponentRoleHandler role.AddComponentRoleHandler
 	// CustomerAddCustomerHandler sets the operation handler for the add customer operation
@@ -463,6 +473,10 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "listener.DeleteComponentListenerHandler")
 	}
 
+	if o.ComponentDeleteComponentRelationshipHandler == nil {
+		unregistered = append(unregistered, "component.DeleteComponentRelationshipHandler")
+	}
+
 	if o.HostgroupUpdateComponentHostgroupHandler == nil {
 		unregistered = append(unregistered, "hostgroup.UpdateComponentHostgroupHandler")
 	}
@@ -485,6 +499,10 @@ func (o *ConfigManagerAPI) Validate() error {
 
 	if o.ComponentAddComponentHandler == nil {
 		unregistered = append(unregistered, "component.AddComponentHandler")
+	}
+
+	if o.ComponentAddComponentRelationshipHandler == nil {
+		unregistered = append(unregistered, "component.AddComponentRelationshipHandler")
 	}
 
 	if o.RoleAddComponentRoleHandler == nil {
@@ -776,6 +794,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	}
 	o.handlers["DELETE"]["/cell/{cell_id}/component/{component_id}/listener/{listener_id}"] = listener.NewDeleteComponentListener(o.context, o.ListenerDeleteComponentListenerHandler)
 
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/cell/{cell_id}/component/{component_id}/connect_to/{entity_id}"] = component.NewDeleteComponentRelationship(o.context, o.ComponentDeleteComponentRelationshipHandler)
+
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
@@ -805,6 +828,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/cell/{cell_id}/component"] = component.NewAddComponent(o.context, o.ComponentAddComponentHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/cell/{cell_id}/component/{component_id}/connect_to/{entity_id}"] = component.NewAddComponentRelationship(o.context, o.ComponentAddComponentRelationshipHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)

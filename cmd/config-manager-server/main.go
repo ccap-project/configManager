@@ -120,6 +120,10 @@ func main() {
 	api.ComponentGetCellComponentHandler = handlers.NewGetCellComponent(rt)
 	api.ComponentFindCellComponentsHandler = handlers.NewFindCellComponents(rt)
 
+	// Component Relationship
+	api.ComponentAddComponentRelationshipHandler = handlers.NewAddCellComponentRelationship(rt)
+	api.ComponentDeleteComponentRelationshipHandler = handlers.NewDeleteCellComponentRelationship(rt)
+
 	// Customer
 	api.CustomerAddCustomerHandler = handlers.NewAddCustomer(rt)
 	api.CustomerFindCustomerByNameHandler = handlers.NewFindCustomerByName(rt)

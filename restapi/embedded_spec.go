@@ -359,6 +359,139 @@ func init() {
         }
       }
     },
+    "/cell/{cell_id}/component/{component_id}/connect_to/{entity_id}": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "component"
+        ],
+        "summary": "Add a new relationship to a component",
+        "operationId": "addComponentRelationship",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell that will be used",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of component that will be used",
+            "name": "component_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of entity that will be used",
+            "name": "entity_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          "404": {
+            "description": "Invalid input",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "409": {
+            "description": "Already exists",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "component"
+        ],
+        "summary": "Deletes a relationship from component",
+        "operationId": "DeleteComponentRelationship",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell that will be used",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of component that will be used",
+            "name": "component_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "entity that will be deleted",
+            "name": "entity_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid cell id, component id or entity id",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "404": {
+            "description": "Entity does not exists",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
     "/cell/{cell_id}/component/{component_id}/hostgroup": {
       "post": {
         "consumes": [
