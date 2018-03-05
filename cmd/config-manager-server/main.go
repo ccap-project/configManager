@@ -120,6 +120,10 @@ func main() {
 	api.ComponentGetCellComponentHandler = handlers.NewGetCellComponent(rt)
 	api.ComponentFindCellComponentsHandler = handlers.NewFindCellComponents(rt)
 
+	// Component Relationship
+	api.ComponentAddComponentRelationshipHandler = handlers.NewAddCellComponentRelationship(rt)
+	api.ComponentDeleteComponentRelationshipHandler = handlers.NewDeleteCellComponentRelationship(rt)
+
 	// Customer
 	api.CustomerAddCustomerHandler = handlers.NewAddCustomer(rt)
 	api.CustomerFindCustomerByNameHandler = handlers.NewFindCustomerByName(rt)
@@ -143,6 +147,22 @@ func main() {
 	api.KeypairGetKeypairByIDHandler = handlers.NewGetKeypairByID(rt)
 	api.KeypairFindKeypairByCustomerHandler = handlers.NewFindKeypairByCustomer(rt)
 	api.KeypairAddCellKeypairHandler = handlers.NewAddCellKeypair(rt)
+
+	// Listener
+	api.ListenerAddComponentListenerHandler = handlers.NewAddComponentListener(rt)
+	api.ListenerDeleteComponentListenerHandler = handlers.NewDeleteComponentListener(rt)
+	api.ListenerFindComponentListenersHandler = handlers.NewFindComponentListeners(rt)
+	api.ListenerGetComponentListenerByIDHandler = handlers.NewGetComponentListenerByID(rt)
+	api.ListenerUpdateComponentListenerHandler = handlers.NewUpdateComponentListener(rt)
+
+	// Loadbalancer
+	api.LoadbalancerAddLoadbalancerHandler = handlers.NewAddCellLoadbalancer(rt)
+	api.LoadbalancerGetCellLoadbalancerHandler = handlers.NewGetCellLoadbalancer(rt)
+	api.LoadbalancerFindCellLoadbalancersHandler = handlers.NewFindCellLoadbalancers(rt)
+
+	// Loadbalancer Relationship
+	api.LoadbalancerAddLoadbalancerRelationshipHandler = handlers.NewAddLoadbalancerRelationship(rt)
+	api.LoadbalancerDeleteLoadbalancerRelationshipHandler = handlers.NewDeleteLoadbalancerRelationship(rt)
 
 	// Provider
 	api.ProviderAddProviderHandler = handlers.NewAddProvider(rt)

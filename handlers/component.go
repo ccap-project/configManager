@@ -37,6 +37,7 @@ import (
 	"configManager/neo4j"
 	"configManager/restapi/operations/component"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 )
@@ -101,6 +102,150 @@ func (ctx *addCellComponent) Handle(params component.AddComponentParams, princip
 	log.Printf("customer(%s) name(%s) ", swag.StringValue(principal.Name), swag.StringValue(params.Body.Name))
 
 	return component.NewAddComponentCreated().WithPayload(output[0].(int64))
+}
+
+func NewAddCellComponentRelationship(rt *configManager.Runtime) component.AddComponentRelationshipHandler {
+	return &addComponentRelationship{rt: rt}
+}
+
+type addComponentRelationship struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *addComponentRelationship) Handle(params component.AddComponentRelationshipParams, principal *models.Customer) middleware.Responder {
+
+	var cypher string
+	entityType := _getEntityType(ctx.rt.DB(), params.CellID, params.EntityID)
+
+	switch entityType {
+	case "Loadbalancer":
+		cypher = `
+			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->(cell:Cell)-[:PROVIDES]->(component:Component)
+			WHERE id(cell) = {cell_id} AND id(component) = {component_id}
+			MATCH (cell)-[:HAS]->(lb:Loadbalancer)
+			WHERE id(lb) = {entity_id}
+			MERGE (component)-[:CONNECT_TO]->(lb)
+			RETURN *`
+	case "Component":
+		cypher = `
+			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->(cell:Cell)-[:PROVIDES]->(component:Component)
+			WHERE id(cell) = {cell_id} AND id(component) = {component_id}
+			MATCH (cell)-[:PROVIDES]->(component_t:Component)-[:LISTEN_ON]->(listener:Listener)
+			WHERE id(component_t) = {entity_id}
+			MERGE (component)-[:CONNECT_TO]->(listener)
+			RETURN *`
+	default:
+		return component.NewAddComponentRelationshipNotFound().WithPayload(models.APIResponse{Message: "entity not found"})
+	}
+
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID,
+		"component_id":  params.ComponentID,
+		"entity_id":     params.EntityID})
+
+	db, err := ctx.rt.DB().OpenPool()
+
+	if err != nil {
+		ctxLogger.Warn("error connecting to neo4j: ", err)
+		return component.NewAddComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+	}
+	defer db.Close()
+
+	stmt, err := db.PrepareNeo(cypher)
+	if err != nil {
+		ctxLogger.Warn("An error occurred preparing statement: ", err)
+		return component.NewAddComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+	}
+
+	defer stmt.Close()
+
+	rows, err := stmt.QueryNeo(map[string]interface{}{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID,
+		"component_id":  params.ComponentID,
+		"entity_id":     params.EntityID})
+
+	ctxLogger.Info("rows", rows)
+
+	if err != nil {
+		ctxLogger.Warn("An error occurred querying Neo: ", err)
+		return component.NewAddComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+	}
+
+	_, _, err = rows.NextNeo()
+	if err != nil {
+		ctxLogger.Warn("An error occurred getting next row: ", err)
+		return component.NewAddComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+	}
+
+	return component.NewAddComponentRelationshipCreated().WithPayload(1)
+}
+
+func NewDeleteCellComponentRelationship(rt *configManager.Runtime) component.DeleteComponentRelationshipHandler {
+	return &deleteComponentRelationship{rt: rt}
+}
+
+type deleteComponentRelationship struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *deleteComponentRelationship) Handle(params component.DeleteComponentRelationshipParams, principal *models.Customer) middleware.Responder {
+
+	var cypher string
+	entityType := _getEntityType(ctx.rt.DB(), params.CellID, params.EntityID)
+
+	switch entityType {
+	case "Loadbalancer":
+		cypher = `
+			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->(cell:Cell)-[:PROVIDES]->(component:Component)-[r:CONNECT_TO]->(entity:Loadbalancer)
+			WHERE id(cell) = {cell_id} AND id(component) = {component_id} AND id(entity) = {entity_id}
+			delete r`
+
+	case "Component":
+		cypher = `
+			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->(cell:Cell)-[:PROVIDES]->(component:Component)-[r:CONNECT_TO]->(Listener)<-[:LISTEN_ON]-(entity:Component)
+			WHERE id(cell) = {cell_id} AND id(component) = {component_id} AND id(entity) = {entity_id}
+			delete r`
+
+	default:
+		return component.NewDeleteComponentRelationshipNotFound().WithPayload(models.APIResponse{Message: "entity not found"})
+	}
+
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID,
+		"component_id":  params.ComponentID,
+		"entity_id":     params.EntityID})
+
+	db, err := ctx.rt.DB().OpenPool()
+
+	if err != nil {
+		ctxLogger.Warn("error connecting to neo4j: ", err)
+		return component.NewDeleteComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure deleting relationship"})
+	}
+	defer db.Close()
+
+	stmt, err := db.PrepareNeo(cypher)
+	if err != nil {
+		ctxLogger.Warn("An error occurred preparing statement: ", err)
+		return component.NewDeleteComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure deleting relationship"})
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.ExecNeo(map[string]interface{}{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID,
+		"component_id":  params.ComponentID,
+		"entity_id":     params.EntityID})
+
+	if err != nil {
+		ctxLogger.Warn("An error occurred querying Neo: ", err)
+		return component.NewDeleteComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure deleting relationship"})
+	}
+
+	return component.NewDeleteComponentRelationshipOK()
 }
 
 func NewGetCellComponent(rt *configManager.Runtime) component.GetCellComponentHandler {
@@ -288,4 +433,48 @@ func _getComponentByName(conn neo4j.ConnPool, customerName *string, CellID int64
 	stmt.Close()
 
 	return component
+}
+
+func _getEntityType(conn neo4j.ConnPool, CellID int64, EntityID int64) string {
+
+	cypher := `MATCH (cell:Cell)-->(entity)
+							WHERE id(cell) = {cell_id} AND id(entity) = {entity_id}
+								RETURN labels(entity)`
+
+	db, err := conn.OpenPool()
+
+	if err != nil {
+		log.Println("error connecting to neo4j:", err)
+		return ""
+	}
+	defer db.Close()
+
+	stmt, err := db.PrepareNeo(cypher)
+	if err != nil {
+		log.Printf("An error occurred preparing statement: %s", err)
+		return ""
+	}
+
+	rows, err := stmt.QueryNeo(map[string]interface{}{
+		"cell_id":   CellID,
+		"entity_id": EntityID})
+
+	if err != nil {
+		log.Printf("An error occurred querying Neo: %s", err)
+		return ""
+	}
+
+	output, _, err := rows.NextNeo()
+	if err != nil {
+		return ""
+	}
+	_labels := output[0]
+
+	switch x := _labels.(type) {
+	case []interface{}:
+		return (x[0].(string))
+	}
+	stmt.Close()
+
+	return ""
 }
