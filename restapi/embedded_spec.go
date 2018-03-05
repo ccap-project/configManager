@@ -1926,6 +1926,124 @@ func init() {
         }
       }
     },
+    "/cell/{cell_id}/loadbalancer/{loadbalancer_id}/connect_to/{listener_id}": {
+      "post": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "loadbalancer"
+        ],
+        "summary": "Add new relationship to the loadbalancer",
+        "operationId": "addLoadbalancerRelationship",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell that needs to be updated",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of loadbalancer that will be used",
+            "name": "loadbalancer_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of listener that will be used",
+            "name": "listener_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "404": {
+            "description": "loadbalancer or component not found",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "loadbalancer"
+        ],
+        "summary": "delete loadbalancer relationship",
+        "operationId": "deleteLoadbalancerRelationship",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of cell that needs to be updated",
+            "name": "cell_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of loadbalancer that will be used",
+            "name": "loadbalancer_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID of listener that will be used",
+            "name": "listener_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "404": {
+            "description": "loadbalancer or entity not found",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
     "/cell/{cell_id}/loadbalancers": {
       "get": {
         "produces": [

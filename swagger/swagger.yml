@@ -1821,7 +1821,85 @@ paths:
           schema:
             $ref: "#definitions/ApiResponse"
 
-
+  /cell/{cell_id}/loadbalancer/{loadbalancer_id}/connect_to/{listener_id}:
+    delete:
+      tags:
+      - "loadbalancer"
+      summary: "delete loadbalancer relationship"
+      operationId: "deleteLoadbalancerRelationship"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that needs to be updated"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "loadbalancer_id"
+        in: "path"
+        description: "ID of loadbalancer that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "listener_id"
+        in: "path"
+        description: "ID of listener that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+        404:
+          description: "loadbalancer or entity not found"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
+    post:
+      tags:
+      - "loadbalancer"
+      summary: "Add new relationship to the loadbalancer"
+      operationId: "addLoadbalancerRelationship"
+      produces:
+      - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+      - name: "cell_id"
+        in: "path"
+        description: "ID of cell that needs to be updated"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "loadbalancer_id"
+        in: "path"
+        description: "ID of loadbalancer that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "listener_id"
+        in: "path"
+        description: "ID of listener that will be used"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+        404:
+          description: "loadbalancer or component not found"
+          schema:
+            $ref: "#definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#definitions/ApiResponse"
 
 
   /cell/{cell_id}/provider:

@@ -37,6 +37,7 @@ import (
 	"configManager/neo4j"
 	"configManager/restapi/operations/loadbalancer"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 )
@@ -103,6 +104,149 @@ func (ctx *addCellLoadbalancer) Handle(params loadbalancer.AddLoadbalancerParams
 	log.Printf("customer(%s) name(%s) ", swag.StringValue(principal.Name), swag.StringValue(params.Body.Name))
 
 	return loadbalancer.NewAddLoadbalancerCreated().WithPayload(output[0].(int64))
+}
+
+func NewAddLoadbalancerRelationship(rt *configManager.Runtime) loadbalancer.AddLoadbalancerRelationshipHandler {
+	return &addLoadbalancerRelationship{rt: rt}
+}
+
+type addLoadbalancerRelationship struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *addLoadbalancerRelationship) Handle(params loadbalancer.AddLoadbalancerRelationshipParams, principal *models.Customer) middleware.Responder {
+
+	if _getComponentListenerByID(ctx.rt.DB(), principal.Name, params.CellID, params.ListenerID) == nil {
+		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "listener not found"})
+	}
+
+	cellLoadbalancer, err := _getCellLoadbalancer(ctx.rt.DB(), principal.Name, params.CellID, params.LoadbalancerID)
+
+	if err != nil {
+		log.Printf("An error occurred querying Neo: %s", err)
+		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError()
+	}
+
+	if cellLoadbalancer == nil {
+		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "loadbalancer not found"})
+	}
+
+	cypher := `
+		MATCH (customer:Customer {name: {customer_name}})-[:OWN]->(cell:Cell)-[:HAS]->(lb:Loadbalancer)
+		WHERE id(cell) = {cell_id} AND id(lb) = {loadbalancer_id}
+		MATCH (cell)-[:PROVIDES]->(component:Component)-[:LISTEN_ON]->(listener:Listener)
+		WHERE id(cell) = {cell_id} AND id(listener) = {listener_id}
+		MERGE (lb)-[:CONNECT_TO]->(listener)
+		RETURN *`
+
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name":   swag.StringValue(principal.Name),
+		"cell_id":         params.CellID,
+		"loadbalancer_id": params.LoadbalancerID,
+		"listener_id":     params.ListenerID})
+
+	db, err := ctx.rt.DB().OpenPool()
+
+	if err != nil {
+		ctxLogger.Warn("error connecting to neo4j: ", err)
+		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+	}
+	defer db.Close()
+
+	stmt, err := db.PrepareNeo(cypher)
+	if err != nil {
+		ctxLogger.Warn("An error occurred preparing statement: ", err)
+		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+	}
+
+	defer stmt.Close()
+
+	rows, err := stmt.QueryNeo(map[string]interface{}{
+		"customer_name":   swag.StringValue(principal.Name),
+		"cell_id":         params.CellID,
+		"loadbalancer_id": params.LoadbalancerID,
+		"listener_id":     params.ListenerID})
+
+	ctxLogger.Info("rows", rows)
+
+	if err != nil {
+		ctxLogger.Warn("An error occurred querying Neo: ", err)
+		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+	}
+
+	_, _, err = rows.NextNeo()
+	if err != nil {
+		ctxLogger.Warn("An error occurred getting next row: ", err)
+		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+	}
+
+	return loadbalancer.NewAddCellLoadbalancerRelationshipOK()
+}
+
+func NewDeleteLoadbalancerRelationship(rt *configManager.Runtime) loadbalancer.DeleteLoadbalancerRelationshipHandler {
+	return &deleteLoadbalancerRelationship{rt: rt}
+}
+
+type deleteLoadbalancerRelationship struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *deleteLoadbalancerRelationship) Handle(params loadbalancer.DeleteLoadbalancerRelationshipParams, principal *models.Customer) middleware.Responder {
+
+	if _getComponentListenerByID(ctx.rt.DB(), principal.Name, params.CellID, params.ListenerID) == nil {
+		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "listener not found"})
+	}
+
+	cellLoadbalancer, err := _getCellLoadbalancer(ctx.rt.DB(), principal.Name, params.CellID, params.LoadbalancerID)
+
+	if err != nil {
+		log.Printf("An error occurred querying Neo: %s", err)
+		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError()
+	}
+
+	if cellLoadbalancer == nil {
+		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "loadbalancer not found"})
+	}
+
+	cypher := `
+			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->(cell:Cell)-[:HAS]->(loadbalancer:Loadbalancer)-[r:CONNECT_TO]->(listener:Listener)
+			WHERE id(cell) = {cell_id} AND id(listener) = {listener_id} AND id(loadbalancer) = {loadbalancer_id}
+			delete r`
+
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name":   swag.StringValue(principal.Name),
+		"cell_id":         params.CellID,
+		"loadbalancer_id": params.LoadbalancerID,
+		"listener_id":     params.ListenerID})
+
+	db, err := ctx.rt.DB().OpenPool()
+
+	if err != nil {
+		ctxLogger.Warn("error connecting to neo4j: ", err)
+		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure deleting relationship"})
+	}
+	defer db.Close()
+
+	stmt, err := db.PrepareNeo(cypher)
+	if err != nil {
+		ctxLogger.Warn("An error occurred preparing statement: ", err)
+		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure deleting relationship"})
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.ExecNeo(map[string]interface{}{
+		"customer_name":   swag.StringValue(principal.Name),
+		"cell_id":         params.CellID,
+		"loadbalancer_id": params.LoadbalancerID,
+		"listener_id":     params.ListenerID})
+
+	if err != nil {
+		ctxLogger.Warn("An error occurred querying Neo: ", err)
+		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure deleting relationship"})
+	}
+
+	return loadbalancer.NewDeleteLoadbalancerRelationshipOK()
 }
 
 func NewGetCellLoadbalancer(rt *configManager.Runtime) loadbalancer.GetCellLoadbalancerHandler {

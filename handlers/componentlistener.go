@@ -122,7 +122,7 @@ func (ctx *deleteComponentListener) Handle(params listener.DeleteComponentListen
 								AND id(listener) = {listener_id}
 							DETACH DELETE listener`
 
-	if _getComponentListenerByID(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, params.ListenerID) == nil {
+	if _getComponentListenerByID(ctx.rt.DB(), principal.Name, params.CellID, params.ListenerID) == nil {
 		log.Println("listener does not exists !")
 		return listener.NewDeleteComponentListenerNotFound()
 	}
@@ -170,7 +170,7 @@ type getComponentListenerByID struct {
 
 func (ctx *getComponentListenerByID) Handle(params listener.GetComponentListenerByIDParams, principal *models.Customer) middleware.Responder {
 
-	Listener := _getComponentListenerByID(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, params.ListenerID)
+	Listener := _getComponentListenerByID(ctx.rt.DB(), principal.Name, params.CellID, params.ListenerID)
 	if Listener == nil {
 		return listener.NewGetComponentListenerByIDNotFound()
 	}
@@ -305,7 +305,7 @@ func (ctx *updateComponentListener) Handle(params listener.UpdateComponentListen
 	return listener.NewUpdateComponentListenerOK()
 }
 
-func _getComponentListenerByID(conn neo4j.ConnPool, customer *string, cellID int64, componentID int64, listenerID int64) *models.Listener {
+func _getComponentListenerByID(conn neo4j.ConnPool, customer *string, cellID int64, listenerID int64) *models.Listener {
 
 	var listener *models.Listener
 	listener = nil
@@ -313,7 +313,6 @@ func _getComponentListenerByID(conn neo4j.ConnPool, customer *string, cellID int
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell)-[:PROVIDES]->(component:Component)-[:LISTEN_ON]->(listener:Listener)
 							WHERE id(cell) = {cell_id}
-								AND id(component) = {component_id}
 								AND id(listener) = {listener_id}
 							RETURN id(listener) as id,
 											listener.name as name,
@@ -337,7 +336,6 @@ func _getComponentListenerByID(conn neo4j.ConnPool, customer *string, cellID int
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"customer_name": swag.StringValue(customer),
 		"cell_id":       cellID,
-		"component_id":  componentID,
 		"listener_id":   listenerID})
 
 	if err != nil {

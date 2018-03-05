@@ -160,6 +160,10 @@ func main() {
 	api.LoadbalancerGetCellLoadbalancerHandler = handlers.NewGetCellLoadbalancer(rt)
 	api.LoadbalancerFindCellLoadbalancersHandler = handlers.NewFindCellLoadbalancers(rt)
 
+	// Loadbalancer Relationship
+	api.LoadbalancerAddLoadbalancerRelationshipHandler = handlers.NewAddLoadbalancerRelationship(rt)
+	api.LoadbalancerDeleteLoadbalancerRelationshipHandler = handlers.NewDeleteLoadbalancerRelationship(rt)
+
 	// Provider
 	api.ProviderAddProviderHandler = handlers.NewAddProvider(rt)
 	api.ProviderGetProviderHandler = handlers.NewGetProvider(rt)

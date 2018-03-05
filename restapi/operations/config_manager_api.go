@@ -123,6 +123,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		LoadbalancerAddLoadbalancerHandler: loadbalancer.AddLoadbalancerHandlerFunc(func(params loadbalancer.AddLoadbalancerParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation LoadbalancerAddLoadbalancer has not yet been implemented")
 		}),
+		LoadbalancerAddLoadbalancerRelationshipHandler: loadbalancer.AddLoadbalancerRelationshipHandlerFunc(func(params loadbalancer.AddLoadbalancerRelationshipParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation LoadbalancerAddLoadbalancerRelationship has not yet been implemented")
+		}),
 		ProviderAddProviderHandler: provider.AddProviderHandlerFunc(func(params provider.AddProviderParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation ProviderAddProvider has not yet been implemented")
 		}),
@@ -140,6 +143,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		}),
 		KeypairDeleteKeypairHandler: keypair.DeleteKeypairHandlerFunc(func(params keypair.DeleteKeypairParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation KeypairDeleteKeypair has not yet been implemented")
+		}),
+		LoadbalancerDeleteLoadbalancerRelationshipHandler: loadbalancer.DeleteLoadbalancerRelationshipHandlerFunc(func(params loadbalancer.DeleteLoadbalancerRelationshipParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation LoadbalancerDeleteLoadbalancerRelationship has not yet been implemented")
 		}),
 		ProvidertypeDeleteProviderTypeHandler: providertype.DeleteProviderTypeHandlerFunc(func(params providertype.DeleteProviderTypeParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProvidertypeDeleteProviderType has not yet been implemented")
@@ -312,6 +318,8 @@ type ConfigManagerAPI struct {
 	KeypairAddKeypairHandler keypair.AddKeypairHandler
 	// LoadbalancerAddLoadbalancerHandler sets the operation handler for the add loadbalancer operation
 	LoadbalancerAddLoadbalancerHandler loadbalancer.AddLoadbalancerHandler
+	// LoadbalancerAddLoadbalancerRelationshipHandler sets the operation handler for the add loadbalancer relationship operation
+	LoadbalancerAddLoadbalancerRelationshipHandler loadbalancer.AddLoadbalancerRelationshipHandler
 	// ProviderAddProviderHandler sets the operation handler for the add provider operation
 	ProviderAddProviderHandler provider.AddProviderHandler
 	// ProvidertypeAddProviderTypeHandler sets the operation handler for the add provider type operation
@@ -324,6 +332,8 @@ type ConfigManagerAPI struct {
 	CustomerDeleteCustomerHandler customer.DeleteCustomerHandler
 	// KeypairDeleteKeypairHandler sets the operation handler for the delete keypair operation
 	KeypairDeleteKeypairHandler keypair.DeleteKeypairHandler
+	// LoadbalancerDeleteLoadbalancerRelationshipHandler sets the operation handler for the delete loadbalancer relationship operation
+	LoadbalancerDeleteLoadbalancerRelationshipHandler loadbalancer.DeleteLoadbalancerRelationshipHandler
 	// ProvidertypeDeleteProviderTypeHandler sets the operation handler for the delete provider type operation
 	ProvidertypeDeleteProviderTypeHandler providertype.DeleteProviderTypeHandler
 	// CellDeployCellAppByIDHandler sets the operation handler for the deploy cell app by Id operation
@@ -521,6 +531,10 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "loadbalancer.AddLoadbalancerHandler")
 	}
 
+	if o.LoadbalancerAddLoadbalancerRelationshipHandler == nil {
+		unregistered = append(unregistered, "loadbalancer.AddLoadbalancerRelationshipHandler")
+	}
+
 	if o.ProviderAddProviderHandler == nil {
 		unregistered = append(unregistered, "provider.AddProviderHandler")
 	}
@@ -543,6 +557,10 @@ func (o *ConfigManagerAPI) Validate() error {
 
 	if o.KeypairDeleteKeypairHandler == nil {
 		unregistered = append(unregistered, "keypair.DeleteKeypairHandler")
+	}
+
+	if o.LoadbalancerDeleteLoadbalancerRelationshipHandler == nil {
+		unregistered = append(unregistered, "loadbalancer.DeleteLoadbalancerRelationshipHandler")
 	}
 
 	if o.ProvidertypeDeleteProviderTypeHandler == nil {
@@ -857,6 +875,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
+	o.handlers["POST"]["/cell/{cell_id}/loadbalancer/{loadbalancer_id}/connect_to/{listener_id}"] = loadbalancer.NewAddLoadbalancerRelationship(o.context, o.LoadbalancerAddLoadbalancerRelationshipHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
 	o.handlers["POST"]["/cell/{cell_id}/provider"] = provider.NewAddProvider(o.context, o.ProviderAddProviderHandler)
 
 	if o.handlers["POST"] == nil {
@@ -883,6 +906,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/keypair/{keypair_id}"] = keypair.NewDeleteKeypair(o.context, o.KeypairDeleteKeypairHandler)
+
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/cell/{cell_id}/loadbalancer/{loadbalancer_id}/connect_to/{listener_id}"] = loadbalancer.NewDeleteLoadbalancerRelationship(o.context, o.LoadbalancerDeleteLoadbalancerRelationshipHandler)
 
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
