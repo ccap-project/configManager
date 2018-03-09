@@ -51,7 +51,7 @@ type AddCustomerCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload int64 `json:"body,omitempty"`
+	Payload models.ULID `json:"body,omitempty"`
 }
 
 // NewAddCustomerCreated creates AddCustomerCreated with default headers values
@@ -60,13 +60,13 @@ func NewAddCustomerCreated() *AddCustomerCreated {
 }
 
 // WithPayload adds the payload to the add customer created response
-func (o *AddCustomerCreated) WithPayload(payload int64) *AddCustomerCreated {
+func (o *AddCustomerCreated) WithPayload(payload models.ULID) *AddCustomerCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add customer created response
-func (o *AddCustomerCreated) SetPayload(payload int64) {
+func (o *AddCustomerCreated) SetPayload(payload models.ULID) {
 	o.Payload = payload
 }
 

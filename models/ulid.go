@@ -35,81 +35,31 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
-	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
-// Customer customer
-// swagger:model Customer
-type Customer struct {
+// ULID u l ID
+// swagger:model ULID
+type ULID string
 
-	// id
-	ID ULID `json:"id,omitempty"`
-
-	// name
-	// Required: true
-	Name *string `json:"name"`
-}
-
-// Validate validates this customer
-func (m *Customer) Validate(formats strfmt.Registry) error {
+// Validate validates this u l ID
+func (m ULID) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateID(formats); err != nil {
-		// prop
-		res = append(res, err)
+	if err := validate.MinLength("", "body", string(m), 26); err != nil {
+		return err
 	}
 
-	if err := m.validateName(formats); err != nil {
-		// prop
-		res = append(res, err)
+	if err := validate.MaxLength("", "body", string(m), 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("", "body", string(m), `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *Customer) validateID(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.ID) { // not required
-		return nil
-	}
-
-	if err := m.ID.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("id")
-		}
-		return err
-	}
-
-	return nil
-}
-
-func (m *Customer) validateName(formats strfmt.Registry) error {
-
-	if err := validate.Required("name", "body", m.Name); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *Customer) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *Customer) UnmarshalBinary(b []byte) error {
-	var res Customer
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
 	return nil
 }

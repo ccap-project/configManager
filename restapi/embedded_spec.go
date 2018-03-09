@@ -2356,7 +2356,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "400": {
@@ -2428,12 +2428,7 @@ func init() {
         "operationId": "getCustomerById",
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of customer to return",
-            "name": "customerId",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CustomerID"
           }
         ],
         "responses": {
@@ -2465,12 +2460,7 @@ func init() {
         "operationId": "updateCustomerWithForm",
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of customer that needs to be updated",
-            "name": "customerId",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CustomerID"
           },
           {
             "type": "string",
@@ -2496,25 +2486,21 @@ func init() {
         "operationId": "deleteCustomer",
         "parameters": [
           {
-            "type": "string",
-            "name": "api_key",
-            "in": "header"
-          },
-          {
-            "type": "integer",
-            "format": "int64",
-            "description": "Customer id to delete",
-            "name": "customerId",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CustomerID"
           }
         ],
         "responses": {
+          "200": {
+            "description": "successful operation"
+          },
           "400": {
             "description": "Invalid ID supplied"
           },
-          "404": {
-            "description": "Customer not found"
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
           }
         }
       }
@@ -3042,7 +3028,7 @@ func init() {
       ],
       "properties": {
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -3359,6 +3345,24 @@ func init() {
           "type": "string"
         }
       }
+    },
+    "ULID": {
+      "type": "string",
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$"
+    }
+  },
+  "parameters": {
+    "CustomerID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "Customer id to delete",
+      "name": "customerId",
+      "in": "path",
+      "required": true
     }
   },
   "securityDefinitions": {

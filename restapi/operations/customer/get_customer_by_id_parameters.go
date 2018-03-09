@@ -36,7 +36,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -57,11 +57,14 @@ type GetCustomerByIDParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*ID of customer to return
+	/*Customer id to delete
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	CustomerID int64
+	CustomerID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -87,11 +90,28 @@ func (o *GetCustomerByIDParams) bindCustomerID(rawData []string, hasKey bool, fo
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("customerId", "path", "int64", raw)
+	o.CustomerID = raw
+
+	if err := o.validateCustomerID(formats); err != nil {
+		return err
 	}
-	o.CustomerID = value
+
+	return nil
+}
+
+func (o *GetCustomerByIDParams) validateCustomerID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("customerId", "path", o.CustomerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("customerId", "path", o.CustomerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("customerId", "path", o.CustomerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

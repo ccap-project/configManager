@@ -35,7 +35,32 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	"configManager/models"
 )
+
+// DeleteCustomerOKCode is the HTTP code returned for type DeleteCustomerOK
+const DeleteCustomerOKCode int = 200
+
+/*DeleteCustomerOK successful operation
+
+swagger:response deleteCustomerOK
+*/
+type DeleteCustomerOK struct {
+}
+
+// NewDeleteCustomerOK creates DeleteCustomerOK with default headers values
+func NewDeleteCustomerOK() *DeleteCustomerOK {
+	return &DeleteCustomerOK{}
+}
+
+// WriteResponse to the client
+func (o *DeleteCustomerOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
+	rw.WriteHeader(200)
+}
 
 // DeleteCustomerBadRequestCode is the HTTP code returned for type DeleteCustomerBadRequest
 const DeleteCustomerBadRequestCode int = 400
@@ -60,25 +85,44 @@ func (o *DeleteCustomerBadRequest) WriteResponse(rw http.ResponseWriter, produce
 	rw.WriteHeader(400)
 }
 
-// DeleteCustomerNotFoundCode is the HTTP code returned for type DeleteCustomerNotFound
-const DeleteCustomerNotFoundCode int = 404
+// DeleteCustomerInternalServerErrorCode is the HTTP code returned for type DeleteCustomerInternalServerError
+const DeleteCustomerInternalServerErrorCode int = 500
 
-/*DeleteCustomerNotFound Customer not found
+/*DeleteCustomerInternalServerError Internal error
 
-swagger:response deleteCustomerNotFound
+swagger:response deleteCustomerInternalServerError
 */
-type DeleteCustomerNotFound struct {
+type DeleteCustomerInternalServerError struct {
+
+	/*
+	  In: Body
+	*/
+	Payload models.APIResponse `json:"body,omitempty"`
 }
 
-// NewDeleteCustomerNotFound creates DeleteCustomerNotFound with default headers values
-func NewDeleteCustomerNotFound() *DeleteCustomerNotFound {
-	return &DeleteCustomerNotFound{}
+// NewDeleteCustomerInternalServerError creates DeleteCustomerInternalServerError with default headers values
+func NewDeleteCustomerInternalServerError() *DeleteCustomerInternalServerError {
+	return &DeleteCustomerInternalServerError{}
+}
+
+// WithPayload adds the payload to the delete customer internal server error response
+func (o *DeleteCustomerInternalServerError) WithPayload(payload models.APIResponse) *DeleteCustomerInternalServerError {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the delete customer internal server error response
+func (o *DeleteCustomerInternalServerError) SetPayload(payload models.APIResponse) {
+	o.Payload = payload
 }
 
 // WriteResponse to the client
-func (o *DeleteCustomerNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *DeleteCustomerInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.WriteHeader(500)
+	payload := o.Payload
+	if err := producer.Produce(rw, payload); err != nil {
+		panic(err) // let the recovery middleware deal with this
+	}
 
-	rw.WriteHeader(404)
 }

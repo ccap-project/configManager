@@ -36,13 +36,11 @@ import (
 	"net/url"
 	golangswaggerpaths "path"
 	"strings"
-
-	"github.com/go-openapi/swag"
 )
 
 // GetCustomerByIDURL generates an URL for the get customer by Id operation
 type GetCustomerByIDURL struct {
-	CustomerID int64
+	CustomerID string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -70,7 +68,7 @@ func (o *GetCustomerByIDURL) Build() (*url.URL, error) {
 
 	var _path = "/customer/{customerId}"
 
-	customerID := swag.FormatInt64(o.CustomerID)
+	customerID := o.CustomerID
 	if customerID != "" {
 		_path = strings.Replace(_path, "{customerId}", customerID, -1)
 	} else {
