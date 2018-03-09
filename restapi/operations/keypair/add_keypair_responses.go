@@ -51,7 +51,7 @@ type AddKeypairCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload int64 `json:"body,omitempty"`
+	Payload models.ULID `json:"body,omitempty"`
 }
 
 // NewAddKeypairCreated creates AddKeypairCreated with default headers values
@@ -60,13 +60,13 @@ func NewAddKeypairCreated() *AddKeypairCreated {
 }
 
 // WithPayload adds the payload to the add keypair created response
-func (o *AddKeypairCreated) WithPayload(payload int64) *AddKeypairCreated {
+func (o *AddKeypairCreated) WithPayload(payload models.ULID) *AddKeypairCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add keypair created response
-func (o *AddKeypairCreated) SetPayload(payload int64) {
+func (o *AddKeypairCreated) SetPayload(payload models.ULID) {
 	o.Payload = payload
 }
 

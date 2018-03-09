@@ -277,7 +277,7 @@ func (ctx *getCellFullByID) Handle(params cell.GetCellFullByIDParams, principal 
 		return cell.NewDeployCellByIDNotFound()
 	}
 
-	FullCell := getCellFull(ctx.rt.DB(), principal.Name, params.CellID)
+	FullCell := getCellFull(ctx.rt, principal.Name, params.CellID)
 
 	if FullCell == nil {
 		log.Print("cell is empty")
@@ -432,7 +432,7 @@ func _getCellByID(conn neo4j.ConnPool, customerName *string, cellID int64) *mode
 /*
  * Return cell structure in ui format
  */
-func getCellFull(conn neo4j.ConnPool, customerName *string, cellID int64) *models.FullCell {
+func getCellFull(ctx *configManager.Runtime, customerName *string, cellID int64) *models.FullCell {
 	cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell)
 							WHERE id(cell) = {cell_id}
 							MATCH (cell)-[:DEPLOY_WITH]->(keypair:Keypair),
@@ -444,6 +444,7 @@ func getCellFull(conn neo4j.ConnPool, customerName *string, cellID int64) *model
 							OPTIONAL MATCH (cell)-->(host)-->(option:Option)
 							RETURN *`
 
+	conn := ctx.DB()
 	db, err := conn.OpenPool()
 
 	if err != nil {
@@ -479,7 +480,7 @@ func getCellFull(conn neo4j.ConnPool, customerName *string, cellID int64) *model
 			}
 		}
 
-		res.Keypair = getCellKeypair(conn, customerName, cellID)
+		res.Keypair = getCellKeypair(ctx, customerName, cellID)
 
 		if res.Provider.Name == nil {
 			providerNode := getNodeByLabel(row, "Provider")

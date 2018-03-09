@@ -228,9 +228,6 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		CustomerUpdateCustomerWithFormHandler: customer.UpdateCustomerWithFormHandlerFunc(func(params customer.UpdateCustomerWithFormParams) middleware.Responder {
 			return middleware.NotImplemented("operation CustomerUpdateCustomerWithForm has not yet been implemented")
 		}),
-		KeypairUpdateKeypairHandler: keypair.UpdateKeypairHandlerFunc(func(params keypair.UpdateKeypairParams, principal *models.Customer) middleware.Responder {
-			return middleware.NotImplemented("operation KeypairUpdateKeypair has not yet been implemented")
-		}),
 		KeypairUpdateKeypairWithFormHandler: keypair.UpdateKeypairWithFormHandlerFunc(func(params keypair.UpdateKeypairWithFormParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation KeypairUpdateKeypairWithForm has not yet been implemented")
 		}),
@@ -388,8 +385,6 @@ type ConfigManagerAPI struct {
 	CustomerUpdateCustomerHandler customer.UpdateCustomerHandler
 	// CustomerUpdateCustomerWithFormHandler sets the operation handler for the update customer with form operation
 	CustomerUpdateCustomerWithFormHandler customer.UpdateCustomerWithFormHandler
-	// KeypairUpdateKeypairHandler sets the operation handler for the update keypair operation
-	KeypairUpdateKeypairHandler keypair.UpdateKeypairHandler
 	// KeypairUpdateKeypairWithFormHandler sets the operation handler for the update keypair with form operation
 	KeypairUpdateKeypairWithFormHandler keypair.UpdateKeypairWithFormHandler
 	// ProviderUpdateProviderHandler sets the operation handler for the update provider operation
@@ -669,10 +664,6 @@ func (o *ConfigManagerAPI) Validate() error {
 
 	if o.CustomerUpdateCustomerWithFormHandler == nil {
 		unregistered = append(unregistered, "customer.UpdateCustomerWithFormHandler")
-	}
-
-	if o.KeypairUpdateKeypairHandler == nil {
-		unregistered = append(unregistered, "keypair.UpdateKeypairHandler")
 	}
 
 	if o.KeypairUpdateKeypairWithFormHandler == nil {
@@ -1046,11 +1037,6 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/customer/{customerId}"] = customer.NewUpdateCustomerWithForm(o.context, o.CustomerUpdateCustomerWithFormHandler)
-
-	if o.handlers["PUT"] == nil {
-		o.handlers["PUT"] = make(map[string]http.Handler)
-	}
-	o.handlers["PUT"]["/keypair"] = keypair.NewUpdateKeypair(o.context, o.KeypairUpdateKeypairHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)

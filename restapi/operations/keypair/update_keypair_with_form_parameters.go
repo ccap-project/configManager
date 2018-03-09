@@ -37,7 +37,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -58,11 +58,14 @@ type UpdateKeypairWithFormParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*ID of keypair that needs to be updated
+	/*KeypairID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	KeypairID int64
+	KeypairID string
 	/*Updated name of the keypair
 	  In: formData
 	*/
@@ -84,7 +87,7 @@ func (o *UpdateKeypairWithFormParams) BindRequest(r *http.Request, route *middle
 	}
 	fds := runtime.Values(r.Form)
 
-	rKeypairID, rhkKeypairID, _ := route.Params.GetOK("keypair_id")
+	rKeypairID, rhkKeypairID, _ := route.Params.GetOK("keypairId")
 	if err := o.bindKeypairID(rKeypairID, rhkKeypairID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -106,11 +109,28 @@ func (o *UpdateKeypairWithFormParams) bindKeypairID(rawData []string, hasKey boo
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("keypair_id", "path", "int64", raw)
+	o.KeypairID = raw
+
+	if err := o.validateKeypairID(formats); err != nil {
+		return err
 	}
-	o.KeypairID = value
+
+	return nil
+}
+
+func (o *UpdateKeypairWithFormParams) validateKeypairID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("keypairId", "path", o.KeypairID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("keypairId", "path", o.KeypairID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("keypairId", "path", o.KeypairID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

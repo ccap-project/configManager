@@ -37,6 +37,29 @@ import (
 	"github.com/go-openapi/runtime"
 )
 
+// DeleteKeypairOKCode is the HTTP code returned for type DeleteKeypairOK
+const DeleteKeypairOKCode int = 200
+
+/*DeleteKeypairOK successful operation
+
+swagger:response deleteKeypairOK
+*/
+type DeleteKeypairOK struct {
+}
+
+// NewDeleteKeypairOK creates DeleteKeypairOK with default headers values
+func NewDeleteKeypairOK() *DeleteKeypairOK {
+	return &DeleteKeypairOK{}
+}
+
+// WriteResponse to the client
+func (o *DeleteKeypairOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
+	rw.WriteHeader(200)
+}
+
 // DeleteKeypairBadRequestCode is the HTTP code returned for type DeleteKeypairBadRequest
 const DeleteKeypairBadRequestCode int = 400
 

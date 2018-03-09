@@ -58,7 +58,7 @@ type UpdateCustomerWithFormParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*Customer id to delete
+	/*Customer ID
 	  Required: true
 	  Max Length: 26
 	  Min Length: 26

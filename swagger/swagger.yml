@@ -198,7 +198,7 @@ paths:
         201:
           description: "Created"
           schema:
-            type: integer
+            $ref: "#/definitions/ULID"
         405:
           description: "Invalid input"
           schema:
@@ -211,32 +211,6 @@ paths:
           description: "Internal error"
           schema:
             $ref: "#definitions/ApiResponse"
-    put:
-      tags:
-      - "keypair"
-      summary: "Update an existing keypair"
-      description: ""
-      operationId: "updateKeypair"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      security:
-        - APIKeyHeader: []
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Keypair object that needs to be updated"
-        required: true
-        schema:
-          $ref: "#/definitions/Keypair"
-      responses:
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Keypair not found"
-        405:
-          description: "Validation exception"
   /keypairs:
     get:
       tags:
@@ -274,12 +248,7 @@ paths:
       security:
         - APIKeyHeader: []
       parameters:
-      - name: "keypair_id"
-        in: "path"
-        description: "ID of keypair to return"
-        required: true
-        type: "integer"
-        format: "int64"
+        - $ref: '#/parameters/KeypairID'
       responses:
         200:
           description: "successful operation"
@@ -306,17 +275,12 @@ paths:
       security:
         - APIKeyHeader: []
       parameters:
-      - name: "keypair_id"
-        in: "path"
-        description: "ID of keypair that needs to be updated"
-        required: true
-        type: "integer"
-        format: "int64"
-      - name: "public_key"
-        in: "formData"
-        description: "Updated name of the keypair"
-        required: false
-        type: "string"
+        - $ref: '#/parameters/KeypairID'
+        - name: "public_key"
+          in: "formData"
+          description: "Updated name of the keypair"
+          required: false
+          type: "string"
       responses:
         405:
           description: "Invalid input"
@@ -331,17 +295,10 @@ paths:
       security:
         - APIKeyHeader: []
       parameters:
-      - name: "api_key"
-        in: "header"
-        required: false
-        type: "string"
-      - name: "keypair_id"
-        in: "path"
-        description: "Keypair id to delete"
-        required: true
-        type: "integer"
-        format: "int64"
+        - $ref: '#/parameters/KeypairID'
       responses:
+        200:
+          description: "successful operation"
         400:
           description: "Invalid ID supplied"
         404:
@@ -1997,7 +1954,17 @@ parameters:
   CustomerID:
     name: "customerId"
     in: "path"
-    description: "Customer id to delete"
+    description: "Customer ID"
+    required: true
+    type: "string"
+    minLength: 26
+    maxLength: 26
+    pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
+
+  KeypairID:
+    name: "keypairId"
+    in: "path"
+    description: "KeypairID"
     required: true
     type: "string"
     minLength: 26
@@ -2099,7 +2066,7 @@ definitions:
       - public_key
     properties:
       id:
-        type: integer
+        $ref: "#/definitions/ULID"
       name:
         type: "string"
       public_key:

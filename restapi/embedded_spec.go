@@ -2506,46 +2506,6 @@ func init() {
       }
     },
     "/keypair": {
-      "put": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "keypair"
-        ],
-        "summary": "Update an existing keypair",
-        "operationId": "updateKeypair",
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "description": "Keypair object that needs to be updated",
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/Keypair"
-            }
-          }
-        ],
-        "responses": {
-          "400": {
-            "description": "Invalid ID supplied"
-          },
-          "404": {
-            "description": "Keypair not found"
-          },
-          "405": {
-            "description": "Validation exception"
-          }
-        }
-      },
       "post": {
         "consumes": [
           "application/json"
@@ -2578,7 +2538,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -2620,12 +2580,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of keypair to return",
-            "name": "keypair_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/KeypairID"
           }
         ],
         "responses": {
@@ -2668,12 +2623,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of keypair that needs to be updated",
-            "name": "keypair_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/KeypairID"
           },
           {
             "type": "string",
@@ -2704,20 +2654,13 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "string",
-            "name": "api_key",
-            "in": "header"
-          },
-          {
-            "type": "integer",
-            "format": "int64",
-            "description": "Keypair id to delete",
-            "name": "keypair_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/KeypairID"
           }
         ],
         "responses": {
+          "200": {
+            "description": "successful operation"
+          },
           "400": {
             "description": "Invalid ID supplied"
           },
@@ -3165,7 +3108,7 @@ func init() {
       ],
       "properties": {
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -3359,8 +3302,18 @@ func init() {
       "minLength": 26,
       "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
       "type": "string",
-      "description": "Customer id to delete",
+      "description": "Customer ID",
       "name": "customerId",
+      "in": "path",
+      "required": true
+    },
+    "KeypairID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "KeypairID",
+      "name": "keypairId",
       "in": "path",
       "required": true
     }

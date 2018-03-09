@@ -36,7 +36,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -57,15 +57,14 @@ type DeleteKeypairParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*
-	  In: header
-	*/
-	APIKey *string
-	/*Keypair id to delete
+	/*KeypairID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	KeypairID int64
+	KeypairID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -74,11 +73,7 @@ func (o *DeleteKeypairParams) BindRequest(r *http.Request, route *middleware.Mat
 	var res []error
 	o.HTTPRequest = r
 
-	if err := o.bindAPIKey(r.Header[http.CanonicalHeaderKey("api_key")], true, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
-	rKeypairID, rhkKeypairID, _ := route.Params.GetOK("keypair_id")
+	rKeypairID, rhkKeypairID, _ := route.Params.GetOK("keypairId")
 	if err := o.bindKeypairID(rKeypairID, rhkKeypairID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -89,31 +84,34 @@ func (o *DeleteKeypairParams) BindRequest(r *http.Request, route *middleware.Mat
 	return nil
 }
 
-func (o *DeleteKeypairParams) bindAPIKey(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-	if raw == "" { // empty values pass all other validations
-		return nil
-	}
-
-	o.APIKey = &raw
-
-	return nil
-}
-
 func (o *DeleteKeypairParams) bindKeypairID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("keypair_id", "path", "int64", raw)
+	o.KeypairID = raw
+
+	if err := o.validateKeypairID(formats); err != nil {
+		return err
 	}
-	o.KeypairID = value
+
+	return nil
+}
+
+func (o *DeleteKeypairParams) validateKeypairID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("keypairId", "path", o.KeypairID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("keypairId", "path", o.KeypairID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("keypairId", "path", o.KeypairID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }
