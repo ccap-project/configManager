@@ -36,9 +36,9 @@ import (
 
 	"configManager"
 	"configManager/models"
-	"configManager/neo4j"
 	"configManager/restapi/operations/providertype"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/go-openapi/runtime/middleware"
 )
 
@@ -52,40 +52,44 @@ type addProviderType struct {
 
 func (ctx *addProviderType) Handle(params providertype.AddProviderTypeParams) middleware.Responder {
 
-	cypher := `create(p:ProviderType { name: {name},
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"provider_type": params.Body.Name})
+
+	cypher := `create(p:ProviderType { id: {id},
+																			name: {name},
 																			auth_url: {auth_url},
 																			domain_name: {domain_name},
 																			username: {username},
-																			password: {password} }) RETURN ID(p)`
+																			password: {password} }) RETURN {id}`
 
-	if len(GetProviderTypeByName(ctx.rt.DB(), params.Body.Name).Name) > 0 {
-		log.Println("providertype already exists !")
+	if len(GetProviderTypeByName(ctx.rt, params.Body.Name).Name) > 0 {
+		ctxLogger.Error("providertype already exists !")
 		return providertype.NewAddProviderTypeInternalServerError().WithPayload(models.APIResponse{Message: "providertype already exists"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j:", err)
 		return providertype.NewAddProviderTypeInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
-	tx, err := db.Begin()
-	if err != nil {
-		log.Printf("An error occurred beginning transaction: %s", err)
-		return providertype.NewAddProviderTypeInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
-	}
-	defer tx.Rollback()
-
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: %s", err)
 		return providertype.NewAddProviderTypeInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
 	defer stmt.Close()
 
+	ulid := configManager.GetULID()
+
+	ctxLogger = ctx.rt.Logger().WithFields(logrus.Fields{
+		"provider_type":    params.Body.Name,
+		"provider_type_id": ulid})
+
 	rows, err := stmt.QueryNeo(map[string]interface{}{
+		"id":          ulid,
 		"name":        params.Body.Name,
 		"auth_url":    params.Body.AuthURL,
 		"domain_name": params.Body.DomainName,
@@ -93,7 +97,7 @@ func (ctx *addProviderType) Handle(params providertype.AddProviderTypeParams) mi
 		"password":    params.Body.Password})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: %s", err)
 		return providertype.NewAddProviderTypeInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
@@ -103,9 +107,8 @@ func (ctx *addProviderType) Handle(params providertype.AddProviderTypeParams) mi
 		return providertype.NewAddProviderTypeInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
-	tx.Commit()
-
-	return providertype.NewAddProviderTypeCreated().WithPayload("OK")
+	ctxLogger.Info("OK")
+	return providertype.NewAddProviderTypeCreated().WithPayload(models.ULID(ulid))
 }
 
 func NewGetProviderTypeByID(rt *configManager.Runtime) providertype.GetProviderTypeByIDHandler {
@@ -118,9 +121,11 @@ type getProviderTypeByID struct {
 
 func (ctx *getProviderTypeByID) Handle(params providertype.GetProviderTypeByIDParams) middleware.Responder {
 
-	cypher := `MATCH (p:ProviderType)
-							WHERE ID(p) = {id}
-							RETURN ID(p) as id,
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"provider_type_id": params.ProvidertypeID})
+
+	cypher := `MATCH (p:ProviderType {id: {id} })
+							RETURN p.id as id,
 											p.name as name,
 											p.auth_url as auth_url,
 											p.domain_name as domain_name,
@@ -129,14 +134,14 @@ func (ctx *getProviderTypeByID) Handle(params providertype.GetProviderTypeByIDPa
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j:", err)
 		return providertype.NewGetProviderTypeByIDInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: %s", err)
 		return providertype.NewGetProviderTypeByIDInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
@@ -146,7 +151,7 @@ func (ctx *getProviderTypeByID) Handle(params providertype.GetProviderTypeByIDPa
 		"customer_name": params.ProvidertypeID})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: %s", err)
 		return providertype.NewGetProviderTypeByIDInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
@@ -157,12 +162,12 @@ func (ctx *getProviderTypeByID) Handle(params providertype.GetProviderTypeByIDPa
 	row, _, err := rows.NextNeo()
 
 	if err != nil {
-		log.Printf("An error occurred getting next row: %s", err)
+		ctxLogger.Error("An error occurred getting next row: %s", err)
 		return providertype.NewListProviderTypesInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
 	provider := &models.ProviderType{
-		ID:         row[0].(int64),
+		ID:         models.ULID(row[0].(string)),
 		Name:       row[1].(string),
 		AuthURL:    row[1].(string),
 		DomainName: row[2].(string),
@@ -172,29 +177,32 @@ func (ctx *getProviderTypeByID) Handle(params providertype.GetProviderTypeByIDPa
 	return providertype.NewGetProviderTypeByIDOK().WithPayload(provider)
 }
 
-func GetProviderTypeByName(conn neo4j.ConnPool, providertypeName string) models.ProviderType {
+func GetProviderTypeByName(rt *configManager.Runtime, providertypeName string) models.ProviderType {
 
 	var providerType models.ProviderType
 
+	ctxLogger := rt.Logger().WithFields(logrus.Fields{
+		"provider_type": providertypeName})
+
 	cypher := `MATCH (p:ProviderType)
-							WHERE p.name = {name}
-							RETURN ID(p) as id,
+							WHERE EXISTS(p.id) AND p.name = {name}
+							RETURN p.id as id,
 											p.name as name,
 											p.auth_url as auth_url,
 											p.domain_name as domain_name,
 											p.username as username,
 											p.password as password`
 
-	db, err := conn.OpenPool()
+	db, err := rt.DB().OpenPool()
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j:", err)
 		return providerType
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: %s", err)
 		return providerType
 	}
 
@@ -204,7 +212,7 @@ func GetProviderTypeByName(conn neo4j.ConnPool, providertypeName string) models.
 		"name": providertypeName})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: %s", err)
 		return providerType
 	}
 
@@ -215,12 +223,11 @@ func GetProviderTypeByName(conn neo4j.ConnPool, providertypeName string) models.
 	row, _, err := rows.NextNeo()
 
 	if err != nil {
-		log.Printf("An error occurred getting next row: %s", err)
-		log.Printf("%#v", row)
+		ctxLogger.Error("An error occurred getting next row: %s", err)
 		return providerType
 	}
 
-	providerType.ID = row[0].(int64)
+	providerType.ID = models.ULID(row[0].(string))
 	providerType.Name = row[1].(string)
 	providerType.AuthURL = row[2].(string)
 	providerType.DomainName = row[3].(string)
@@ -241,7 +248,7 @@ type listProviderTypes struct {
 func (ctx *listProviderTypes) Handle(params providertype.ListProviderTypesParams) middleware.Responder {
 
 	cypher := `MATCH (p:ProviderType)
-							RETURN ID(p) as id,
+							RETURN p.id as id,
 											p.name as name,
 											p.auth_url as auth_url,
 											p.domain_name as domain_name,
@@ -250,7 +257,7 @@ func (ctx *listProviderTypes) Handle(params providertype.ListProviderTypesParams
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctx.rt.Logger().Error("error connecting to neo4j:", err)
 		return providertype.NewListProviderTypesInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
@@ -258,7 +265,7 @@ func (ctx *listProviderTypes) Handle(params providertype.ListProviderTypesParams
 	data, _, _, err := db.QueryNeoAll(cypher, nil)
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctx.rt.Logger().Error("An error occurred querying Neo: %s", err)
 		return providertype.NewListProviderTypesInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
@@ -266,7 +273,7 @@ func (ctx *listProviderTypes) Handle(params providertype.ListProviderTypesParams
 
 	for idx, row := range data {
 		res[idx] = &models.ProviderType{
-			ID:         row[0].(int64),
+			ID:         models.ULID(row[0].(string)),
 			Name:       row[1].(string),
 			AuthURL:    row[2].(string),
 			DomainName: row[3].(string),
@@ -279,23 +286,23 @@ func (ctx *listProviderTypes) Handle(params providertype.ListProviderTypesParams
 
 func InitProviderType(rt *configManager.Runtime) {
 
-	log.Printf("Checking provider types...")
+	rt.Logger().Info("Checking provider types...")
 
-	if err := _addProviderType(rt.DB(), "Openstack", []string{"auth_url", "domain_name", "username", "password"}); err != nil {
-		log.Println("Error Initializing provider types, ", err)
+	if err := _addProviderType(rt, "Openstack", []string{"auth_url", "domain_name", "username", "password"}); err != nil {
+		rt.Logger().Error("Error Initializing provider types, ", err)
 	}
 }
 
-func _addProviderType(conn neo4j.ConnPool, name string, fields []string) error {
+func _addProviderType(rt *configManager.Runtime, name string, fields []string) error {
 
 	var allFields []string
 
-	if len(GetProviderTypeByName(conn, name).Name) > 0 {
-		log.Printf("Provider %s already exists", name)
+	if len(GetProviderTypeByName(rt, name).Name) > 0 {
+		rt.Logger().Warnf("Provider %s already exists", name)
 		return nil
 	}
 
-	createTmpl := `Create (p:ProviderType { name: '%s', %s })`
+	createTmpl := `Create (p:ProviderType { id: '%s', name: '%s', %s })`
 
 	lastField := len(fields)
 
@@ -311,9 +318,9 @@ func _addProviderType(conn neo4j.ConnPool, name string, fields []string) error {
 
 	allFields = append(allFields, fmt.Sprintf("%s: '%s'", fields[lastField], fields[lastField]))
 
-	create := fmt.Sprintf(createTmpl, name, strings.Join(allFields, ""))
+	create := fmt.Sprintf(createTmpl, configManager.GetULID(), name, strings.Join(allFields, ""))
 
-	db, err := conn.OpenPool()
+	db, err := rt.DB().OpenPool()
 	if err != nil {
 		return fmt.Errorf("error connecting to neo4j:", err)
 	}
@@ -332,7 +339,7 @@ func _addProviderType(conn neo4j.ConnPool, name string, fields []string) error {
 		return fmt.Errorf("An error occurred querying Neo: %s", err)
 	}
 
-	log.Printf("Provider %s has been created", name)
+	rt.Logger().Info("Provider %s has been created", name)
 
 	return nil
 }

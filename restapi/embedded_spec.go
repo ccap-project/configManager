@@ -2782,7 +2782,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "$ref": "#/definitions/ProviderTypeID"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -3241,7 +3241,7 @@ func init() {
           "type": "string"
         },
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
