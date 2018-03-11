@@ -350,12 +350,7 @@ func init() {
             "$ref": "#/parameters/ComponentID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of entity that will be used",
-            "name": "entity_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/EntityID"
           }
         ],
         "responses": {
@@ -404,12 +399,7 @@ func init() {
             "$ref": "#/parameters/ComponentID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "entity that will be deleted",
-            "name": "entity_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/EntityID"
           }
         ],
         "responses": {
@@ -3039,6 +3029,16 @@ func init() {
       "type": "string",
       "description": "Customer ID",
       "name": "customerId",
+      "in": "path",
+      "required": true
+    },
+    "EntityID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "Entity ID",
+      "name": "entityId",
       "in": "path",
       "required": true
     },

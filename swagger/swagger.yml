@@ -861,12 +861,7 @@ paths:
       parameters:
         - $ref: '#/parameters/CellID'
         - $ref: '#/parameters/ComponentID'
-        - name: "entity_id"
-          in: "path"
-          description: "entity that will be deleted"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/EntityID'
       responses:
         200:
           description: "successful operation"
@@ -897,12 +892,7 @@ paths:
       parameters:
         - $ref: '#/parameters/CellID'
         - $ref: '#/parameters/ComponentID'
-        - name: "entity_id"
-          in: "path"
-          description: "ID of entity that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/EntityID'
       responses:
         201:
           description: "Created"
@@ -1693,6 +1683,16 @@ parameters:
     name: "customerId"
     in: "path"
     description: "Customer ID"
+    required: true
+    type: "string"
+    minLength: 26
+    maxLength: 26
+    pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
+
+  EntityID:
+    name: "entityId"
+    in: "path"
+    description: "Entity ID"
     required: true
     type: "string"
     minLength: 26

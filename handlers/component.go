@@ -34,7 +34,6 @@ import (
 
 	"configManager"
 	"configManager/models"
-	"configManager/neo4j"
 	"configManager/restapi/operations/component"
 
 	"github.com/Sirupsen/logrus"
@@ -124,23 +123,22 @@ type addComponentRelationship struct {
 func (ctx *addComponentRelationship) Handle(params component.AddComponentRelationshipParams, principal *models.Customer) middleware.Responder {
 
 	var cypher string
-	entityType := _getEntityType(ctx.rt.DB(), &params.CellID, params.EntityID)
+	entityType := _getEntityType(ctx.rt, &params.CellID, &params.EntityID)
 
 	switch entityType {
 	case "Loadbalancer":
 		cypher = `
 			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->
 				(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component {id: {component_id}})
-			MATCH (cell)-[:HAS]->(lb:Loadbalancer)
-			WHERE id(lb) = {entity_id}
+			MATCH (cell)-[:HAS]->(lb:Loadbalancer {id: {entity_id}})
 			MERGE (component)-[:CONNECT_TO]->(lb)
 			RETURN *`
 	case "Component":
 		cypher = `
 			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->
 				(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component {id: {component_id}})
-			MATCH (cell)-[:PROVIDES]->(component_t:Component)-[:LISTEN_ON]->(listener:Listener)
-			WHERE id(component_t) = {entity_id}
+			MATCH (cell)-[:PROVIDES]->(component_t:Component)-[:LISTEN_ON]->
+				(listener:Listener {id: {entity_id}})
 			MERGE (component)-[:CONNECT_TO]->(listener)
 			RETURN *`
 	default:
@@ -202,23 +200,23 @@ type deleteComponentRelationship struct {
 func (ctx *deleteComponentRelationship) Handle(params component.DeleteComponentRelationshipParams, principal *models.Customer) middleware.Responder {
 
 	var cypher string
-	entityType := _getEntityType(ctx.rt.DB(), &params.CellID, params.EntityID)
+	entityType := _getEntityType(ctx.rt, &params.CellID, &params.EntityID)
 
 	switch entityType {
 	case "Loadbalancer":
 		cypher = `
 			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->
 			 (cell:Cell {id: {cell_id}})-[:PROVIDES]->
-			 (component:Component {id: {component_id}})-[r:CONNECT_TO]->(entity:Loadbalancer)
-			WHERE id(entity) = {entity_id}
+			 (component:Component {id: {component_id}})-[r:CONNECT_TO]->
+			 (entity:Loadbalancer {id: {entity_id}})
 			delete r`
 
 	case "Component":
 		cypher = `
 			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->
 			 (cell:Cell {id: {cell_id}})-[:PROVIDES]->
-			 (component:Component {id: {component_id}})-[r:CONNECT_TO]->(Listener)<-[:LISTEN_ON]-(entity:Component)
-			WHERE id(entity) = {entity_id}
+			 (component:Component {id: {component_id}})-[r:CONNECT_TO]->
+			 (Listener)<-[:LISTEN_ON]-(entity:Component {id: {entity_id}})
 			delete r`
 
 	default:
@@ -453,23 +451,26 @@ func _getComponentByName(rt *configManager.Runtime, customerName *string, CellID
 	return component
 }
 
-func _getEntityType(conn neo4j.ConnPool, CellID *string, EntityID int64) string {
+func _getEntityType(rt *configManager.Runtime, CellID *string, EntityID *string) string {
 
-	cypher := `MATCH (cell:Cell{id: {cell_id}})-->(entity)
-							WHERE id(entity) = {entity_id}
-								RETURN labels(entity)`
+	cypher := `MATCH (cell:Cell{id: {cell_id}})-->(entity {id: {entity_id}})
+						RETURN labels(entity)`
 
-	db, err := conn.OpenPool()
+	ctxLogger := rt.Logger().WithFields(logrus.Fields{
+		"cell_id":   CellID,
+		"entity_id": EntityID})
+
+	db, err := rt.DB().OpenPool()
 
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j: ", err)
 		return ""
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return ""
 	}
 
@@ -478,7 +479,7 @@ func _getEntityType(conn neo4j.ConnPool, CellID *string, EntityID int64) string 
 		"entity_id": EntityID})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return ""
 	}
 

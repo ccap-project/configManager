@@ -36,7 +36,6 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
@@ -74,11 +73,14 @@ type AddComponentRelationshipParams struct {
 	  In: path
 	*/
 	ComponentID string
-	/*ID of entity that will be used
+	/*Entity ID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	EntityID int64
+	EntityID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -97,7 +99,7 @@ func (o *AddComponentRelationshipParams) BindRequest(r *http.Request, route *mid
 		res = append(res, err)
 	}
 
-	rEntityID, rhkEntityID, _ := route.Params.GetOK("entity_id")
+	rEntityID, rhkEntityID, _ := route.Params.GetOK("entityId")
 	if err := o.bindEntityID(rEntityID, rhkEntityID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -178,11 +180,28 @@ func (o *AddComponentRelationshipParams) bindEntityID(rawData []string, hasKey b
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("entity_id", "path", "int64", raw)
+	o.EntityID = raw
+
+	if err := o.validateEntityID(formats); err != nil {
+		return err
 	}
-	o.EntityID = value
+
+	return nil
+}
+
+func (o *AddComponentRelationshipParams) validateEntityID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("entityId", "path", o.EntityID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("entityId", "path", o.EntityID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("entityId", "path", o.EntityID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

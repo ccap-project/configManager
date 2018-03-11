@@ -36,15 +36,13 @@ import (
 	"net/url"
 	golangswaggerpaths "path"
 	"strings"
-
-	"github.com/go-openapi/swag"
 )
 
 // DeleteComponentRelationshipURL generates an URL for the delete component relationship operation
 type DeleteComponentRelationshipURL struct {
 	CellID      string
 	ComponentID string
-	EntityID    int64
+	EntityID    string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -84,9 +82,9 @@ func (o *DeleteComponentRelationshipURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("ComponentID is required on DeleteComponentRelationshipURL")
 	}
-	entityID := swag.FormatInt64(o.EntityID)
+	entityID := o.EntityID
 	if entityID != "" {
-		_path = strings.Replace(_path, "{entity_id}", entityID, -1)
+		_path = strings.Replace(_path, "{entityId}", entityID, -1)
 	} else {
 		return nil, errors.New("EntityID is required on DeleteComponentRelationshipURL")
 	}
