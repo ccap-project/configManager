@@ -75,11 +75,14 @@ type UpdateComponentListenerParams struct {
 	  In: path
 	*/
 	CellID string
-	/*ID of component that will be used
+	/*Component ID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	ComponentID int64
+	ComponentID string
 	/*Listener that will be updated
 	  Required: true
 	  In: path
@@ -122,7 +125,7 @@ func (o *UpdateComponentListenerParams) BindRequest(r *http.Request, route *midd
 		res = append(res, err)
 	}
 
-	rComponentID, rhkComponentID, _ := route.Params.GetOK("component_id")
+	rComponentID, rhkComponentID, _ := route.Params.GetOK("componentId")
 	if err := o.bindComponentID(rComponentID, rhkComponentID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -176,11 +179,28 @@ func (o *UpdateComponentListenerParams) bindComponentID(rawData []string, hasKey
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("component_id", "path", "int64", raw)
+	o.ComponentID = raw
+
+	if err := o.validateComponentID(formats); err != nil {
+		return err
 	}
-	o.ComponentID = value
+
+	return nil
+}
+
+func (o *UpdateComponentListenerParams) validateComponentID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("componentId", "path", o.ComponentID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("componentId", "path", o.ComponentID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("componentId", "path", o.ComponentID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -740,7 +740,7 @@ paths:
         201:
           description: "Created"
           schema:
-            type: integer
+            $ref: "#/definitions/ULID"
         405:
           description: "Invalid input"
           schema:
@@ -766,12 +766,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
       responses:
         200:
           description: "successful operation"
@@ -865,12 +860,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
         - name: "entity_id"
           in: "path"
           description: "entity that will be deleted"
@@ -906,12 +896,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
         - name: "entity_id"
           in: "path"
           description: "ID of entity that will be used"
@@ -948,12 +933,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
       responses:
         200:
           description: "successful operation"
@@ -984,12 +964,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
         - in: "body"
           name: "body"
           description: "Component object that needs to be added"
@@ -1025,12 +1000,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
         - name: "hostgroup_id"
           in: "path"
           description: "ID of hostgroup that will be used"
@@ -1066,12 +1036,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
         - name: "hostgroup_id"
           in: "path"
           description: "hostgroup that will be updated"
@@ -1107,12 +1072,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
         - name: "hostgroup_id"
           in: "path"
           description: "hostgroup that will be deleted"
@@ -1145,12 +1105,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
       responses:
         200:
           description: "successful operation"
@@ -1181,12 +1136,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
         - in: "body"
           name: "body"
           description: "Component object that needs to be added"
@@ -1222,12 +1172,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
         - name: "listener_id"
           in: "path"
           description: "ID of listener that will be used"
@@ -1263,12 +1208,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
         - name: "listener_id"
           in: "path"
           description: "Listener that will be updated"
@@ -1304,12 +1244,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
         - name: "listener_id"
           in: "path"
           description: "listener that will be deleted"
@@ -1346,12 +1281,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
         - in: "body"
           name: "body"
           description: "Component object that needs to be added"
@@ -1388,12 +1318,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
         - name: "role_name"
           in: "path"
           description: "role that will be updated"
@@ -1426,12 +1351,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
         - name: "role_name"
           in: "path"
           description: "role that will be updated"
@@ -1470,12 +1390,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "component_id"
-          in: "path"
-          description: "ID of component that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ComponentID'
       responses:
         200:
           description: "successful operation"
@@ -1764,6 +1679,16 @@ parameters:
     maxLength: 26
     pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
 
+  ComponentID:
+    name: "componentId"
+    in: "path"
+    description: "Component ID"
+    required: true
+    type: "string"
+    minLength: 26
+    maxLength: 26
+    pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
+
   CustomerID:
     name: "customerId"
     in: "path"
@@ -1817,7 +1742,7 @@ definitions:
       - name
     properties:
       id:
-        type: integer
+        $ref: "#/definitions/ULID"
       name:
         type: "string"
       hostgroups:

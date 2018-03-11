@@ -255,7 +255,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -299,12 +299,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           }
         ],
         "responses": {
@@ -352,12 +347,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "type": "integer",
@@ -411,12 +401,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "type": "integer",
@@ -475,12 +460,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "description": "Component object that needs to be added",
@@ -540,12 +520,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "type": "integer",
@@ -602,12 +577,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "type": "integer",
@@ -664,12 +634,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "type": "integer",
@@ -722,12 +687,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           }
         ],
         "responses": {
@@ -778,12 +738,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "description": "Component object that needs to be added",
@@ -843,12 +798,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "type": "integer",
@@ -905,12 +855,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "type": "integer",
@@ -967,12 +912,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "type": "integer",
@@ -1025,12 +965,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           }
         ],
         "responses": {
@@ -1081,12 +1016,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "description": "Component object that needs to be added",
@@ -1149,12 +1079,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "type": "string",
@@ -1216,12 +1141,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "type": "string",
@@ -1273,12 +1193,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           }
         ],
         "responses": {
@@ -2747,7 +2662,7 @@ func init() {
           }
         },
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -3104,6 +3019,16 @@ func init() {
       "type": "string",
       "description": "Cell ID",
       "name": "cellId",
+      "in": "path",
+      "required": true
+    },
+    "ComponentID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "Component ID",
+      "name": "componentId",
       "in": "path",
       "required": true
     },

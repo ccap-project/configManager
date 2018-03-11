@@ -51,13 +51,14 @@ type addComponentListener struct {
 
 func (ctx *addComponentListener) Handle(params listener.AddComponentListenerParams, principal *models.Customer) middleware.Responder {
 
-	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->(cell:Cell{id: {cell_id}})-[:PROVIDES]->(component:Component)
-							WHERE AND id(component) = {component_id}
-							CREATE (component)-[:LISTEN_ON]->(listener:Listener {
-								name: {listener_name},
-								port: {listener_port},
-								protocol: {listener_protocol}} )
-								RETURN id(listener) as id`
+	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
+							(cell:Cell{id: {cell_id}})-[:PROVIDES]->
+							(component:Component {id: {component_id}})
+						CREATE (component)-[:LISTEN_ON]->(listener:Listener {
+							name: {listener_name},
+							port: {listener_port},
+							protocol: {listener_protocol}} )
+							RETURN id(listener) as id`
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
@@ -116,9 +117,9 @@ type deleteComponentListener struct {
 func (ctx *deleteComponentListener) Handle(params listener.DeleteComponentListenerParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell{id: {cell_id}})-[:PROVIDES]->(component:Component)-[:LISTEN_ON]->(listener:Listener)
-							WHERE id(component) = {component_id}
-								AND id(listener) = {listener_id}
+							(cell:Cell{id: {cell_id}})-[:PROVIDES]->
+							(component:Component {id: {component_id}})-[:LISTEN_ON]->(listener:Listener)
+							WHERE id(listener) = {listener_id}
 							DETACH DELETE listener`
 
 	if _getComponentListenerByID(ctx.rt.DB(), principal.Name, &params.CellID, params.ListenerID) == nil {
@@ -187,7 +188,7 @@ type findComponentListeners struct {
 
 func (ctx *findComponentListeners) Handle(params listener.FindComponentListenersParams, principal *models.Customer) middleware.Responder {
 
-	data, err := _FindComponentListeners(ctx.rt.DB(), principal.Name, &params.CellID, params.ComponentID)
+	data, err := _FindComponentListeners(ctx.rt.DB(), principal.Name, &params.CellID, &params.ComponentID)
 
 	log.Printf("= data(%#v)", data)
 
@@ -198,11 +199,11 @@ func (ctx *findComponentListeners) Handle(params listener.FindComponentListeners
 	return listener.NewFindComponentListenersOK().WithPayload(data)
 }
 
-func _FindComponentListeners(conn neo4j.ConnPool, customerName *string, CellID *string, ComponentID int64) ([]*models.Listener, middleware.Responder) {
+func _FindComponentListeners(conn neo4j.ConnPool, customerName *string, CellID *string, ComponentID *string) ([]*models.Listener, middleware.Responder) {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)-[:LISTEN_ON]->(listener:Listener)
-							WHERE id(component) = {component_id}
+							(cell:Cell {id: {cell_id}})-[:PROVIDES]->
+							(component:Component {id: {component_id}})-[:LISTEN_ON]->(listener:Listener)
 								RETURN id(listener) as id,
 												listener.name as name,
 												listener.port as port,
@@ -214,8 +215,6 @@ func _FindComponentListeners(conn neo4j.ConnPool, customerName *string, CellID *
 		return nil, listener.NewFindComponentListenersInternalServerError()
 	}
 	defer db.Close()
-
-	log.Println(" customerName =>>>>>", *customerName)
 
 	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
 		"customer_name": *customerName,
@@ -259,11 +258,12 @@ type updateComponentListener struct {
 func (ctx *updateComponentListener) Handle(params listener.UpdateComponentListenerParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-								(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)-[:LISTEN_ON]->(listener:Listener)
-							WHERE id(component) = {component_id} AND id(listener) = {listener_id}
-							SET listener.name={listener_name},
-									listener.port={listener_port},
-									listener.protocol={listener_protocol}`
+							(cell:Cell {id: {cell_id}})-[:PROVIDES]->
+							(component:Component {id: {component_id}})-[:LISTEN_ON]->(listener:Listener)
+						WHERE id(listener) = {listener_id}
+						SET listener.name={listener_name},
+								listener.port={listener_port},
+								listener.protocol={listener_protocol}`
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {

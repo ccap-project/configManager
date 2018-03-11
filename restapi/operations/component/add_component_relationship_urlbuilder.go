@@ -43,7 +43,7 @@ import (
 // AddComponentRelationshipURL generates an URL for the add component relationship operation
 type AddComponentRelationshipURL struct {
 	CellID      string
-	ComponentID int64
+	ComponentID string
 	EntityID    int64
 
 	_basePath string
@@ -78,9 +78,9 @@ func (o *AddComponentRelationshipURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("CellID is required on AddComponentRelationshipURL")
 	}
-	componentID := swag.FormatInt64(o.ComponentID)
+	componentID := o.ComponentID
 	if componentID != "" {
-		_path = strings.Replace(_path, "{component_id}", componentID, -1)
+		_path = strings.Replace(_path, "{componentId}", componentID, -1)
 	} else {
 		return nil, errors.New("ComponentID is required on AddComponentRelationshipURL")
 	}

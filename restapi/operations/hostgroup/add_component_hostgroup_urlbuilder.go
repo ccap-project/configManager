@@ -36,14 +36,12 @@ import (
 	"net/url"
 	golangswaggerpaths "path"
 	"strings"
-
-	"github.com/go-openapi/swag"
 )
 
 // AddComponentHostgroupURL generates an URL for the add component hostgroup operation
 type AddComponentHostgroupURL struct {
 	CellID      string
-	ComponentID int64
+	ComponentID string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -77,9 +75,9 @@ func (o *AddComponentHostgroupURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("CellID is required on AddComponentHostgroupURL")
 	}
-	componentID := swag.FormatInt64(o.ComponentID)
+	componentID := o.ComponentID
 	if componentID != "" {
-		_path = strings.Replace(_path, "{component_id}", componentID, -1)
+		_path = strings.Replace(_path, "{componentId}", componentID, -1)
 	} else {
 		return nil, errors.New("ComponentID is required on AddComponentHostgroupURL")
 	}

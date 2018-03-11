@@ -51,7 +51,7 @@ type AddComponentCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload int64 `json:"body,omitempty"`
+	Payload models.ULID `json:"body,omitempty"`
 }
 
 // NewAddComponentCreated creates AddComponentCreated with default headers values
@@ -60,13 +60,13 @@ func NewAddComponentCreated() *AddComponentCreated {
 }
 
 // WithPayload adds the payload to the add component created response
-func (o *AddComponentCreated) WithPayload(payload int64) *AddComponentCreated {
+func (o *AddComponentCreated) WithPayload(payload models.ULID) *AddComponentCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add component created response
-func (o *AddComponentCreated) SetPayload(payload int64) {
+func (o *AddComponentCreated) SetPayload(payload models.ULID) {
 	o.Payload = payload
 }
 

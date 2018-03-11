@@ -535,7 +535,7 @@ func getCellFull(rt *configManager.Runtime, customerName *string, cellID *string
 		}
 
 		// Component
-		C, err := _findCellComponents(conn, customerName, cellID)
+		C, err := _findCellComponents(rt, customerName, cellID)
 		res.Components = C
 		log.Printf(">>>>>>>>>>>>>>>>> %#v<<<<<<  %v<<<<<<<<<<<<", C, err)
 		//componentNode := getNodeByLabel(row, "Component")

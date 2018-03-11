@@ -43,7 +43,7 @@ import (
 // GetComponentListenerByIDURL generates an URL for the get component listener by ID operation
 type GetComponentListenerByIDURL struct {
 	CellID      string
-	ComponentID int64
+	ComponentID string
 	ListenerID  int64
 
 	_basePath string
@@ -78,9 +78,9 @@ func (o *GetComponentListenerByIDURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("CellID is required on GetComponentListenerByIDURL")
 	}
-	componentID := swag.FormatInt64(o.ComponentID)
+	componentID := o.ComponentID
 	if componentID != "" {
-		_path = strings.Replace(_path, "{component_id}", componentID, -1)
+		_path = strings.Replace(_path, "{componentId}", componentID, -1)
 	} else {
 		return nil, errors.New("ComponentID is required on GetComponentListenerByIDURL")
 	}
