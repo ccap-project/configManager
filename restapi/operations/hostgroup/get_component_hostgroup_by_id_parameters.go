@@ -36,7 +36,6 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
@@ -74,11 +73,14 @@ type GetComponentHostgroupByIDParams struct {
 	  In: path
 	*/
 	ComponentID string
-	/*ID of hostgroup that will be used
+	/*Hostgroup ID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	HostgroupID int64
+	HostgroupID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -97,7 +99,7 @@ func (o *GetComponentHostgroupByIDParams) BindRequest(r *http.Request, route *mi
 		res = append(res, err)
 	}
 
-	rHostgroupID, rhkHostgroupID, _ := route.Params.GetOK("hostgroup_id")
+	rHostgroupID, rhkHostgroupID, _ := route.Params.GetOK("hostgroupId")
 	if err := o.bindHostgroupID(rHostgroupID, rhkHostgroupID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -178,11 +180,28 @@ func (o *GetComponentHostgroupByIDParams) bindHostgroupID(rawData []string, hasK
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("hostgroup_id", "path", "int64", raw)
+	o.HostgroupID = raw
+
+	if err := o.validateHostgroupID(formats); err != nil {
+		return err
 	}
-	o.HostgroupID = value
+
+	return nil
+}
+
+func (o *GetComponentHostgroupByIDParams) validateHostgroupID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("hostgroupId", "path", o.HostgroupID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("hostgroupId", "path", o.HostgroupID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("hostgroupId", "path", o.HostgroupID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

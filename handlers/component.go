@@ -52,7 +52,10 @@ type addCellComponent struct {
 func (ctx *addCellComponent) Handle(params component.AddComponentParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})
-							CREATE (cell)-[:PROVIDES]->(component:Component { name: {component_name}, order: {component_order} })
+							CREATE (cell)-[:PROVIDES]->(component:Component {
+								id: {component_id},
+								name: {component_name},
+								order: {component_order} })
 							RETURN	component.id AS id,
 											component.name AS name`
 

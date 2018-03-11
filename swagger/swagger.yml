@@ -965,7 +965,7 @@ paths:
         201:
           description: "Created"
           schema:
-            type: integer
+            $ref: "#/definitions/ULID"
         405:
           description: "Invalid input"
           schema:
@@ -991,12 +991,7 @@ paths:
       parameters:
         - $ref: '#/parameters/CellID'
         - $ref: '#/parameters/ComponentID'
-        - name: "hostgroup_id"
-          in: "path"
-          description: "ID of hostgroup that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/HostgroupID'
       responses:
         200:
           description: "successful operation"
@@ -1027,12 +1022,7 @@ paths:
       parameters:
         - $ref: '#/parameters/CellID'
         - $ref: '#/parameters/ComponentID'
-        - name: "hostgroup_id"
-          in: "path"
-          description: "hostgroup that will be updated"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/HostgroupID'
         - in: "body"
           name: "body"
           description: "Hostgroup object that needs to be updated"
@@ -1063,12 +1053,7 @@ paths:
       parameters:
         - $ref: '#/parameters/CellID'
         - $ref: '#/parameters/ComponentID'
-        - name: "hostgroup_id"
-          in: "path"
-          description: "hostgroup that will be deleted"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/HostgroupID'
       responses:
         200:
           description: "successful operation"
@@ -1699,6 +1684,16 @@ parameters:
     maxLength: 26
     pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
 
+  HostgroupID:
+    name: "hostgroupId"
+    in: "path"
+    description: "Hostgroup ID"
+    required: true
+    type: "string"
+    minLength: 26
+    maxLength: 26
+    pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
+
   KeypairID:
     name: "keypairId"
     in: "path"
@@ -1782,7 +1777,7 @@ definitions:
       - network
     properties:
       id:
-        type: "integer"
+        $ref: "#/definitions/ULID"
       name:
         type: "string"
       image:

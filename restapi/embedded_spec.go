@@ -466,7 +466,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -513,12 +513,7 @@ func init() {
             "$ref": "#/parameters/ComponentID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of hostgroup that will be used",
-            "name": "hostgroup_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/HostgroupID"
           }
         ],
         "responses": {
@@ -570,12 +565,7 @@ func init() {
             "$ref": "#/parameters/ComponentID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "hostgroup that will be updated",
-            "name": "hostgroup_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/HostgroupID"
           },
           {
             "description": "Hostgroup object that needs to be updated",
@@ -627,12 +617,7 @@ func init() {
             "$ref": "#/parameters/ComponentID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "hostgroup that will be deleted",
-            "name": "hostgroup_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/HostgroupID"
           }
         ],
         "responses": {
@@ -2779,7 +2764,7 @@ func init() {
           "type": "string"
         },
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "image": {
           "type": "string"
@@ -3039,6 +3024,16 @@ func init() {
       "type": "string",
       "description": "Entity ID",
       "name": "entityId",
+      "in": "path",
+      "required": true
+    },
+    "HostgroupID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "Hostgroup ID",
+      "name": "hostgroupId",
       "in": "path",
       "required": true
     },

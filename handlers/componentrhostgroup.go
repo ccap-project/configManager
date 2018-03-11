@@ -34,7 +34,6 @@ import (
 
 	"configManager"
 	"configManager/models"
-	"configManager/neo4j"
 	"configManager/restapi/operations/hostgroup"
 
 	"github.com/Sirupsen/logrus"
@@ -56,6 +55,7 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 							(cell:Cell {id: {cell_id}})-[:PROVIDES]->
 							(component:Component {id: {component_id}})
 						CREATE (component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup {
+							id: {hostgroup_id},
 							name: {hostgroup_name},
 							image: {hostgroup_image},
 							flavor: {hostgroup_flavor},
@@ -64,23 +64,27 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 							count: {hostgroup_count},
 							network: {hostgroup_network},
 							order: {hostgroup_order} } )
-							RETURN id(hostgroup) as id`
+							RETURN hostgroup.id as id`
+
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID})
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j: ", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	if err != nil {
-		log.Printf("An error occurred beginning transaction: %s", err)
+		ctxLogger.Error("An error occurred beginning transaction: ", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
@@ -89,12 +93,17 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 		*params.Body.Order = 99
 	}
 
-	log.Println("Count: ", swag.Int64Value(params.Body.Count))
+	ulid := configManager.GetULID()
+
+	ctxLogger = ctx.rt.Logger().WithFields(logrus.Fields{
+		"hostgroup_id":   ulid,
+		"hostgroup_name": params.Body.Name})
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"customer_name":               swag.StringValue(principal.Name),
 		"cell_id":                     params.CellID,
 		"component_id":                params.ComponentID,
+		"hostgroup_id":                ulid,
 		"hostgroup_name":              swag.StringValue(params.Body.Name),
 		"hostgroup_image":             swag.StringValue(params.Body.Image),
 		"hostgroup_flavor":            swag.StringValue(params.Body.Flavor),
@@ -105,23 +114,19 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 		"hostgroup_order":             swag.Int64Value(params.Body.Order)})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 	if err != nil {
-		log.Printf("An error occurred getting next row: %s", err)
+		ctxLogger.Error("An error occurred getting next row: ", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
-	log.Printf("= Output(%#v)", output)
-
-	log.Printf("name(%s)", swag.StringValue(params.Body.Name))
-
 	stmt.Close()
 
-	return hostgroup.NewAddComponentHostgroupCreated().WithPayload(output[0].(int64))
+	return hostgroup.NewAddComponentHostgroupCreated().WithPayload(models.ULID(output[0].(string)))
 }
 
 func NewDeleteComponentHostgroup(rt *configManager.Runtime) hostgroup.DeleteComponentHostgroupHandler {
@@ -136,25 +141,30 @@ func (ctx *deleteComponentHostgroup) Handle(params hostgroup.DeleteComponentHost
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell {id: {cell_id}})-[:PROVIDES]->
-							(component:Component {id: {component_id}})-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
-						WHERE id(hostgroup) = {hostgroup_id}
+							(component:Component {id: {component_id}})-[:DEPLOYED_ON]->
+							(hostgroup:Hostgroup {id: {hostgroup_id}})
 						DETACH DELETE hostgroup`
 
-	if _getComponentHostgroupByID(ctx.rt.DB(), principal.Name, &params.CellID, &params.ComponentID, params.HostgroupID) == nil {
-		log.Println("hostgroup does not exists !")
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID,
+		"hostgroup_id":  params.HostgroupID})
+
+	if _getComponentHostgroupByID(ctx.rt, principal.Name, &params.CellID, &params.ComponentID, &params.HostgroupID) == nil {
+		ctxLogger.Error("hostgroup does not exists !")
 		return hostgroup.NewDeleteComponentHostgroupNotFound()
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j: ", err)
 		return hostgroup.NewDeleteComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return hostgroup.NewDeleteComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
@@ -167,13 +177,9 @@ func (ctx *deleteComponentHostgroup) Handle(params hostgroup.DeleteComponentHost
 		"hostgroup_id":  params.HostgroupID})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
-
-	//if res.Count.(int) <= 0 {
-	//	return hostgroup.NewDeleteComponentHostgroupNotFound()
-	//}
 
 	return hostgroup.NewDeleteComponentHostgroupOK()
 }
@@ -188,7 +194,7 @@ type getComponentHostgroupByID struct {
 
 func (ctx *getComponentHostgroupByID) Handle(params hostgroup.GetComponentHostgroupByIDParams, principal *models.Customer) middleware.Responder {
 
-	Hostgroup := _getComponentHostgroupByID(ctx.rt.DB(), principal.Name, &params.CellID, &params.ComponentID, params.HostgroupID)
+	Hostgroup := _getComponentHostgroupByID(ctx.rt, principal.Name, &params.CellID, &params.ComponentID, &params.HostgroupID)
 	if Hostgroup == nil {
 		return hostgroup.NewGetComponentHostgroupByIDNotFound()
 	}
@@ -208,8 +214,6 @@ func (ctx *findComponentHostgroups) Handle(params hostgroup.FindComponentHostgro
 
 	data, err := _FindComponentHostgroups(ctx.rt, principal.Name, &params.CellID, &params.ComponentID)
 
-	log.Printf("= data(%#v)", data)
-
 	if err != nil {
 		return err
 	}
@@ -222,7 +226,7 @@ func _FindComponentHostgroups(rt *configManager.Runtime, customerName *string, C
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell{id: {cell_id}})-[:PROVIDES]->
 							(component:Component {id: {component_id}})-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
-						RETURN id(hostgroup) as id,
+						RETURN hostgroup.id as id,
 										hostgroup.name as name,
 										hostgroup.image as image,
 										hostgroup.flavor as flavor,
@@ -279,7 +283,7 @@ func _FindComponentHostgroups(rt *configManager.Runtime, customerName *string, C
 		}
 
 		res[idx] = &models.Hostgroup{
-			ID:               row[0].(int64),
+			ID:               models.ULID(row[0].(string)),
 			Count:            &_count,
 			Name:             &_name,
 			Image:            &_image,
@@ -304,8 +308,8 @@ func (ctx *updateComponentHostgroup) Handle(params hostgroup.UpdateComponentHost
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 								(cell:Cell {id: {cell_id}})-[:PROVIDES]->
-								(component:Component {id: {component_id}})-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
-							WHERE id(hostgroup) = {hostgroup_id}
+								(component:Component {id: {component_id}})-[:DEPLOYED_ON]->
+								(hostgroup:Hostgroup {id: {hostgroup_id}})
 							SET hostgroup.name={hostgroup_name},
 									hostgroup.image={hostgroup_image},
 									hostgroup.flavor={hostgroup_flavor},
@@ -315,16 +319,22 @@ func (ctx *updateComponentHostgroup) Handle(params hostgroup.UpdateComponentHost
 									hostgroup.network={hostgroup_network},
 									hostgroup.order={hostgroup_order}`
 
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID,
+		"hostgroup_id":  params.HostgroupID,
+		"component_id":  params.ComponentID})
+
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j: ", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	defer stmt.Close()
@@ -357,23 +367,23 @@ func (ctx *updateComponentHostgroup) Handle(params hostgroup.UpdateComponentHost
 		"hostgroup_order":             swag.Int64Value(params.Body.Order)})
 
 	if err != nil {
-		log.Printf("-> An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
 	return hostgroup.NewUpdateComponentHostgroupOK()
 }
 
-func _getComponentHostgroupByID(conn neo4j.ConnPool, customer *string, cellID *string, componentID *string, hostgroupID int64) *models.Hostgroup {
+func _getComponentHostgroupByID(rt *configManager.Runtime, customer *string, cellID *string, componentID *string, hostgroupID *string) *models.Hostgroup {
 
 	var hostgroup *models.Hostgroup
 	hostgroup = nil
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell{id: {cell_id}})-[:PROVIDES]->
-							(component:Component {id: {component_id}})-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
-							WHERE id(hostgroup) = {hostgroup_id}
-							RETURN id(hostgroup) as id,
+							(component:Component {id: {component_id}})-[:DEPLOYED_ON]->
+							(hostgroup:Hostgroup {id: {hostgroup_id}})
+							RETURN hostgroup.id as id,
 											hostgroup.name as name,
 											hostgroup.image as image,
 											hostgroup.flavor as flavor,
@@ -383,16 +393,22 @@ func _getComponentHostgroupByID(conn neo4j.ConnPool, customer *string, cellID *s
 											hostgroup.network as network,
 											hostgroup.order as order`
 
-	db, err := conn.OpenPool()
+	ctxLogger := rt.Logger().WithFields(logrus.Fields{
+		"customer_name": customer,
+		"cell_id":       cellID,
+		"componentID":   componentID,
+		"hostgroup_id":  hostgroupID})
+
+	db, err := rt.DB().OpenPool()
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j: ", err)
 		return hostgroup
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return hostgroup
 	}
 	defer stmt.Close()
@@ -404,7 +420,7 @@ func _getComponentHostgroupByID(conn neo4j.ConnPool, customer *string, cellID *s
 		"hostgroup_id":  hostgroupID})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return hostgroup
 	}
 
@@ -434,7 +450,7 @@ func _getComponentHostgroupByID(conn neo4j.ConnPool, customer *string, cellID *s
 	}
 
 	hostgroup = &models.Hostgroup{
-		ID:               output[0].(int64),
+		ID:               models.ULID(output[0].(string)),
 		Count:            &_count,
 		Name:             &_name,
 		Image:            &_image,
