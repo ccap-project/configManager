@@ -38,7 +38,6 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
@@ -83,11 +82,14 @@ type UpdateComponentListenerParams struct {
 	  In: path
 	*/
 	ComponentID string
-	/*Listener that will be updated
+	/*ListenerID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	ListenerID int64
+	ListenerID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -130,7 +132,7 @@ func (o *UpdateComponentListenerParams) BindRequest(r *http.Request, route *midd
 		res = append(res, err)
 	}
 
-	rListenerID, rhkListenerID, _ := route.Params.GetOK("listener_id")
+	rListenerID, rhkListenerID, _ := route.Params.GetOK("listenerId")
 	if err := o.bindListenerID(rListenerID, rhkListenerID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -211,11 +213,28 @@ func (o *UpdateComponentListenerParams) bindListenerID(rawData []string, hasKey 
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("listener_id", "path", "int64", raw)
+	o.ListenerID = raw
+
+	if err := o.validateListenerID(formats); err != nil {
+		return err
 	}
-	o.ListenerID = value
+
+	return nil
+}
+
+func (o *UpdateComponentListenerParams) validateListenerID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("listenerId", "path", o.ListenerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("listenerId", "path", o.ListenerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("listenerId", "path", o.ListenerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

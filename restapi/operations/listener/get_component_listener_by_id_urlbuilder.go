@@ -36,15 +36,13 @@ import (
 	"net/url"
 	golangswaggerpaths "path"
 	"strings"
-
-	"github.com/go-openapi/swag"
 )
 
 // GetComponentListenerByIDURL generates an URL for the get component listener by ID operation
 type GetComponentListenerByIDURL struct {
 	CellID      string
 	ComponentID string
-	ListenerID  int64
+	ListenerID  string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -84,9 +82,9 @@ func (o *GetComponentListenerByIDURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("ComponentID is required on GetComponentListenerByIDURL")
 	}
-	listenerID := swag.FormatInt64(o.ListenerID)
+	listenerID := o.ListenerID
 	if listenerID != "" {
-		_path = strings.Replace(_path, "{listener_id}", listenerID, -1)
+		_path = strings.Replace(_path, "{listenerId}", listenerID, -1)
 	} else {
 		return nil, errors.New("ListenerID is required on GetComponentListenerByIDURL")
 	}

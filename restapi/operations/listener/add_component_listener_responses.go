@@ -51,7 +51,7 @@ type AddComponentListenerCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload int64 `json:"body,omitempty"`
+	Payload models.ULID `json:"body,omitempty"`
 }
 
 // NewAddComponentListenerCreated creates AddComponentListenerCreated with default headers values
@@ -60,13 +60,13 @@ func NewAddComponentListenerCreated() *AddComponentListenerCreated {
 }
 
 // WithPayload adds the payload to the add component listener created response
-func (o *AddComponentListenerCreated) WithPayload(payload int64) *AddComponentListenerCreated {
+func (o *AddComponentListenerCreated) WithPayload(payload models.ULID) *AddComponentListenerCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add component listener created response
-func (o *AddComponentListenerCreated) SetPayload(payload int64) {
+func (o *AddComponentListenerCreated) SetPayload(payload models.ULID) {
 	o.Payload = payload
 }
 

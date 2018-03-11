@@ -1122,7 +1122,7 @@ paths:
         201:
           description: "Created"
           schema:
-            type: integer
+            $ref: "#/definitions/ULID"
         405:
           description: "Invalid input"
           schema:
@@ -1148,12 +1148,7 @@ paths:
       parameters:
         - $ref: '#/parameters/CellID'
         - $ref: '#/parameters/ComponentID'
-        - name: "listener_id"
-          in: "path"
-          description: "ID of listener that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ListenerID'
       responses:
         200:
           description: "successful operation"
@@ -1184,12 +1179,7 @@ paths:
       parameters:
         - $ref: '#/parameters/CellID'
         - $ref: '#/parameters/ComponentID'
-        - name: "listener_id"
-          in: "path"
-          description: "Listener that will be updated"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ListenerID'
         - in: "body"
           name: "body"
           description: "Listener object that needs to be updated"
@@ -1220,12 +1210,7 @@ paths:
       parameters:
         - $ref: '#/parameters/CellID'
         - $ref: '#/parameters/ComponentID'
-        - name: "listener_id"
-          in: "path"
-          description: "listener that will be deleted"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/ListenerID'
       responses:
         200:
           description: "successful operation"
@@ -1493,15 +1478,10 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
+        - $ref: '#/parameters/ListenerID'
         - name: "loadbalancer_id"
           in: "path"
           description: "ID of loadbalancer that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
-        - name: "listener_id"
-          in: "path"
-          description: "ID of listener that will be used"
           required: true
           type: "integer"
           format: "int64"
@@ -1527,15 +1507,10 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
+        - $ref: '#/parameters/ListenerID'
         - name: "loadbalancer_id"
           in: "path"
           description: "ID of loadbalancer that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
-        - name: "listener_id"
-          in: "path"
-          description: "ID of listener that will be used"
           required: true
           type: "integer"
           format: "int64"
@@ -1698,6 +1673,16 @@ parameters:
     name: "keypairId"
     in: "path"
     description: "KeypairID"
+    required: true
+    type: "string"
+    minLength: 26
+    maxLength: 26
+    pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
+
+  ListenerID:
+    name: "listenerId"
+    in: "path"
+    description: "ListenerID"
     required: true
     type: "string"
     minLength: 26
@@ -1916,7 +1901,7 @@ definitions:
       - protocol
     properties:
       id:
-        type: integer
+        $ref: "#/definitions/ULID"
       name:
         type: "string"
       port:

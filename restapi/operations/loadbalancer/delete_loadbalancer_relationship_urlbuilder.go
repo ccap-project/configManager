@@ -43,7 +43,7 @@ import (
 // DeleteLoadbalancerRelationshipURL generates an URL for the delete loadbalancer relationship operation
 type DeleteLoadbalancerRelationshipURL struct {
 	CellID         string
-	ListenerID     int64
+	ListenerID     string
 	LoadbalancerID int64
 
 	_basePath string
@@ -78,9 +78,9 @@ func (o *DeleteLoadbalancerRelationshipURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("CellID is required on DeleteLoadbalancerRelationshipURL")
 	}
-	listenerID := swag.FormatInt64(o.ListenerID)
+	listenerID := o.ListenerID
 	if listenerID != "" {
-		_path = strings.Replace(_path, "{listener_id}", listenerID, -1)
+		_path = strings.Replace(_path, "{listenerId}", listenerID, -1)
 	} else {
 		return nil, errors.New("ListenerID is required on DeleteLoadbalancerRelationshipURL")
 	}

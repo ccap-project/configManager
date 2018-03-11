@@ -729,7 +729,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -776,12 +776,7 @@ func init() {
             "$ref": "#/parameters/ComponentID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of listener that will be used",
-            "name": "listener_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ListenerID"
           }
         ],
         "responses": {
@@ -833,12 +828,7 @@ func init() {
             "$ref": "#/parameters/ComponentID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "Listener that will be updated",
-            "name": "listener_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ListenerID"
           },
           {
             "description": "Listener object that needs to be updated",
@@ -890,12 +880,7 @@ func init() {
             "$ref": "#/parameters/ComponentID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "listener that will be deleted",
-            "name": "listener_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ListenerID"
           }
         ],
         "responses": {
@@ -1681,18 +1666,13 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of loadbalancer that will be used",
-            "name": "loadbalancer_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ListenerID"
           },
           {
             "type": "integer",
             "format": "int64",
-            "description": "ID of listener that will be used",
-            "name": "listener_id",
+            "description": "ID of loadbalancer that will be used",
+            "name": "loadbalancer_id",
             "in": "path",
             "required": true
           }
@@ -1734,18 +1714,13 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of loadbalancer that will be used",
-            "name": "loadbalancer_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ListenerID"
           },
           {
             "type": "integer",
             "format": "int64",
-            "description": "ID of listener that will be used",
-            "name": "listener_id",
+            "description": "ID of loadbalancer that will be used",
+            "name": "loadbalancer_id",
             "in": "path",
             "required": true
           }
@@ -2817,7 +2792,7 @@ func init() {
       ],
       "properties": {
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -3044,6 +3019,16 @@ func init() {
       "type": "string",
       "description": "KeypairID",
       "name": "keypairId",
+      "in": "path",
+      "required": true
+    },
+    "ListenerID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "ListenerID",
+      "name": "listenerId",
       "in": "path",
       "required": true
     },

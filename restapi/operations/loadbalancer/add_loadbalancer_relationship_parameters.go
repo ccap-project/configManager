@@ -66,11 +66,14 @@ type AddLoadbalancerRelationshipParams struct {
 	  In: path
 	*/
 	CellID string
-	/*ID of listener that will be used
+	/*ListenerID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	ListenerID int64
+	ListenerID string
 	/*ID of loadbalancer that will be used
 	  Required: true
 	  In: path
@@ -89,7 +92,7 @@ func (o *AddLoadbalancerRelationshipParams) BindRequest(r *http.Request, route *
 		res = append(res, err)
 	}
 
-	rListenerID, rhkListenerID, _ := route.Params.GetOK("listener_id")
+	rListenerID, rhkListenerID, _ := route.Params.GetOK("listenerId")
 	if err := o.bindListenerID(rListenerID, rhkListenerID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -143,11 +146,28 @@ func (o *AddLoadbalancerRelationshipParams) bindListenerID(rawData []string, has
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("listener_id", "path", "int64", raw)
+	o.ListenerID = raw
+
+	if err := o.validateListenerID(formats); err != nil {
+		return err
 	}
-	o.ListenerID = value
+
+	return nil
+}
+
+func (o *AddLoadbalancerRelationshipParams) validateListenerID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("listenerId", "path", o.ListenerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("listenerId", "path", o.ListenerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("listenerId", "path", o.ListenerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -115,7 +115,7 @@ type addLoadbalancerRelationship struct {
 
 func (ctx *addLoadbalancerRelationship) Handle(params loadbalancer.AddLoadbalancerRelationshipParams, principal *models.Customer) middleware.Responder {
 
-	if _getComponentListenerByID(ctx.rt.DB(), principal.Name, &params.CellID, params.ListenerID) == nil {
+	if _getComponentListenerByID(ctx.rt, principal.Name, &params.CellID, &params.ListenerID) == nil {
 		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "listener not found"})
 	}
 
@@ -133,8 +133,9 @@ func (ctx *addLoadbalancerRelationship) Handle(params loadbalancer.AddLoadbalanc
 	cypher := `
 		MATCH (customer:Customer {name: {customer_name}})-[:OWN]->(cell:Cell {id: {cell_id}})-[:HAS]->(lb:Loadbalancer)
 		WHERE id(lb) = {loadbalancer_id}
-		MATCH (cell {id: {cell_id}})-[:PROVIDES]->(component:Component)-[:LISTEN_ON]->(listener:Listener)
-		WHERE id(listener) = {listener_id}
+		MATCH (cell {id: {cell_id}})-[:PROVIDES]->
+			(component:Component)-[:LISTEN_ON]->
+			(listener:Listener {id: {listener_id}})
 		MERGE (lb)-[:CONNECT_TO]->(listener)
 		RETURN *`
 
@@ -192,7 +193,7 @@ type deleteLoadbalancerRelationship struct {
 
 func (ctx *deleteLoadbalancerRelationship) Handle(params loadbalancer.DeleteLoadbalancerRelationshipParams, principal *models.Customer) middleware.Responder {
 
-	if _getComponentListenerByID(ctx.rt.DB(), principal.Name, &params.CellID, params.ListenerID) == nil {
+	if _getComponentListenerByID(ctx.rt, principal.Name, &params.CellID, &params.ListenerID) == nil {
 		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "listener not found"})
 	}
 
@@ -209,8 +210,10 @@ func (ctx *deleteLoadbalancerRelationship) Handle(params loadbalancer.DeleteLoad
 
 	cypher := `
 			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->
-				(cell:Cell {id: {cell_id}})-[:HAS]->(loadbalancer:Loadbalancer)-[r:CONNECT_TO]->(listener:Listener)
-			WHERE id(listener) = {listener_id} AND id(loadbalancer) = {loadbalancer_id}
+				(cell:Cell {id: {cell_id}})-[:HAS]->
+				(loadbalancer:Loadbalancer)-[r:CONNECT_TO]->
+				(listener:Listener {id: {listener_id}})
+			WHERE id(loadbalancer) = {loadbalancer_id}
 			delete r`
 
 	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{

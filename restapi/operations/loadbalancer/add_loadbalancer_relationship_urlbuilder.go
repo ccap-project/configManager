@@ -43,7 +43,7 @@ import (
 // AddLoadbalancerRelationshipURL generates an URL for the add loadbalancer relationship operation
 type AddLoadbalancerRelationshipURL struct {
 	CellID         string
-	ListenerID     int64
+	ListenerID     string
 	LoadbalancerID int64
 
 	_basePath string
@@ -78,9 +78,9 @@ func (o *AddLoadbalancerRelationshipURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("CellID is required on AddLoadbalancerRelationshipURL")
 	}
-	listenerID := swag.FormatInt64(o.ListenerID)
+	listenerID := o.ListenerID
 	if listenerID != "" {
-		_path = strings.Replace(_path, "{listener_id}", listenerID, -1)
+		_path = strings.Replace(_path, "{listenerId}", listenerID, -1)
 	} else {
 		return nil, errors.New("ListenerID is required on AddLoadbalancerRelationshipURL")
 	}
