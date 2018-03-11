@@ -52,13 +52,12 @@ type addCellComponent struct {
 
 func (ctx *addCellComponent) Handle(params component.AddComponentParams, principal *models.Customer) middleware.Responder {
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)
-							WHERE id(cell) = {cell_id}
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})
 							CREATE (cell)-[:PROVIDES]->(component:Component { name: {component_name}, order: {component_order} })
 							RETURN	id(component) AS id,
 											component.name AS name`
 
-	if _getComponentByName(ctx.rt.DB(), principal.Name, params.CellID, params.Body.Name) != nil {
+	if _getComponentByName(ctx.rt.DB(), principal.Name, &params.CellID, params.Body.Name) != nil {
 		log.Println("component already exists !")
 		return component.NewAddComponentConflict().WithPayload(models.APIResponse{Message: "component already exists"})
 	}
@@ -115,21 +114,21 @@ type addComponentRelationship struct {
 func (ctx *addComponentRelationship) Handle(params component.AddComponentRelationshipParams, principal *models.Customer) middleware.Responder {
 
 	var cypher string
-	entityType := _getEntityType(ctx.rt.DB(), params.CellID, params.EntityID)
+	entityType := _getEntityType(ctx.rt.DB(), &params.CellID, params.EntityID)
 
 	switch entityType {
 	case "Loadbalancer":
 		cypher = `
-			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->(cell:Cell)-[:PROVIDES]->(component:Component)
-			WHERE id(cell) = {cell_id} AND id(component) = {component_id}
+			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)
+			WHERE id(component) = {component_id}
 			MATCH (cell)-[:HAS]->(lb:Loadbalancer)
 			WHERE id(lb) = {entity_id}
 			MERGE (component)-[:CONNECT_TO]->(lb)
 			RETURN *`
 	case "Component":
 		cypher = `
-			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->(cell:Cell)-[:PROVIDES]->(component:Component)
-			WHERE id(cell) = {cell_id} AND id(component) = {component_id}
+			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)
+			WHERE id(component) = {component_id}
 			MATCH (cell)-[:PROVIDES]->(component_t:Component)-[:LISTEN_ON]->(listener:Listener)
 			WHERE id(component_t) = {entity_id}
 			MERGE (component)-[:CONNECT_TO]->(listener)
@@ -193,19 +192,21 @@ type deleteComponentRelationship struct {
 func (ctx *deleteComponentRelationship) Handle(params component.DeleteComponentRelationshipParams, principal *models.Customer) middleware.Responder {
 
 	var cypher string
-	entityType := _getEntityType(ctx.rt.DB(), params.CellID, params.EntityID)
+	entityType := _getEntityType(ctx.rt.DB(), &params.CellID, params.EntityID)
 
 	switch entityType {
 	case "Loadbalancer":
 		cypher = `
-			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->(cell:Cell)-[:PROVIDES]->(component:Component)-[r:CONNECT_TO]->(entity:Loadbalancer)
-			WHERE id(cell) = {cell_id} AND id(component) = {component_id} AND id(entity) = {entity_id}
+			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->
+			 (cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)-[r:CONNECT_TO]->(entity:Loadbalancer)
+			WHERE id(component) = {component_id} AND id(entity) = {entity_id}
 			delete r`
 
 	case "Component":
 		cypher = `
-			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->(cell:Cell)-[:PROVIDES]->(component:Component)-[r:CONNECT_TO]->(Listener)<-[:LISTEN_ON]-(entity:Component)
-			WHERE id(cell) = {cell_id} AND id(component) = {component_id} AND id(entity) = {entity_id}
+			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->
+			 (cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)-[r:CONNECT_TO]->(Listener)<-[:LISTEN_ON]-(entity:Component)
+			WHERE id(component) = {component_id} AND id(entity) = {entity_id}
 			delete r`
 
 	default:
@@ -258,7 +259,7 @@ type getCellComponent struct {
 
 func (ctx *getCellComponent) Handle(params component.GetCellComponentParams, principal *models.Customer) middleware.Responder {
 
-	cellComponent, err := _getCellComponent(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID)
+	cellComponent, err := _getCellComponent(ctx.rt.DB(), principal.Name, &params.CellID, params.ComponentID)
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
@@ -282,7 +283,7 @@ type findCellComponents struct {
 
 func (ctx *findCellComponents) Handle(params component.FindCellComponentsParams, principal *models.Customer) middleware.Responder {
 
-	cellComponents, err := _findCellComponents(ctx.rt.DB(), principal.Name, params.CellID)
+	cellComponents, err := _findCellComponents(ctx.rt.DB(), principal.Name, &params.CellID)
 
 	if err != nil {
 		return component.NewFindCellComponentsInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -291,9 +292,8 @@ func (ctx *findCellComponents) Handle(params component.FindCellComponentsParams,
 	return component.NewFindCellComponentsOK().WithPayload(cellComponents)
 }
 
-func _findCellComponents(conn neo4j.ConnPool, customerName *string, CellID int64) ([]*models.Component, error) {
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)-[:PROVIDES]->(component)
-								WHERE id(cell) = {cell_id}
+func _findCellComponents(conn neo4j.ConnPool, customerName *string, CellID *string) ([]*models.Component, error) {
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component)
 								RETURN ID(component) as id,
 												component.name as name`
 
@@ -335,12 +335,12 @@ func _findCellComponents(conn neo4j.ConnPool, customerName *string, CellID int64
 	return res, nil
 }
 
-func _getCellComponent(conn neo4j.ConnPool, customerName *string, CellID int64, ComponentID int64) (*models.Component, error) {
+func _getCellComponent(conn neo4j.ConnPool, customerName *string, CellID *string, ComponentID int64) (*models.Component, error) {
 	var component *models.Component
 	component = nil
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)-[:PROVIDES]->(component:Component)
-							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)
+							WHERE id(component) = {component_id}
 								RETURN ID(component) as id,
 												component.name as name`
 
@@ -388,13 +388,13 @@ func _getCellComponent(conn neo4j.ConnPool, customerName *string, CellID int64, 
 	return component, nil
 }
 
-func _getComponentByName(conn neo4j.ConnPool, customerName *string, CellID int64, componentName *string) *models.Component {
+func _getComponentByName(conn neo4j.ConnPool, customerName *string, CellID *string, componentName *string) *models.Component {
 
 	var component *models.Component
 	component = nil
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)-[:PROVIDES]->(component:Component)
-							WHERE id(cell) = {cell_id} AND component.name = {component_name}
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)
+							WHERE component.name = {component_name}
 								RETURN ID(component) as id,
 												component.name as name`
 
@@ -412,7 +412,8 @@ func _getComponentByName(conn neo4j.ConnPool, customerName *string, CellID int64
 		return component
 	}
 
-	rows, err := stmt.QueryNeo(map[string]interface{}{"name": swag.StringValue(customerName),
+	rows, err := stmt.QueryNeo(map[string]interface{}{
+		"name":           swag.StringValue(customerName),
 		"cell_id":        CellID,
 		"component_name": swag.StringValue(componentName)})
 
@@ -435,10 +436,10 @@ func _getComponentByName(conn neo4j.ConnPool, customerName *string, CellID int64
 	return component
 }
 
-func _getEntityType(conn neo4j.ConnPool, CellID int64, EntityID int64) string {
+func _getEntityType(conn neo4j.ConnPool, CellID *string, EntityID int64) string {
 
-	cypher := `MATCH (cell:Cell)-->(entity)
-							WHERE id(cell) = {cell_id} AND id(entity) = {entity_id}
+	cypher := `MATCH (cell:Cell{id: {cell_id}})-->(entity)
+							WHERE id(entity) = {entity_id}
 								RETURN labels(entity)`
 
 	db, err := conn.OpenPool()

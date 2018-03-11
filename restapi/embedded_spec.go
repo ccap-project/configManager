@@ -87,7 +87,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -129,12 +129,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell to return",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -180,12 +175,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that needs to be updated",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "string",
@@ -216,17 +206,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "string",
-            "name": "api_key",
-            "in": "header"
-          },
-          {
-            "type": "integer",
-            "format": "int64",
-            "description": "Cell id to delete",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -259,12 +239,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "description": "Component object that needs to be added",
@@ -321,12 +296,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that needs to be updated",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -379,12 +349,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -443,12 +408,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -512,12 +472,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -582,12 +537,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -649,12 +599,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -716,12 +661,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -779,12 +719,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -840,12 +775,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -910,12 +840,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -977,12 +902,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -1044,12 +964,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -1107,12 +1022,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -1168,12 +1078,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -1241,12 +1146,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -1313,12 +1213,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -1375,12 +1270,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -1433,12 +1323,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that needs to be updated",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -1484,12 +1369,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell to return",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -1538,12 +1418,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell to return",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -1592,12 +1467,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell to return",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -1645,12 +1515,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "description": "Host object that will be added",
@@ -1707,12 +1572,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -1760,12 +1620,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "string",
@@ -1826,12 +1681,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "description": "Loadbalancer object that needs to be added",
@@ -1888,12 +1738,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that needs to be updated",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -1943,12 +1788,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that needs to be updated",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -2001,12 +1841,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that needs to be updated",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "integer",
@@ -2061,12 +1896,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that needs to be updated",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -2112,12 +1942,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -2154,12 +1979,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "description": "Provider object that needs to be updated",
@@ -2214,12 +2034,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "description": "Provider object that needs to be added",
@@ -2810,12 +2625,7 @@ func init() {
         "operationId": "getProviderTypeById",
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of providertype to return",
-            "name": "providertype_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ProvidertypeID"
           }
         ],
         "responses": {
@@ -2850,17 +2660,7 @@ func init() {
         "operationId": "deleteProviderType",
         "parameters": [
           {
-            "type": "string",
-            "name": "api_key",
-            "in": "header"
-          },
-          {
-            "type": "integer",
-            "format": "int64",
-            "description": "Provider type id to delete",
-            "name": "providertype_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ProvidertypeID"
           }
         ],
         "responses": {
@@ -2927,7 +2727,7 @@ func init() {
       ],
       "properties": {
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -3297,6 +3097,16 @@ func init() {
     }
   },
   "parameters": {
+    "CellID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "Cell ID",
+      "name": "cellId",
+      "in": "path",
+      "required": true
+    },
     "CustomerID": {
       "maxLength": 26,
       "minLength": 26,
@@ -3314,6 +3124,16 @@ func init() {
       "type": "string",
       "description": "KeypairID",
       "name": "keypairId",
+      "in": "path",
+      "required": true
+    },
+    "ProvidertypeID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "ProvidertypeID",
+      "name": "providertypeId",
       "in": "path",
       "required": true
     }

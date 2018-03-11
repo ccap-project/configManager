@@ -51,12 +51,11 @@ type addCellHost struct {
 
 func (ctx *addCellHost) Handle(params host.AddCellHostParams, principal *models.Customer) middleware.Responder {
 
-	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->(cell:Cell)
-							WHERE id(cell) = {cell_id}
+	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->(cell:Cell {id: {cell_id}})
 							CREATE (cell)-[:HAS]->(host:Host {name: {host_name}} )
 								RETURN id(host) as id`
 
-	if getCellHostByName(ctx.rt.DB(), principal.Name, params.CellID, params.Body.Name) != nil {
+	if getCellHostByName(ctx.rt.DB(), principal.Name, &params.CellID, params.Body.Name) != nil {
 		log.Println("host already exists !")
 		return host.NewAddCellHostConflict().WithPayload(models.APIResponse{Message: "host already exists"})
 	}
@@ -99,7 +98,7 @@ func (ctx *addCellHost) Handle(params host.AddCellHostParams, principal *models.
 
 	stmt.Close()
 
-	err = addCellHostOptions(principal.Name, params.CellID, params.Body.Name, params.Body.Options, db)
+	err = addCellHostOptions(principal.Name, &params.CellID, params.Body.Name, params.Body.Options, db)
 	if err != nil {
 		log.Printf("An error occurred adding Host options: %s", err)
 		return host.NewAddCellHostInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -112,8 +111,7 @@ func (ctx *addCellHost) Handle(params host.AddCellHostParams, principal *models.
 func FindCellHosts(params host.FindCellHostsParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:HAS]->(host:Host)
-							WHERE id(cell) = {cell_id}
+							(cell:Cell {id: {cell_id}})-[:HAS]->(host:Host)
 								RETURN id(host) as id,
 												host.name as name`
 
@@ -151,13 +149,12 @@ func FindCellHosts(params host.FindCellHostsParams, principal *models.Customer) 
 	return host.NewFindCellHostsOK().WithPayload(res)
 }
 
-func addCellHostOptions(customer *string, cellID int64, hostName *string, options []*models.Parameter, db neo4j.Conn) error {
+func addCellHostOptions(customer *string, cellID *string, hostName *string, options []*models.Parameter, db neo4j.Conn) error {
 
 	log.Printf("= Output(%#v)", options)
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:HAS]->(host:Host {name: {host_name}})
-							WHERE id(cell) = {cell_id}
+							(cell:Cell {id: {cell_id}})-[:HAS]->(host:Host {name: {host_name}})
 							CREATE (host)-[:OPT]->(option:Option {name: {opt_name}, value: {opt_val}} )
 								RETURN id(option) as id`
 
@@ -187,14 +184,13 @@ func addCellHostOptions(customer *string, cellID int64, hostName *string, option
 	return nil
 }
 
-func getCellHostByName(conn neo4j.ConnPool, customer *string, cellID int64, hostName *string) *models.Host {
+func getCellHostByName(conn neo4j.ConnPool, customer *string, cellID *string, hostName *string) *models.Host {
 
 	var host *models.Host
 	host = nil
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:HAS]->(host:Host {name: {host_name}})
-							WHERE id(cell) = {cell_id}
+							(cell:Cell {id: {cell_id}})-[:HAS]->(host:Host {name: {host_name}})
 								RETURN ID(host) as id,
 												host.name as name`
 

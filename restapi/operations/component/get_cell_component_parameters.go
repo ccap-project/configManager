@@ -37,6 +37,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -57,11 +58,14 @@ type GetCellComponentParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*ID of cell that needs to be updated
+	/*Cell ID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	CellID int64
+	CellID string
 	/*ID of component that will be used
 	  Required: true
 	  In: path
@@ -75,7 +79,7 @@ func (o *GetCellComponentParams) BindRequest(r *http.Request, route *middleware.
 	var res []error
 	o.HTTPRequest = r
 
-	rCellID, rhkCellID, _ := route.Params.GetOK("cell_id")
+	rCellID, rhkCellID, _ := route.Params.GetOK("cellId")
 	if err := o.bindCellID(rCellID, rhkCellID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -97,11 +101,28 @@ func (o *GetCellComponentParams) bindCellID(rawData []string, hasKey bool, forma
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("cell_id", "path", "int64", raw)
+	o.CellID = raw
+
+	if err := o.validateCellID(formats); err != nil {
+		return err
 	}
-	o.CellID = value
+
+	return nil
+}
+
+func (o *GetCellComponentParams) validateCellID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("cellId", "path", o.CellID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("cellId", "path", o.CellID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("cellId", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

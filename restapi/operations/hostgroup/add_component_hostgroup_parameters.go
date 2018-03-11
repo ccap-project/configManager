@@ -39,6 +39,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -66,11 +67,14 @@ type AddComponentHostgroupParams struct {
 	  In: body
 	*/
 	Body *models.Hostgroup
-	/*ID of cell that will be used
+	/*Cell ID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	CellID int64
+	CellID string
 	/*ID of component that will be used
 	  Required: true
 	  In: path
@@ -108,7 +112,7 @@ func (o *AddComponentHostgroupParams) BindRequest(r *http.Request, route *middle
 		res = append(res, errors.Required("body", "body"))
 	}
 
-	rCellID, rhkCellID, _ := route.Params.GetOK("cell_id")
+	rCellID, rhkCellID, _ := route.Params.GetOK("cellId")
 	if err := o.bindCellID(rCellID, rhkCellID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -130,11 +134,28 @@ func (o *AddComponentHostgroupParams) bindCellID(rawData []string, hasKey bool, 
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("cell_id", "path", "int64", raw)
+	o.CellID = raw
+
+	if err := o.validateCellID(formats); err != nil {
+		return err
 	}
-	o.CellID = value
+
+	return nil
+}
+
+func (o *AddComponentHostgroupParams) validateCellID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("cellId", "path", o.CellID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("cellId", "path", o.CellID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("cellId", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

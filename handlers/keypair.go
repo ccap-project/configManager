@@ -69,7 +69,7 @@ func (ctx *addCellKeypair) Handle(params keypair.AddCellKeypairParams, principal
 		"customer_name": swag.StringValue(principal.Name),
 		"keypair_name":  params.KeypairName})
 
-	if getCellKeypair(ctx.rt, principal.Name, params.CellID) != nil {
+	if getCellKeypair(ctx.rt, principal.Name, &params.CellID) != nil {
 		ctxLogger.Error("This Cell already has a keypair")
 		return keypair.NewAddCellKeypairNotFound()
 	}
@@ -154,8 +154,13 @@ func (ctx *addKeypair) Handle(params keypair.AddKeypairParams, principal *models
 		return keypair.NewAddKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
+	ulid := configManager.GetULID()
+
+	ctxLogger = ctxLogger.WithFields(logrus.Fields{
+		"keypair_id": ulid})
+
 	rows, err := stmt.QueryNeo(map[string]interface{}{
-		"id":         configManager.GetULID(),
+		"id":         ulid,
 		"name":       swag.StringValue(principal.Name),
 		"kname":      swag.StringValue(params.Body.Name),
 		"public_key": swag.StringValue(params.Body.PublicKey)})
@@ -286,7 +291,7 @@ func (ctx *findKeypairByCustomer) Handle(params keypair.FindKeypairByCustomerPar
 	return keypair.NewFindKeypairByCustomerOK().WithPayload(res)
 }
 
-func getCellKeypair(ctx *configManager.Runtime, customerName *string, CellID int64) *models.Keypair {
+func getCellKeypair(ctx *configManager.Runtime, customerName *string, CellID *string) *models.Keypair {
 
 	var keypair *models.Keypair
 	keypair = nil

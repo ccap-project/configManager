@@ -42,7 +42,7 @@ import (
 
 // DeleteComponentRoleURL generates an URL for the delete component role operation
 type DeleteComponentRoleURL struct {
-	CellID      int64
+	CellID      string
 	ComponentID int64
 	RoleName    string
 
@@ -72,9 +72,9 @@ func (o *DeleteComponentRoleURL) Build() (*url.URL, error) {
 
 	var _path = "/cell/{cell_id}/component/{component_id}/role/{role_name}"
 
-	cellID := swag.FormatInt64(o.CellID)
+	cellID := o.CellID
 	if cellID != "" {
-		_path = strings.Replace(_path, "{cell_id}", cellID, -1)
+		_path = strings.Replace(_path, "{cellId}", cellID, -1)
 	} else {
 		return nil, errors.New("CellID is required on DeleteComponentRoleURL")
 	}

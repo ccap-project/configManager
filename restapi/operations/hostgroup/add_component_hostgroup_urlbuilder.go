@@ -42,7 +42,7 @@ import (
 
 // AddComponentHostgroupURL generates an URL for the add component hostgroup operation
 type AddComponentHostgroupURL struct {
-	CellID      int64
+	CellID      string
 	ComponentID int64
 
 	_basePath string
@@ -71,9 +71,9 @@ func (o *AddComponentHostgroupURL) Build() (*url.URL, error) {
 
 	var _path = "/cell/{cell_id}/component/{component_id}/hostgroup"
 
-	cellID := swag.FormatInt64(o.CellID)
+	cellID := o.CellID
 	if cellID != "" {
-		_path = strings.Replace(_path, "{cell_id}", cellID, -1)
+		_path = strings.Replace(_path, "{cellId}", cellID, -1)
 	} else {
 		return nil, errors.New("CellID is required on AddComponentHostgroupURL")
 	}

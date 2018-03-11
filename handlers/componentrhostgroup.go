@@ -51,8 +51,9 @@ type addComponentHostgroup struct {
 
 func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 
-	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->(cell:Cell)-[:PROVIDES]->(component:Component)
-							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
+	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
+							(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)
+							WHERE id(component) = {component_id}
 							CREATE (component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup {
 								name: {hostgroup_name},
 								image: {hostgroup_image},
@@ -133,13 +134,12 @@ type deleteComponentHostgroup struct {
 func (ctx *deleteComponentHostgroup) Handle(params hostgroup.DeleteComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:PROVIDES]->(component:Component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
-							WHERE id(cell) = {cell_id}
-								AND id(component) = {component_id}
+							(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
+							WHERE id(component) = {component_id}
 								AND id(hostgroup) = {hostgroup_id}
 							DETACH DELETE hostgroup`
 
-	if _getComponentHostgroupByID(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, params.HostgroupID) == nil {
+	if _getComponentHostgroupByID(ctx.rt.DB(), principal.Name, &params.CellID, params.ComponentID, params.HostgroupID) == nil {
 		log.Println("hostgroup does not exists !")
 		return hostgroup.NewDeleteComponentHostgroupNotFound()
 	}
@@ -187,7 +187,7 @@ type getComponentHostgroupByID struct {
 
 func (ctx *getComponentHostgroupByID) Handle(params hostgroup.GetComponentHostgroupByIDParams, principal *models.Customer) middleware.Responder {
 
-	Hostgroup := _getComponentHostgroupByID(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, params.HostgroupID)
+	Hostgroup := _getComponentHostgroupByID(ctx.rt.DB(), principal.Name, &params.CellID, params.ComponentID, params.HostgroupID)
 	if Hostgroup == nil {
 		return hostgroup.NewGetComponentHostgroupByIDNotFound()
 	}
@@ -205,7 +205,7 @@ type findComponentHostgroups struct {
 
 func (ctx *findComponentHostgroups) Handle(params hostgroup.FindComponentHostgroupsParams, principal *models.Customer) middleware.Responder {
 
-	data, err := _FindComponentHostgroups(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID)
+	data, err := _FindComponentHostgroups(ctx.rt.DB(), principal.Name, &params.CellID, params.ComponentID)
 
 	log.Printf("= data(%#v)", data)
 
@@ -216,11 +216,11 @@ func (ctx *findComponentHostgroups) Handle(params hostgroup.FindComponentHostgro
 	return hostgroup.NewFindComponentHostgroupsOK().WithPayload(data)
 }
 
-func _FindComponentHostgroups(conn neo4j.ConnPool, customerName *string, CellID int64, ComponentID int64) ([]*models.Hostgroup, middleware.Responder) {
+func _FindComponentHostgroups(conn neo4j.ConnPool, customerName *string, CellID *string, ComponentID int64) ([]*models.Hostgroup, middleware.Responder) {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:PROVIDES]->(component:Component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
-							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
+							(cell:Cell{id: {cell_id}})-[:PROVIDES]->(component:Component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
+							WHERE id(component) = {component_id}
 								RETURN id(hostgroup) as id,
 												hostgroup.name as name,
 												hostgroup.image as image,
@@ -301,8 +301,8 @@ type updateComponentHostgroup struct {
 func (ctx *updateComponentHostgroup) Handle(params hostgroup.UpdateComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-								(cell:Cell)-[:PROVIDES]->(component:Component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
-							WHERE id(cell) = {cell_id} AND id(component) = {component_id} AND id(hostgroup) = {hostgroup_id}
+								(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
+							WHERE id(component) = {component_id} AND id(hostgroup) = {hostgroup_id}
 							SET hostgroup.name={hostgroup_name},
 									hostgroup.image={hostgroup_image},
 									hostgroup.flavor={hostgroup_flavor},
@@ -361,15 +361,14 @@ func (ctx *updateComponentHostgroup) Handle(params hostgroup.UpdateComponentHost
 	return hostgroup.NewUpdateComponentHostgroupOK()
 }
 
-func _getComponentHostgroupByID(conn neo4j.ConnPool, customer *string, cellID int64, componentID int64, hostgroupID int64) *models.Hostgroup {
+func _getComponentHostgroupByID(conn neo4j.ConnPool, customer *string, cellID *string, componentID int64, hostgroupID int64) *models.Hostgroup {
 
 	var hostgroup *models.Hostgroup
 	hostgroup = nil
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:PROVIDES]->(component:Component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
-							WHERE id(cell) = {cell_id}
-								AND id(component) = {component_id}
+							(cell:Cell{id: {cell_id}})-[:PROVIDES]->(component:Component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
+							WHERE id(component) = {component_id}
 								AND id(hostgroup) = {hostgroup_id}
 							RETURN id(hostgroup) as id,
 											hostgroup.name as name,

@@ -36,13 +36,11 @@ import (
 	"net/url"
 	golangswaggerpaths "path"
 	"strings"
-
-	"github.com/go-openapi/swag"
 )
 
 // DeleteProviderTypeURL generates an URL for the delete provider type operation
 type DeleteProviderTypeURL struct {
-	ProvidertypeID int64
+	ProvidertypeID string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -70,9 +68,9 @@ func (o *DeleteProviderTypeURL) Build() (*url.URL, error) {
 
 	var _path = "/providertype/{providertype_id}"
 
-	providertypeID := swag.FormatInt64(o.ProvidertypeID)
+	providertypeID := o.ProvidertypeID
 	if providertypeID != "" {
-		_path = strings.Replace(_path, "{providertype_id}", providertypeID, -1)
+		_path = strings.Replace(_path, "{providertypeId}", providertypeID, -1)
 	} else {
 		return nil, errors.New("ProvidertypeID is required on DeleteProviderTypeURL")
 	}

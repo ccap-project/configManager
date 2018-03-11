@@ -52,14 +52,12 @@ type addComponentRole struct {
 
 func (ctx *addComponentRole) Handle(params role.AddComponentRoleParams, principal *models.Customer) middleware.Responder {
 
-	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->(cell:Cell)-[:PROVIDES]->(component:Component)
-							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
+	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)
+							WHERE id(component) = {component_id}
 							CREATE (component)-[:USE]->(role:Role {name: {role_name}, url: {role_url}, version: {role_version}, order: {role_order}} )
 								RETURN id(role) as id`
 
-	//log.Printf("= getRoleByName(%s), (%#v)", params.Body.Name, _getComponentRoleByName(principal.Name, params.CellID, params.ComponentID, params.Body.Name))
-
-	if _getComponentRoleByName(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, params.Body.Name) != nil {
+	if _getComponentRoleByName(ctx.rt.DB(), principal.Name, &params.CellID, params.ComponentID, params.Body.Name) != nil {
 		log.Println("role already exists !")
 		return role.NewAddComponentRoleConflict().WithPayload(models.APIResponse{Message: "role already exists"})
 	}
@@ -114,7 +112,7 @@ func (ctx *addComponentRole) Handle(params role.AddComponentRoleParams, principa
 
 	stmt.Close()
 
-	err = addComponentRoleParameters(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, params.Body.Name, params.Body.Params)
+	err = addComponentRoleParameters(ctx.rt.DB(), principal.Name, &params.CellID, params.ComponentID, params.Body.Name, params.Body.Params)
 	if err != nil {
 		log.Printf("An error occurred adding Role parameters: %s", err)
 		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -135,12 +133,12 @@ type deleteComponentRole struct {
 func (ctx *deleteComponentRole) Handle(params role.DeleteComponentRoleParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role {name: {role_name}})
+							(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)-[:USE]->(role:Role {name: {role_name}})
 							OPTIONAL MATCH (role)-[r:PARAM]->(p)
-							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
+							WHERE id(component) = {component_id}
 							DETACH DELETE role, r, p`
 
-	if _getComponentRoleByName(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, &params.RoleName) == nil {
+	if _getComponentRoleByName(ctx.rt.DB(), principal.Name, &params.CellID, params.ComponentID, &params.RoleName) == nil {
 		log.Println("role does not exists !")
 		return role.NewDeleteComponentRoleNotFound()
 	}
@@ -206,20 +204,18 @@ type updateComponentRole struct {
 func (ctx *updateComponentRole) Handle(params role.UpdateComponentRoleParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role{name: {role_current_name}})-[:PARAM]->(param:Parameter)
-							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
+							(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)-[:USE]->(role:Role{name: {role_current_name}})-[:PARAM]->(param:Parameter)
+							WHERE id(component) = {component_id}
 							SET role.name={role_new_name}, role.url={role_url}, role.version={role_version}, role.order={role_order}
 							DETACH DELETE param`
 
-	//log.Printf("= getRoleByName(%s), (%v)", params.Body.Name, _getComponentRoleByName(principal.Name, params.CellID, params.ComponentID, params.Body.Name))
-
-	if _getComponentRoleByName(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, &params.RoleName) == nil {
+	if _getComponentRoleByName(ctx.rt.DB(), principal.Name, &params.CellID, params.ComponentID, &params.RoleName) == nil {
 		log.Println("role does not exists !")
 		return role.NewUpdateComponentRoleNotFound()
 	}
 
 	if strings.Compare(params.RoleName, *params.Body.Name) != 0 &&
-		_getComponentRoleByName(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, params.Body.Name) != nil {
+		_getComponentRoleByName(ctx.rt.DB(), principal.Name, &params.CellID, params.ComponentID, params.Body.Name) != nil {
 		log.Println("role target name already exists !")
 		return role.NewUpdateComponentRoleConflict()
 	}
@@ -263,7 +259,7 @@ func (ctx *updateComponentRole) Handle(params role.UpdateComponentRoleParams, pr
 	stmt.Close()
 
 	if len(params.Body.Params) > 0 {
-		err = addComponentRoleParameters(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID, params.Body.Name, params.Body.Params)
+		err = addComponentRoleParameters(ctx.rt.DB(), principal.Name, &params.CellID, params.ComponentID, params.Body.Name, params.Body.Params)
 		if err != nil {
 			log.Printf("An error occurred adding Role parameters: %s", err)
 			return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -275,11 +271,11 @@ func (ctx *updateComponentRole) Handle(params role.UpdateComponentRoleParams, pr
 	return role.NewUpdateComponentRoleOK()
 }
 
-func addComponentRoleParameters(conn neo4j.ConnPool, customer *string, cellID int64, componentID int64, roleName *string, params []*models.Parameter) error {
+func addComponentRoleParameters(conn neo4j.ConnPool, customer *string, cellID *string, componentID int64, roleName *string, params []*models.Parameter) error {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role{name: {role_name}})
-							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
+							(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)-[:USE]->(role:Role{name: {role_name}})
+							WHERE id(component) = {component_id}
 							CREATE (role)-[:PARAM]->(param:Parameter {name: {param_name}, value: {param_val}} )
 								RETURN id(param) as id`
 
@@ -421,14 +417,14 @@ func findComponentRoleParameters(conn neo4j.ConnPool, roleID int64) ([]*models.P
 	return res, nil
 }
 
-func _getComponentRoleByName(conn neo4j.ConnPool, customer *string, cellID int64, componentID int64, roleName *string) *models.Role {
+func _getComponentRoleByName(conn neo4j.ConnPool, customer *string, cellID *string, componentID int64, roleName *string) *models.Role {
 
 	var role *models.Role
 	role = nil
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role {name: {role_name}})
-							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
+							(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)-[:USE]->(role:Role {name: {role_name}})
+							WHERE id(component) = {component_id}
 								RETURN ID(role) as id,
 												role.name as name,
 												role.url as url,

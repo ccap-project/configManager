@@ -51,8 +51,8 @@ type addComponentListener struct {
 
 func (ctx *addComponentListener) Handle(params listener.AddComponentListenerParams, principal *models.Customer) middleware.Responder {
 
-	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->(cell:Cell)-[:PROVIDES]->(component:Component)
-							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
+	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->(cell:Cell{id: {cell_id}})-[:PROVIDES]->(component:Component)
+							WHERE AND id(component) = {component_id}
 							CREATE (component)-[:LISTEN_ON]->(listener:Listener {
 								name: {listener_name},
 								port: {listener_port},
@@ -116,13 +116,12 @@ type deleteComponentListener struct {
 func (ctx *deleteComponentListener) Handle(params listener.DeleteComponentListenerParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:PROVIDES]->(component:Component)-[:LISTEN_ON]->(listener:Listener)
-							WHERE id(cell) = {cell_id}
-								AND id(component) = {component_id}
+							(cell:Cell{id: {cell_id}})-[:PROVIDES]->(component:Component)-[:LISTEN_ON]->(listener:Listener)
+							WHERE id(component) = {component_id}
 								AND id(listener) = {listener_id}
 							DETACH DELETE listener`
 
-	if _getComponentListenerByID(ctx.rt.DB(), principal.Name, params.CellID, params.ListenerID) == nil {
+	if _getComponentListenerByID(ctx.rt.DB(), principal.Name, &params.CellID, params.ListenerID) == nil {
 		log.Println("listener does not exists !")
 		return listener.NewDeleteComponentListenerNotFound()
 	}
@@ -170,7 +169,7 @@ type getComponentListenerByID struct {
 
 func (ctx *getComponentListenerByID) Handle(params listener.GetComponentListenerByIDParams, principal *models.Customer) middleware.Responder {
 
-	Listener := _getComponentListenerByID(ctx.rt.DB(), principal.Name, params.CellID, params.ListenerID)
+	Listener := _getComponentListenerByID(ctx.rt.DB(), principal.Name, &params.CellID, params.ListenerID)
 	if Listener == nil {
 		return listener.NewGetComponentListenerByIDNotFound()
 	}
@@ -188,7 +187,7 @@ type findComponentListeners struct {
 
 func (ctx *findComponentListeners) Handle(params listener.FindComponentListenersParams, principal *models.Customer) middleware.Responder {
 
-	data, err := _FindComponentListeners(ctx.rt.DB(), principal.Name, params.CellID, params.ComponentID)
+	data, err := _FindComponentListeners(ctx.rt.DB(), principal.Name, &params.CellID, params.ComponentID)
 
 	log.Printf("= data(%#v)", data)
 
@@ -199,11 +198,11 @@ func (ctx *findComponentListeners) Handle(params listener.FindComponentListeners
 	return listener.NewFindComponentListenersOK().WithPayload(data)
 }
 
-func _FindComponentListeners(conn neo4j.ConnPool, customerName *string, CellID int64, ComponentID int64) ([]*models.Listener, middleware.Responder) {
+func _FindComponentListeners(conn neo4j.ConnPool, customerName *string, CellID *string, ComponentID int64) ([]*models.Listener, middleware.Responder) {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:PROVIDES]->(component:Component)-[:LISTEN_ON]->(listener:Listener)
-							WHERE id(cell) = {cell_id} AND id(component) = {component_id}
+							(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)-[:LISTEN_ON]->(listener:Listener)
+							WHERE id(component) = {component_id}
 								RETURN id(listener) as id,
 												listener.name as name,
 												listener.port as port,
@@ -260,8 +259,8 @@ type updateComponentListener struct {
 func (ctx *updateComponentListener) Handle(params listener.UpdateComponentListenerParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-								(cell:Cell)-[:PROVIDES]->(component:Component)-[:LISTEN_ON]->(listener:Listener)
-							WHERE id(cell) = {cell_id} AND id(component) = {component_id} AND id(listener) = {listener_id}
+								(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)-[:LISTEN_ON]->(listener:Listener)
+							WHERE id(component) = {component_id} AND id(listener) = {listener_id}
 							SET listener.name={listener_name},
 									listener.port={listener_port},
 									listener.protocol={listener_protocol}`
@@ -305,15 +304,14 @@ func (ctx *updateComponentListener) Handle(params listener.UpdateComponentListen
 	return listener.NewUpdateComponentListenerOK()
 }
 
-func _getComponentListenerByID(conn neo4j.ConnPool, customer *string, cellID int64, listenerID int64) *models.Listener {
+func _getComponentListenerByID(conn neo4j.ConnPool, customer *string, cellID *string, listenerID int64) *models.Listener {
 
 	var listener *models.Listener
 	listener = nil
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:PROVIDES]->(component:Component)-[:LISTEN_ON]->(listener:Listener)
-							WHERE id(cell) = {cell_id}
-								AND id(listener) = {listener_id}
+							(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)-[:LISTEN_ON]->(listener:Listener)
+							WHERE AND id(listener) = {listener_id}
 							RETURN id(listener) as id,
 											listener.name as name,
 											listener.port as image,

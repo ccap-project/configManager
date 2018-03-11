@@ -42,7 +42,7 @@ import (
 
 // GetCellLoadbalancerURL generates an URL for the get cell loadbalancer operation
 type GetCellLoadbalancerURL struct {
-	CellID         int64
+	CellID         string
 	LoadbalancerID int64
 
 	_basePath string
@@ -71,9 +71,9 @@ func (o *GetCellLoadbalancerURL) Build() (*url.URL, error) {
 
 	var _path = "/cell/{cell_id}/loadbalancer/{loadbalancer_id}"
 
-	cellID := swag.FormatInt64(o.CellID)
+	cellID := o.CellID
 	if cellID != "" {
-		_path = strings.Replace(_path, "{cell_id}", cellID, -1)
+		_path = strings.Replace(_path, "{cellId}", cellID, -1)
 	} else {
 		return nil, errors.New("CellID is required on GetCellLoadbalancerURL")
 	}

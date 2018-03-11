@@ -36,7 +36,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -57,11 +57,14 @@ type GetProviderTypeByIDParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*ID of providertype to return
+	/*ProvidertypeID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	ProvidertypeID int64
+	ProvidertypeID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -70,7 +73,7 @@ func (o *GetProviderTypeByIDParams) BindRequest(r *http.Request, route *middlewa
 	var res []error
 	o.HTTPRequest = r
 
-	rProvidertypeID, rhkProvidertypeID, _ := route.Params.GetOK("providertype_id")
+	rProvidertypeID, rhkProvidertypeID, _ := route.Params.GetOK("providertypeId")
 	if err := o.bindProvidertypeID(rProvidertypeID, rhkProvidertypeID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -87,11 +90,28 @@ func (o *GetProviderTypeByIDParams) bindProvidertypeID(rawData []string, hasKey 
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("providertype_id", "path", "int64", raw)
+	o.ProvidertypeID = raw
+
+	if err := o.validateProvidertypeID(formats); err != nil {
+		return err
 	}
-	o.ProvidertypeID = value
+
+	return nil
+}
+
+func (o *GetProviderTypeByIDParams) validateProvidertypeID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("providertypeId", "path", o.ProvidertypeID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("providertypeId", "path", o.ProvidertypeID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("providertypeId", "path", o.ProvidertypeID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

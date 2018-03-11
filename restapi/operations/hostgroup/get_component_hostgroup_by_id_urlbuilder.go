@@ -42,7 +42,7 @@ import (
 
 // GetComponentHostgroupByIDURL generates an URL for the get component hostgroup by ID operation
 type GetComponentHostgroupByIDURL struct {
-	CellID      int64
+	CellID      string
 	ComponentID int64
 	HostgroupID int64
 
@@ -72,9 +72,9 @@ func (o *GetComponentHostgroupByIDURL) Build() (*url.URL, error) {
 
 	var _path = "/cell/{cell_id}/component/{component_id}/hostgroup/{hostgroup_id}"
 
-	cellID := swag.FormatInt64(o.CellID)
+	cellID := o.CellID
 	if cellID != "" {
-		_path = strings.Replace(_path, "{cell_id}", cellID, -1)
+		_path = strings.Replace(_path, "{cellId}", cellID, -1)
 	} else {
 		return nil, errors.New("CellID is required on GetComponentHostgroupByIDURL")
 	}

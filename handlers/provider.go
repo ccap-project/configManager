@@ -51,9 +51,8 @@ type addCellProvider struct {
 
 func (ctx *addCellProvider) Handle(params provider.AddProviderParams, principal *models.Customer) middleware.Responder {
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell),
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}}),
 										(providertype:ProviderType {name: {providertype}})
-							WHERE id(cell) = {cell_id}
 							CREATE (cell)-[:USE]->(provider:Provider {
 								name: {provider_name},
 							 	domain_name: {domain_name},
@@ -64,7 +63,7 @@ func (ctx *addCellProvider) Handle(params provider.AddProviderParams, principal 
 							RETURN	id(provider) AS id,
 											provider.name AS name`
 
-	Provider := getProvider(ctx.rt.DB(), principal.Name, params.CellID)
+	Provider := getProvider(ctx.rt.DB(), principal.Name, &params.CellID)
 	log.Printf("Here =>>>> %#v\n", Provider)
 
 	if Provider != nil {
@@ -124,7 +123,7 @@ type getCellProvider struct {
 
 func (ctx *getCellProvider) Handle(params provider.GetProviderParams, principal *models.Customer) middleware.Responder {
 
-	Provider := getProvider(ctx.rt.DB(), principal.Name, params.CellID)
+	Provider := getProvider(ctx.rt.DB(), principal.Name, &params.CellID)
 
 	if Provider == nil {
 		log.Println("provider does not exists !")
@@ -134,13 +133,12 @@ func (ctx *getCellProvider) Handle(params provider.GetProviderParams, principal 
 	return provider.NewGetProviderOK().WithPayload(Provider)
 }
 
-func getProvider(conn neo4j.ConnPool, customerName *string, CellID int64) *models.Provider {
+func getProvider(conn neo4j.ConnPool, customerName *string, CellID *string) *models.Provider {
 
 	var provider *models.Provider
 	provider = nil
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)-[:USE]->(provider:Provider)
-							WHERE id(cell) = {cell_id}
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})-[:USE]->(provider:Provider)
 							MATCH (provider)-[:PROVIDER_IS]->(provider_type:ProviderType)
 								RETURN ID(provider) as id,
 												provider.name as name,
@@ -212,8 +210,7 @@ type updateCellProvider struct {
 func (ctx *updateCellProvider) Handle(params provider.UpdateProviderParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[rel:USE]->(provider:Provider)-[rel2:PROVIDER_IS]->(provider_type:ProviderType)
-							WHERE id(cell) = {cell_id}
+							(cell:Cell {id: {cell_id}})-[rel:USE]->(provider:Provider)-[rel2:PROVIDER_IS]->(provider_type:ProviderType)
 						MATCH (newProviderType:ProviderType)
 							WHERE newProviderType.name = {providertype}
 							SET provider.name={name},
@@ -227,7 +224,7 @@ func (ctx *updateCellProvider) Handle(params provider.UpdateProviderParams, prin
 							CREATE (cell)-[:USE]->(provider)-[:PROVIDER_IS]->(newProviderType)
 							return provider`
 
-	Provider := getProvider(ctx.rt.DB(), principal.Name, params.CellID)
+	Provider := getProvider(ctx.rt.DB(), principal.Name, &params.CellID)
 	log.Printf("UpdateCellProvider =>>>> %#v\n", Provider)
 
 	if Provider == nil {

@@ -38,7 +38,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -66,11 +66,14 @@ type AddCellHostParams struct {
 	  In: body
 	*/
 	Body *models.Host
-	/*ID of cell that will be used
+	/*Cell ID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	CellID int64
+	CellID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -103,7 +106,7 @@ func (o *AddCellHostParams) BindRequest(r *http.Request, route *middleware.Match
 		res = append(res, errors.Required("body", "body"))
 	}
 
-	rCellID, rhkCellID, _ := route.Params.GetOK("cell_id")
+	rCellID, rhkCellID, _ := route.Params.GetOK("cellId")
 	if err := o.bindCellID(rCellID, rhkCellID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -120,11 +123,28 @@ func (o *AddCellHostParams) bindCellID(rawData []string, hasKey bool, formats st
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("cell_id", "path", "int64", raw)
+	o.CellID = raw
+
+	if err := o.validateCellID(formats); err != nil {
+		return err
 	}
-	o.CellID = value
+
+	return nil
+}
+
+func (o *AddCellHostParams) validateCellID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("cellId", "path", o.CellID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("cellId", "path", o.CellID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("cellId", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }
