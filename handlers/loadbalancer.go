@@ -391,7 +391,7 @@ func _getCellLoadbalancer(conn neo4j.ConnPool, customerName *string, CellID *str
 	_algorithm := output[4].(string)
 
 	loadbalancer = &models.Loadbalancer{
-		ID:        output[0].(int64),
+		ID:        models.ULID(output[0].(string)),
 		Name:      &_name,
 		Port:      &_port,
 		Protocol:  &_protocol,
@@ -441,7 +441,7 @@ func _getLoadbalancerByName(conn neo4j.ConnPool, customerName *string, CellID *s
 	}
 	_name := output[1].(string)
 
-	loadbalancer = &models.Loadbalancer{ID: output[0].(int64),
+	loadbalancer = &models.Loadbalancer{ID: models.ULID(output[0].(string)),
 		Name: &_name}
 
 	stmt.Close()
