@@ -672,7 +672,7 @@ paths:
         201:
           description: "Created"
           schema:
-            type: integer
+            $ref: "#/definitions/ULID"
         404:
           description: "does not exists"
         405:
@@ -1252,7 +1252,7 @@ paths:
         201:
           description: "Created"
           schema:
-            type: integer
+            $ref: "#/definitions/ULID"
         405:
           description: "Invalid input"
           schema:
@@ -1865,7 +1865,7 @@ definitions:
       - version
     properties:
       id:
-        type: integer
+        $ref: "#/definitions/ULID"
       name:
         type: "string"
       version:
@@ -1887,7 +1887,7 @@ definitions:
       - value
     properties:
       id:
-        type: integer
+        $ref: "#/definitions/ULID"
       name:
         type: "string"
       value:

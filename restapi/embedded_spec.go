@@ -992,7 +992,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -1509,7 +1509,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "404": {
@@ -2848,7 +2848,7 @@ func init() {
       ],
       "properties": {
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -2931,7 +2931,7 @@ func init() {
       ],
       "properties": {
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
