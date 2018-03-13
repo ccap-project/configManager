@@ -36,15 +36,13 @@ import (
 	"net/url"
 	golangswaggerpaths "path"
 	"strings"
-
-	"github.com/go-openapi/swag"
 )
 
 // UpdateComponentListenerURL generates an URL for the update component listener operation
 type UpdateComponentListenerURL struct {
-	CellID      int64
-	ComponentID int64
-	ListenerID  int64
+	CellID      string
+	ComponentID string
+	ListenerID  string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -72,21 +70,21 @@ func (o *UpdateComponentListenerURL) Build() (*url.URL, error) {
 
 	var _path = "/cell/{cell_id}/component/{component_id}/listener/{listener_id}"
 
-	cellID := swag.FormatInt64(o.CellID)
+	cellID := o.CellID
 	if cellID != "" {
-		_path = strings.Replace(_path, "{cell_id}", cellID, -1)
+		_path = strings.Replace(_path, "{cellId}", cellID, -1)
 	} else {
 		return nil, errors.New("CellID is required on UpdateComponentListenerURL")
 	}
-	componentID := swag.FormatInt64(o.ComponentID)
+	componentID := o.ComponentID
 	if componentID != "" {
-		_path = strings.Replace(_path, "{component_id}", componentID, -1)
+		_path = strings.Replace(_path, "{componentId}", componentID, -1)
 	} else {
 		return nil, errors.New("ComponentID is required on UpdateComponentListenerURL")
 	}
-	listenerID := swag.FormatInt64(o.ListenerID)
+	listenerID := o.ListenerID
 	if listenerID != "" {
-		_path = strings.Replace(_path, "{listener_id}", listenerID, -1)
+		_path = strings.Replace(_path, "{listenerId}", listenerID, -1)
 	} else {
 		return nil, errors.New("ListenerID is required on UpdateComponentListenerURL")
 	}

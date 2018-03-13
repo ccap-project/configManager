@@ -36,14 +36,12 @@ import (
 	"net/url"
 	golangswaggerpaths "path"
 	"strings"
-
-	"github.com/go-openapi/swag"
 )
 
 // GetCellLoadbalancerURL generates an URL for the get cell loadbalancer operation
 type GetCellLoadbalancerURL struct {
-	CellID         int64
-	LoadbalancerID int64
+	CellID         string
+	LoadbalancerID string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -71,15 +69,15 @@ func (o *GetCellLoadbalancerURL) Build() (*url.URL, error) {
 
 	var _path = "/cell/{cell_id}/loadbalancer/{loadbalancer_id}"
 
-	cellID := swag.FormatInt64(o.CellID)
+	cellID := o.CellID
 	if cellID != "" {
-		_path = strings.Replace(_path, "{cell_id}", cellID, -1)
+		_path = strings.Replace(_path, "{cellId}", cellID, -1)
 	} else {
 		return nil, errors.New("CellID is required on GetCellLoadbalancerURL")
 	}
-	loadbalancerID := swag.FormatInt64(o.LoadbalancerID)
+	loadbalancerID := o.LoadbalancerID
 	if loadbalancerID != "" {
-		_path = strings.Replace(_path, "{loadbalancer_id}", loadbalancerID, -1)
+		_path = strings.Replace(_path, "{loadbalancerId}", loadbalancerID, -1)
 	} else {
 		return nil, errors.New("LoadbalancerID is required on GetCellLoadbalancerURL")
 	}

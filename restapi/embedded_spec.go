@@ -87,7 +87,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -129,12 +129,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell to return",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -180,12 +175,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that needs to be updated",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "string",
@@ -216,17 +206,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "string",
-            "name": "api_key",
-            "in": "header"
-          },
-          {
-            "type": "integer",
-            "format": "int64",
-            "description": "Cell id to delete",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -259,12 +239,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "description": "Component object that needs to be added",
@@ -280,7 +255,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -321,20 +296,10 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that needs to be updated",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           }
         ],
         "responses": {
@@ -379,36 +344,18 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of entity that will be used",
-            "name": "entity_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/EntityID"
           }
         ],
         "responses": {
           "201": {
-            "description": "Created",
-            "schema": {
-              "type": "integer"
-            }
+            "description": "Created"
           },
           "404": {
             "description": "Invalid input",
@@ -443,28 +390,13 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "entity that will be deleted",
-            "name": "entity_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/EntityID"
           }
         ],
         "responses": {
@@ -512,20 +444,10 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "description": "Component object that needs to be added",
@@ -541,7 +463,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -582,28 +504,13 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of hostgroup that will be used",
-            "name": "hostgroup_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/HostgroupID"
           }
         ],
         "responses": {
@@ -649,28 +556,13 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "hostgroup that will be updated",
-            "name": "hostgroup_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/HostgroupID"
           },
           {
             "description": "Hostgroup object that needs to be updated",
@@ -716,28 +608,13 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "hostgroup that will be deleted",
-            "name": "hostgroup_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/HostgroupID"
           }
         ],
         "responses": {
@@ -779,20 +656,10 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           }
         ],
         "responses": {
@@ -840,20 +707,10 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "description": "Component object that needs to be added",
@@ -869,7 +726,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -910,28 +767,13 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of listener that will be used",
-            "name": "listener_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ListenerID"
           }
         ],
         "responses": {
@@ -977,28 +819,13 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "Listener that will be updated",
-            "name": "listener_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ListenerID"
           },
           {
             "description": "Listener object that needs to be updated",
@@ -1044,28 +871,13 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "listener that will be deleted",
-            "name": "listener_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ListenerID"
           }
         ],
         "responses": {
@@ -1107,20 +919,10 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           }
         ],
         "responses": {
@@ -1168,20 +970,10 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "description": "Component object that needs to be added",
@@ -1197,7 +989,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -1241,20 +1033,10 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "type": "string",
@@ -1313,20 +1095,10 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           },
           {
             "type": "string",
@@ -1375,20 +1147,10 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of component that will be used",
-            "name": "component_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ComponentID"
           }
         ],
         "responses": {
@@ -1433,12 +1195,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that needs to be updated",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -1484,12 +1241,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell to return",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -1538,12 +1290,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell to return",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -1592,12 +1339,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell to return",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -1645,12 +1387,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "description": "Host object that will be added",
@@ -1666,7 +1403,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -1707,12 +1444,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -1760,12 +1492,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "type": "string",
@@ -1779,7 +1506,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "404": {
@@ -1826,12 +1553,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "description": "Loadbalancer object that needs to be added",
@@ -1847,7 +1569,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -1888,20 +1610,10 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that needs to be updated",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of loadbalancer that will be used",
-            "name": "loadbalancer_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/LoadbalancerID"
           }
         ],
         "responses": {
@@ -1943,28 +1655,13 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that needs to be updated",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of loadbalancer that will be used",
-            "name": "loadbalancer_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ListenerID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of listener that will be used",
-            "name": "listener_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/LoadbalancerID"
           }
         ],
         "responses": {
@@ -2001,28 +1698,13 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that needs to be updated",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of loadbalancer that will be used",
-            "name": "loadbalancer_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ListenerID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of listener that will be used",
-            "name": "listener_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/LoadbalancerID"
           }
         ],
         "responses": {
@@ -2061,12 +1743,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that needs to be updated",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -2112,12 +1789,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           }
         ],
         "responses": {
@@ -2154,12 +1826,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "description": "Provider object that needs to be updated",
@@ -2214,12 +1881,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of cell that will be used",
-            "name": "cell_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CellID"
           },
           {
             "description": "Provider object that needs to be added",
@@ -2235,7 +1897,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "409": {
@@ -2356,7 +2018,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "400": {
@@ -2428,12 +2090,7 @@ func init() {
         "operationId": "getCustomerById",
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of customer to return",
-            "name": "customerId",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CustomerID"
           }
         ],
         "responses": {
@@ -2465,12 +2122,7 @@ func init() {
         "operationId": "updateCustomerWithForm",
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of customer that needs to be updated",
-            "name": "customerId",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CustomerID"
           },
           {
             "type": "string",
@@ -2496,70 +2148,26 @@ func init() {
         "operationId": "deleteCustomer",
         "parameters": [
           {
-            "type": "string",
-            "name": "api_key",
-            "in": "header"
-          },
-          {
-            "type": "integer",
-            "format": "int64",
-            "description": "Customer id to delete",
-            "name": "customerId",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/CustomerID"
           }
         ],
         "responses": {
+          "200": {
+            "description": "successful operation"
+          },
           "400": {
             "description": "Invalid ID supplied"
           },
-          "404": {
-            "description": "Customer not found"
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#definitions/ApiResponse"
+            }
           }
         }
       }
     },
     "/keypair": {
-      "put": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "keypair"
-        ],
-        "summary": "Update an existing keypair",
-        "operationId": "updateKeypair",
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "description": "Keypair object that needs to be updated",
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/Keypair"
-            }
-          }
-        ],
-        "responses": {
-          "400": {
-            "description": "Invalid ID supplied"
-          },
-          "404": {
-            "description": "Keypair not found"
-          },
-          "405": {
-            "description": "Validation exception"
-          }
-        }
-      },
       "post": {
         "consumes": [
           "application/json"
@@ -2592,7 +2200,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -2634,12 +2242,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of keypair to return",
-            "name": "keypair_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/KeypairID"
           }
         ],
         "responses": {
@@ -2682,12 +2285,7 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of keypair that needs to be updated",
-            "name": "keypair_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/KeypairID"
           },
           {
             "type": "string",
@@ -2718,20 +2316,13 @@ func init() {
         ],
         "parameters": [
           {
-            "type": "string",
-            "name": "api_key",
-            "in": "header"
-          },
-          {
-            "type": "integer",
-            "format": "int64",
-            "description": "Keypair id to delete",
-            "name": "keypair_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/KeypairID"
           }
         ],
         "responses": {
+          "200": {
+            "description": "successful operation"
+          },
           "400": {
             "description": "Invalid ID supplied"
           },
@@ -2853,7 +2444,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "$ref": "#/definitions/ProviderTypeID"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -2881,12 +2472,7 @@ func init() {
         "operationId": "getProviderTypeById",
         "parameters": [
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of providertype to return",
-            "name": "providertype_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ProvidertypeID"
           }
         ],
         "responses": {
@@ -2921,17 +2507,7 @@ func init() {
         "operationId": "deleteProviderType",
         "parameters": [
           {
-            "type": "string",
-            "name": "api_key",
-            "in": "header"
-          },
-          {
-            "type": "integer",
-            "format": "int64",
-            "description": "Provider type id to delete",
-            "name": "providertype_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/ProvidertypeID"
           }
         ],
         "responses": {
@@ -2998,7 +2574,7 @@ func init() {
       ],
       "properties": {
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -3018,7 +2594,7 @@ func init() {
           }
         },
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -3042,7 +2618,7 @@ func init() {
       ],
       "properties": {
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -3108,7 +2684,7 @@ func init() {
       ],
       "properties": {
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -3145,7 +2721,7 @@ func init() {
           "type": "string"
         },
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "image": {
           "type": "string"
@@ -3179,7 +2755,7 @@ func init() {
       ],
       "properties": {
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -3198,7 +2774,7 @@ func init() {
       ],
       "properties": {
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -3230,7 +2806,7 @@ func init() {
           "type": "integer"
         },
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -3254,7 +2830,7 @@ func init() {
       ],
       "properties": {
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -3283,7 +2859,7 @@ func init() {
           "type": "string"
         },
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -3312,7 +2888,7 @@ func init() {
           "type": "string"
         },
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -3337,7 +2913,7 @@ func init() {
       ],
       "properties": {
         "id": {
-          "type": "integer"
+          "$ref": "#/definitions/ULID"
         },
         "name": {
           "type": "string"
@@ -3359,6 +2935,104 @@ func init() {
           "type": "string"
         }
       }
+    },
+    "ULID": {
+      "type": "string",
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$"
+    }
+  },
+  "parameters": {
+    "CellID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "Cell ID",
+      "name": "cellId",
+      "in": "path",
+      "required": true
+    },
+    "ComponentID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "Component ID",
+      "name": "componentId",
+      "in": "path",
+      "required": true
+    },
+    "CustomerID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "Customer ID",
+      "name": "customerId",
+      "in": "path",
+      "required": true
+    },
+    "EntityID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "Entity ID",
+      "name": "entityId",
+      "in": "path",
+      "required": true
+    },
+    "HostgroupID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "Hostgroup ID",
+      "name": "hostgroupId",
+      "in": "path",
+      "required": true
+    },
+    "KeypairID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "KeypairID",
+      "name": "keypairId",
+      "in": "path",
+      "required": true
+    },
+    "ListenerID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "ListenerID",
+      "name": "listenerId",
+      "in": "path",
+      "required": true
+    },
+    "LoadbalancerID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "LoadbalancerID",
+      "name": "loadbalancerId",
+      "in": "path",
+      "required": true
+    },
+    "ProvidertypeID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "ProvidertypeID",
+      "name": "providertypeId",
+      "in": "path",
+      "required": true
     }
   },
   "securityDefinitions": {

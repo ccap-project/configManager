@@ -36,13 +36,11 @@ import (
 	"net/url"
 	golangswaggerpaths "path"
 	"strings"
-
-	"github.com/go-openapi/swag"
 )
 
 // AddCellKeypairURL generates an URL for the add cell keypair operation
 type AddCellKeypairURL struct {
-	CellID      int64
+	CellID      string
 	KeypairName string
 
 	_basePath string
@@ -71,9 +69,9 @@ func (o *AddCellKeypairURL) Build() (*url.URL, error) {
 
 	var _path = "/cell/{cell_id}/keypair/{keypair_name}"
 
-	cellID := swag.FormatInt64(o.CellID)
+	cellID := o.CellID
 	if cellID != "" {
-		_path = strings.Replace(_path, "{cell_id}", cellID, -1)
+		_path = strings.Replace(_path, "{cellId}", cellID, -1)
 	} else {
 		return nil, errors.New("CellID is required on AddCellKeypairURL")
 	}

@@ -2,10 +2,13 @@ package configManager
 
 import (
 	"configManager/neo4j"
+	"math/rand"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	app "github.com/casualjim/go-app"
 	"github.com/casualjim/go-app/tracing"
+	"github.com/oklog/ulid"
 	"github.com/spf13/viper"
 )
 
@@ -50,4 +53,11 @@ func (r *Runtime) NewLogger(name string, fields logrus.Fields) logrus.FieldLogge
 // Config returns the viper config for this application
 func (r *Runtime) Config() *viper.Viper {
 	return r.app.Config()
+}
+
+func GetULID() string {
+	t := time.Now()
+	entropy := rand.New(rand.NewSource(t.UnixNano()))
+
+	return ulid.MustNew(ulid.Timestamp(t), entropy).String()
 }

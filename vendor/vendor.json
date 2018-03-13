@@ -357,6 +357,12 @@
 			"revisionTime": "2017-10-17T17:18:08Z"
 		},
 		{
+			"checksumSHA1": "B1iGaUz7NrjEmCjVdIgH5pvkTe8=",
+			"path": "github.com/oklog/ulid",
+			"revision": "b38f8fcd3b93fd0e63dae168550d51a485185d60",
+			"revisionTime": "2017-11-28T05:51:21Z"
+		},
+		{
 			"checksumSHA1": "+qobk0BQiCfqdrhKeoZnwz6hFnE=",
 			"path": "github.com/pelletier/go-toml",
 			"revision": "acdc4509485b587f5e675510c4f2c63e90ff68a8",

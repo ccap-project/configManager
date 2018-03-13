@@ -72,7 +72,7 @@ func configureAPI(api *operations.ConfigManagerAPI) http.Handler {
 		Customer := new(models.Customer)
 		Customer.Name = new(string)
 		*Customer.Name = "customer1"
-		Customer.ID = 84
+		Customer.ID = "01AN4Z07BY79KA1307SR9X4MV3"
 
 		return Customer, nil
 		return nil, errors.NotImplemented("api key auth (APIKeyHeader) x-api-token from header param [x-api-token] has not yet been implemented")

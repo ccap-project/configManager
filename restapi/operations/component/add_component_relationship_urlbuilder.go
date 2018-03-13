@@ -36,15 +36,13 @@ import (
 	"net/url"
 	golangswaggerpaths "path"
 	"strings"
-
-	"github.com/go-openapi/swag"
 )
 
 // AddComponentRelationshipURL generates an URL for the add component relationship operation
 type AddComponentRelationshipURL struct {
-	CellID      int64
-	ComponentID int64
-	EntityID    int64
+	CellID      string
+	ComponentID string
+	EntityID    string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -72,21 +70,21 @@ func (o *AddComponentRelationshipURL) Build() (*url.URL, error) {
 
 	var _path = "/cell/{cell_id}/component/{component_id}/connect_to/{entity_id}"
 
-	cellID := swag.FormatInt64(o.CellID)
+	cellID := o.CellID
 	if cellID != "" {
-		_path = strings.Replace(_path, "{cell_id}", cellID, -1)
+		_path = strings.Replace(_path, "{cellId}", cellID, -1)
 	} else {
 		return nil, errors.New("CellID is required on AddComponentRelationshipURL")
 	}
-	componentID := swag.FormatInt64(o.ComponentID)
+	componentID := o.ComponentID
 	if componentID != "" {
-		_path = strings.Replace(_path, "{component_id}", componentID, -1)
+		_path = strings.Replace(_path, "{componentId}", componentID, -1)
 	} else {
 		return nil, errors.New("ComponentID is required on AddComponentRelationshipURL")
 	}
-	entityID := swag.FormatInt64(o.EntityID)
+	entityID := o.EntityID
 	if entityID != "" {
-		_path = strings.Replace(_path, "{entity_id}", entityID, -1)
+		_path = strings.Replace(_path, "{entityId}", entityID, -1)
 	} else {
 		return nil, errors.New("EntityID is required on AddComponentRelationshipURL")
 	}

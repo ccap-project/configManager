@@ -37,6 +37,7 @@ import (
 	"configManager/neo4j"
 	"configManager/restapi/operations/host"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 )
@@ -51,75 +52,89 @@ type addCellHost struct {
 
 func (ctx *addCellHost) Handle(params host.AddCellHostParams, principal *models.Customer) middleware.Responder {
 
-	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->(cell:Cell)
-							WHERE id(cell) = {cell_id}
-							CREATE (cell)-[:HAS]->(host:Host {name: {host_name}} )
-								RETURN id(host) as id`
+	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->(cell:Cell {id: {cell_id}})
+							CREATE (cell)-[:HAS]->(host:Host {id: {host_id}, name: {host_name}} )
+								RETURN host.id as id`
 
-	if getCellHostByName(ctx.rt.DB(), principal.Name, params.CellID, params.Body.Name) != nil {
-		log.Println("host already exists !")
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer":  swag.StringValue(principal.Name),
+		"cell_id":   params.CellID,
+		"host_name": params.Body.Name})
+
+	if getCellHostByName(ctx.rt.DB(), principal.Name, &params.CellID, params.Body.Name) != nil {
+		ctxLogger.Warn("host already exists !")
 		return host.NewAddCellHostConflict().WithPayload(models.APIResponse{Message: "host already exists"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j:", err)
 		return host.NewAddCellHostInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	tx, err := db.Begin()
 	if err != nil {
-		log.Printf("An error occurred beginning transaction: %s", err)
+		ctxLogger.Error("An error occurred beginning transaction: %s", err)
 		return host.NewAddCellHostInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	defer tx.Rollback()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: %s", err)
 		return host.NewAddCellHostInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
+
+	ulid := configManager.GetULID()
+
+	ctxLogger = ctxLogger.WithFields(logrus.Fields{
+		"host_id": ulid})
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"customer_name": swag.StringValue(principal.Name),
 		"cell_id":       params.CellID,
+		"host_id":       ulid,
 		"host_name":     swag.StringValue(params.Body.Name)})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return host.NewAddCellHostInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 	if err != nil {
-		log.Printf("An error occurred getting next row: %s", err)
+		ctxLogger.Error("An error occurred getting next row: ", err)
 		return host.NewAddCellHostInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
 	stmt.Close()
 
-	err = addCellHostOptions(principal.Name, params.CellID, params.Body.Name, params.Body.Options, db)
+	err = addCellHostOptions(db, ctxLogger, principal.Name, &params.CellID, params.Body.Name, params.Body.Options)
 	if err != nil {
-		log.Printf("An error occurred adding Host options: %s", err)
+		ctxLogger.Error("An error occurred adding Host options: ", err)
 		return host.NewAddCellHostInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	tx.Commit()
 
-	return host.NewAddCellHostCreated().WithPayload(output[0].(int64))
+	return host.NewAddCellHostCreated().WithPayload(models.ULID(output[0].(string)))
 }
 
+/*
 func FindCellHosts(params host.FindCellHostsParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:HAS]->(host:Host)
-							WHERE id(cell) = {cell_id}
-								RETURN id(host) as id,
+							(cell:Cell {id: {cell_id}})-[:HAS]->(host:Host)
+								RETURN host.id as id,
 												host.name as name`
+
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer": swag.StringValue(principal.Name),
+		"cell_id":  params.CellID})
 
 	db, err := neo4j.Connect("")
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j: ", err)
 		return host.NewFindCellHostsInternalServerError()
 	}
 	defer db.Close()
@@ -128,12 +143,9 @@ func FindCellHosts(params host.FindCellHostsParams, principal *models.Customer) 
 		"customer_name": swag.StringValue(principal.Name),
 		"cell_id":       params.CellID})
 
-	log.Printf("= data(%#v)", data)
-
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return host.NewFindCellHostsInternalServerError()
-
 	}
 
 	res := make([]*models.Host, len(data))
@@ -146,40 +158,38 @@ func FindCellHosts(params host.FindCellHostsParams, principal *models.Customer) 
 			Name: &_name}
 	}
 
-	log.Printf("= Res(%#v)", res)
-
 	return host.NewFindCellHostsOK().WithPayload(res)
-}
+}*/
 
-func addCellHostOptions(customer *string, cellID int64, hostName *string, options []*models.Parameter, db neo4j.Conn) error {
-
-	log.Printf("= Output(%#v)", options)
+func addCellHostOptions(db neo4j.Conn, ctxLogger *logrus.Entry, customer *string, cellID *string, hostName *string, options []*models.Parameter) error {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:HAS]->(host:Host {name: {host_name}})
-							WHERE id(cell) = {cell_id}
-							CREATE (host)-[:OPT]->(option:Option {name: {opt_name}, value: {opt_val}} )
-								RETURN id(option) as id`
+							(cell:Cell {id: {cell_id}})-[:HAS]->(host:Host {name: {host_name}})
+							CREATE (host)-[:OPT]->(option:Option {
+									id: {opt_id},
+									name: {opt_name},
+									value: {opt_val}} )
+								RETURN option.id as id`
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return err
 	}
 
 	// add parameters
 	for _, option := range options {
-		log.Printf("name(%s) val(%s)", option.Name, option.Value)
-		//log.Printf("param(%#v)", param)
+		ulid := configManager.GetULID()
 		_, err := stmt.ExecNeo(map[string]interface{}{
 			"customer_name": swag.StringValue(customer),
 			"cell_id":       cellID,
 			"host_name":     swag.StringValue(hostName),
+			"opt_id":        ulid,
 			"opt_name":      swag.StringValue(option.Name),
 			"opt_val":       swag.StringValue(option.Value)})
 
 		if err != nil {
-			log.Printf("An error occurred querying Neo: %s", err)
+			ctxLogger.Error("An error occurred querying Neo: %s", err)
 			return err
 		}
 	}
@@ -187,15 +197,14 @@ func addCellHostOptions(customer *string, cellID int64, hostName *string, option
 	return nil
 }
 
-func getCellHostByName(conn neo4j.ConnPool, customer *string, cellID int64, hostName *string) *models.Host {
+func getCellHostByName(conn neo4j.ConnPool, customer *string, cellID *string, hostName *string) *models.Host {
 
 	var host *models.Host
 	host = nil
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[:HAS]->(host:Host {name: {host_name}})
-							WHERE id(cell) = {cell_id}
-								RETURN ID(host) as id,
+							(cell:Cell {id: {cell_id}})-[:HAS]->(host:Host {name: {host_name}})
+								RETURN host.id as id,
 												host.name as name`
 
 	db, err := conn.OpenPool()
@@ -230,10 +239,8 @@ func getCellHostByName(conn neo4j.ConnPool, customer *string, cellID int64, host
 	_name := output[1].(string)
 
 	host = &models.Host{
-		ID:   output[0].(int64),
+		ID:   models.ULID(output[0].(string)),
 		Name: &_name}
-
-	log.Printf("\n here => (%#v)\n", host)
 
 	return host
 }

@@ -54,7 +54,7 @@ type Loadbalancer struct {
 	ConnectionIDLETimeout int64 `json:"connection_idle_timeout,omitempty"`
 
 	// id
-	ID int64 `json:"id,omitempty"`
+	ID ULID `json:"id,omitempty"`
 
 	// name
 	// Required: true
@@ -77,6 +77,11 @@ func (m *Loadbalancer) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAlgorithm(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateID(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -105,6 +110,22 @@ func (m *Loadbalancer) Validate(formats strfmt.Registry) error {
 func (m *Loadbalancer) validateAlgorithm(formats strfmt.Registry) error {
 
 	if err := validate.Required("algorithm", "body", m.Algorithm); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Loadbalancer) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ID) { // not required
+		return nil
+	}
+
+	if err := m.ID.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("id")
+		}
 		return err
 	}
 

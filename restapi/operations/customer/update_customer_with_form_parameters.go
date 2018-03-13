@@ -37,7 +37,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -58,11 +58,14 @@ type UpdateCustomerWithFormParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*ID of customer that needs to be updated
+	/*Customer ID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	CustomerID int64
+	CustomerID string
 	/*Updated name of the customer
 	  In: formData
 	*/
@@ -106,11 +109,28 @@ func (o *UpdateCustomerWithFormParams) bindCustomerID(rawData []string, hasKey b
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("customerId", "path", "int64", raw)
+	o.CustomerID = raw
+
+	if err := o.validateCustomerID(formats); err != nil {
+		return err
 	}
-	o.CustomerID = value
+
+	return nil
+}
+
+func (o *UpdateCustomerWithFormParams) validateCustomerID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("customerId", "path", o.CustomerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("customerId", "path", o.CustomerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("customerId", "path", o.CustomerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

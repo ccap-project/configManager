@@ -44,7 +44,7 @@ import (
 type Role struct {
 
 	// id
-	ID int64 `json:"id,omitempty"`
+	ID ULID `json:"id,omitempty"`
 
 	// name
 	// Required: true
@@ -69,6 +69,11 @@ type Role struct {
 func (m *Role) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateID(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if err := m.validateName(formats); err != nil {
 		// prop
 		res = append(res, err)
@@ -87,6 +92,22 @@ func (m *Role) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Role) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ID) { // not required
+		return nil
+	}
+
+	if err := m.ID.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("id")
+		}
+		return err
+	}
+
 	return nil
 }
 

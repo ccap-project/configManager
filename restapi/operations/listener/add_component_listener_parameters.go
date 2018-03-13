@@ -38,7 +38,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -66,16 +66,22 @@ type AddComponentListenerParams struct {
 	  In: body
 	*/
 	Body *models.Listener
-	/*ID of cell that will be used
+	/*Cell ID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	CellID int64
-	/*ID of component that will be used
+	CellID string
+	/*Component ID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	ComponentID int64
+	ComponentID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -108,12 +114,12 @@ func (o *AddComponentListenerParams) BindRequest(r *http.Request, route *middlew
 		res = append(res, errors.Required("body", "body"))
 	}
 
-	rCellID, rhkCellID, _ := route.Params.GetOK("cell_id")
+	rCellID, rhkCellID, _ := route.Params.GetOK("cellId")
 	if err := o.bindCellID(rCellID, rhkCellID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	rComponentID, rhkComponentID, _ := route.Params.GetOK("component_id")
+	rComponentID, rhkComponentID, _ := route.Params.GetOK("componentId")
 	if err := o.bindComponentID(rComponentID, rhkComponentID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -130,11 +136,28 @@ func (o *AddComponentListenerParams) bindCellID(rawData []string, hasKey bool, f
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("cell_id", "path", "int64", raw)
+	o.CellID = raw
+
+	if err := o.validateCellID(formats); err != nil {
+		return err
 	}
-	o.CellID = value
+
+	return nil
+}
+
+func (o *AddComponentListenerParams) validateCellID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("cellId", "path", o.CellID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("cellId", "path", o.CellID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("cellId", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -145,11 +168,28 @@ func (o *AddComponentListenerParams) bindComponentID(rawData []string, hasKey bo
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("component_id", "path", "int64", raw)
+	o.ComponentID = raw
+
+	if err := o.validateComponentID(formats); err != nil {
+		return err
 	}
-	o.ComponentID = value
+
+	return nil
+}
+
+func (o *AddComponentListenerParams) validateComponentID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("componentId", "path", o.ComponentID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("componentId", "path", o.ComponentID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("componentId", "path", o.ComponentID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

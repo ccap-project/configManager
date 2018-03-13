@@ -36,7 +36,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -57,15 +57,14 @@ type DeleteCustomerParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*
-	  In: header
-	*/
-	APIKey *string
-	/*Customer id to delete
+	/*Customer ID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	CustomerID int64
+	CustomerID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -73,10 +72,6 @@ type DeleteCustomerParams struct {
 func (o *DeleteCustomerParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 	o.HTTPRequest = r
-
-	if err := o.bindAPIKey(r.Header[http.CanonicalHeaderKey("api_key")], true, route.Formats); err != nil {
-		res = append(res, err)
-	}
 
 	rCustomerID, rhkCustomerID, _ := route.Params.GetOK("customerId")
 	if err := o.bindCustomerID(rCustomerID, rhkCustomerID, route.Formats); err != nil {
@@ -89,31 +84,34 @@ func (o *DeleteCustomerParams) BindRequest(r *http.Request, route *middleware.Ma
 	return nil
 }
 
-func (o *DeleteCustomerParams) bindAPIKey(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-	if raw == "" { // empty values pass all other validations
-		return nil
-	}
-
-	o.APIKey = &raw
-
-	return nil
-}
-
 func (o *DeleteCustomerParams) bindCustomerID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("customerId", "path", "int64", raw)
+	o.CustomerID = raw
+
+	if err := o.validateCustomerID(formats); err != nil {
+		return err
 	}
-	o.CustomerID = value
+
+	return nil
+}
+
+func (o *DeleteCustomerParams) validateCustomerID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("customerId", "path", o.CustomerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("customerId", "path", o.CustomerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("customerId", "path", o.CustomerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

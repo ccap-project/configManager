@@ -52,58 +52,68 @@ type addCellLoadbalancer struct {
 
 func (ctx *addCellLoadbalancer) Handle(params loadbalancer.AddLoadbalancerParams, principal *models.Customer) middleware.Responder {
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)
-							WHERE id(cell) = {cell_id}
-							CREATE (cell)-[:HAS]->(loadbalancer:Loadbalancer { name: {loadbalancer_name},
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})
+							CREATE (cell)-[:HAS]->(loadbalancer:Loadbalancer {
+								id: {loadbalancer_id},
+								name: {loadbalancer_name},
 								port: {loadbalancer_port},
 							 	protocol: {loadbalancer_protocol},
 								algorithm: {loadbalancer_algorithm}})
-							RETURN	id(loadbalancer) AS id`
+							RETURN	loadbalancer.id AS id`
+
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name":     swag.StringValue(principal.Name),
+		"cell_id":           params.CellID,
+		"loadbalancer_name": swag.StringValue(params.Body.Name)})
 
 	// XXX: Consistency check should have more than only name...
-	if _getLoadbalancerByName(ctx.rt.DB(), principal.Name, params.CellID, params.Body.Name) != nil {
-		log.Println("loadbalancer already exists !")
+	if _getLoadbalancerByName(ctx.rt.DB(), principal.Name, &params.CellID, params.Body.Name) != nil {
+		ctxLogger.Warn("loadbalancer already exists !")
 		return loadbalancer.NewAddLoadbalancerConflict().WithPayload(models.APIResponse{Message: "loadbalancer already exists"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j: ", err)
 		return loadbalancer.NewAddLoadbalancerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return loadbalancer.NewAddLoadbalancerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
+
+	ulid := configManager.GetULID()
+
+	ctxLogger = ctxLogger.WithFields(logrus.Fields{
+		"loadbalancer_id": ulid})
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"name":                   swag.StringValue(principal.Name),
 		"cell_id":                params.CellID,
+		"loadbalancer_id":        ulid,
 		"loadbalancer_name":      swag.StringValue(params.Body.Name),
 		"loadbalancer_port":      swag.Int64Value(params.Body.Port),
 		"loadbalancer_protocol":  swag.StringValue(params.Body.Protocol),
 		"loadbalancer_algorithm": swag.StringValue(params.Body.Algorithm)})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return loadbalancer.NewAddLoadbalancerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 	if err != nil {
-		log.Printf("An error occurred getting next row: %s", err)
+		ctxLogger.Error("An error occurred getting next row: ", err)
 		return loadbalancer.NewAddLoadbalancerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
-	log.Printf("= Output(%#v)", output)
+	ctxLogger.Info("OK")
 
-	log.Printf("customer(%s) name(%s) ", swag.StringValue(principal.Name), swag.StringValue(params.Body.Name))
-
-	return loadbalancer.NewAddLoadbalancerCreated().WithPayload(output[0].(int64))
+	return loadbalancer.NewAddLoadbalancerCreated().WithPayload(models.ULID(output[0].(string)))
 }
 
 func NewAddLoadbalancerRelationship(rt *configManager.Runtime) loadbalancer.AddLoadbalancerRelationshipHandler {
@@ -116,11 +126,11 @@ type addLoadbalancerRelationship struct {
 
 func (ctx *addLoadbalancerRelationship) Handle(params loadbalancer.AddLoadbalancerRelationshipParams, principal *models.Customer) middleware.Responder {
 
-	if _getComponentListenerByID(ctx.rt.DB(), principal.Name, params.CellID, params.ListenerID) == nil {
+	if _getComponentListenerByID(ctx.rt, principal.Name, &params.CellID, &params.ListenerID) == nil {
 		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "listener not found"})
 	}
 
-	cellLoadbalancer, err := _getCellLoadbalancer(ctx.rt.DB(), principal.Name, params.CellID, params.LoadbalancerID)
+	cellLoadbalancer, err := _getCellLoadbalancer(ctx.rt.DB(), principal.Name, &params.CellID, &params.LoadbalancerID)
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
@@ -132,10 +142,12 @@ func (ctx *addLoadbalancerRelationship) Handle(params loadbalancer.AddLoadbalanc
 	}
 
 	cypher := `
-		MATCH (customer:Customer {name: {customer_name}})-[:OWN]->(cell:Cell)-[:HAS]->(lb:Loadbalancer)
-		WHERE id(cell) = {cell_id} AND id(lb) = {loadbalancer_id}
-		MATCH (cell)-[:PROVIDES]->(component:Component)-[:LISTEN_ON]->(listener:Listener)
-		WHERE id(cell) = {cell_id} AND id(listener) = {listener_id}
+		MATCH (customer:Customer {name: {customer_name}})-[:OWN]->
+					(cell:Cell {id: {cell_id}})-[:HAS]->
+					(lb:Loadbalancer {id: {loadbalancer_id}})
+		MATCH (cell {id: {cell_id}})-[:PROVIDES]->
+			(component:Component)-[:LISTEN_ON]->
+			(listener:Listener {id: {listener_id}})
 		MERGE (lb)-[:CONNECT_TO]->(listener)
 		RETURN *`
 
@@ -193,11 +205,11 @@ type deleteLoadbalancerRelationship struct {
 
 func (ctx *deleteLoadbalancerRelationship) Handle(params loadbalancer.DeleteLoadbalancerRelationshipParams, principal *models.Customer) middleware.Responder {
 
-	if _getComponentListenerByID(ctx.rt.DB(), principal.Name, params.CellID, params.ListenerID) == nil {
+	if _getComponentListenerByID(ctx.rt, principal.Name, &params.CellID, &params.ListenerID) == nil {
 		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "listener not found"})
 	}
 
-	cellLoadbalancer, err := _getCellLoadbalancer(ctx.rt.DB(), principal.Name, params.CellID, params.LoadbalancerID)
+	cellLoadbalancer, err := _getCellLoadbalancer(ctx.rt.DB(), principal.Name, &params.CellID, &params.LoadbalancerID)
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
@@ -209,8 +221,10 @@ func (ctx *deleteLoadbalancerRelationship) Handle(params loadbalancer.DeleteLoad
 	}
 
 	cypher := `
-			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->(cell:Cell)-[:HAS]->(loadbalancer:Loadbalancer)-[r:CONNECT_TO]->(listener:Listener)
-			WHERE id(cell) = {cell_id} AND id(listener) = {listener_id} AND id(loadbalancer) = {loadbalancer_id}
+			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->
+				(cell:Cell {id: {cell_id}})-[:HAS]->
+				(loadbalancer:Loadbalancer {id: loadbalancer_id})-[r:CONNECT_TO]->
+				(listener:Listener {id: {listener_id}})
 			delete r`
 
 	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
@@ -259,7 +273,7 @@ type getCellLoadbalancer struct {
 
 func (ctx *getCellLoadbalancer) Handle(params loadbalancer.GetCellLoadbalancerParams, principal *models.Customer) middleware.Responder {
 
-	cellLoadbalancer, err := _getCellLoadbalancer(ctx.rt.DB(), principal.Name, params.CellID, params.LoadbalancerID)
+	cellLoadbalancer, err := _getCellLoadbalancer(ctx.rt.DB(), principal.Name, &params.CellID, &params.LoadbalancerID)
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
@@ -283,7 +297,7 @@ type findCellLoadbalancers struct {
 
 func (ctx *findCellLoadbalancers) Handle(params loadbalancer.FindCellLoadbalancersParams, principal *models.Customer) middleware.Responder {
 
-	cellLoadbalancers, err := _findCellLoadbalancers(ctx.rt.DB(), principal.Name, params.CellID)
+	cellLoadbalancers, err := _findCellLoadbalancers(ctx.rt.DB(), principal.Name, &params.CellID)
 
 	if err != nil {
 		return loadbalancer.NewFindCellLoadbalancersInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -292,10 +306,9 @@ func (ctx *findCellLoadbalancers) Handle(params loadbalancer.FindCellLoadbalance
 	return loadbalancer.NewFindCellLoadbalancersOK().WithPayload(cellLoadbalancers)
 }
 
-func _findCellLoadbalancers(conn neo4j.ConnPool, customerName *string, CellID int64) ([]*models.Loadbalancer, error) {
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)-[:HAS]->(loadbalancer)
-								WHERE id(cell) = {cell_id}
-								RETURN ID(loadbalancer) as id,
+func _findCellLoadbalancers(conn neo4j.ConnPool, customerName *string, CellID *string) ([]*models.Loadbalancer, error) {
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})-[:HAS]->(loadbalancer)
+								RETURN loadbalancer.id as id,
 												loadbalancer.name as name`
 
 	db, err := conn.OpenPool()
@@ -321,19 +334,21 @@ func _findCellLoadbalancers(conn neo4j.ConnPool, customerName *string, CellID in
 	res := make([]*models.Loadbalancer, len(data))
 
 	for idx, row := range data {
-		res[idx], _ = _getCellLoadbalancer(conn, customerName, CellID, row[0].(int64))
+		lb_id := row[0].(string)
+		res[idx], _ = _getCellLoadbalancer(conn, customerName, CellID, &lb_id)
 	}
 
 	return res, nil
 }
 
-func _getCellLoadbalancer(conn neo4j.ConnPool, customerName *string, CellID int64, LoadbalancerID int64) (*models.Loadbalancer, error) {
+func _getCellLoadbalancer(conn neo4j.ConnPool, customerName *string, CellID *string, LoadbalancerID *string) (*models.Loadbalancer, error) {
 	var loadbalancer *models.Loadbalancer
 	loadbalancer = nil
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)-[:HAS]->(loadbalancer:Loadbalancer)
-							WHERE id(cell) = {cell_id} AND id(loadbalancer) = {loadbalancer_id}
-								RETURN ID(loadbalancer) as id,
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->
+										(cell:Cell {id: {cell_id}})-[:HAS]->
+										(loadbalancer:Loadbalancer {id: {loadbalancer_id}})
+								RETURN loadbalancer.id as id,
 												loadbalancer.name as name,
 												loadbalancer.port as port,
 												loadbalancer.protocol as protocol,
@@ -376,7 +391,7 @@ func _getCellLoadbalancer(conn neo4j.ConnPool, customerName *string, CellID int6
 	_algorithm := output[4].(string)
 
 	loadbalancer = &models.Loadbalancer{
-		ID:        output[0].(int64),
+		ID:        models.ULID(output[0].(string)),
 		Name:      &_name,
 		Port:      &_port,
 		Protocol:  &_protocol,
@@ -385,14 +400,16 @@ func _getCellLoadbalancer(conn neo4j.ConnPool, customerName *string, CellID int6
 	return loadbalancer, nil
 }
 
-func _getLoadbalancerByName(conn neo4j.ConnPool, customerName *string, CellID int64, loadbalancerName *string) *models.Loadbalancer {
+func _getLoadbalancerByName(conn neo4j.ConnPool, customerName *string, CellID *string, loadbalancerName *string) *models.Loadbalancer {
 
 	var loadbalancer *models.Loadbalancer
 	loadbalancer = nil
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)-[:PROVIDES]->(loadbalancer:Loadbalancer)
-							WHERE id(cell) = {cell_id} AND loadbalancer.name = {loadbalancer_name}
-								RETURN ID(loadbalancer) as id,
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->
+										(cell:Cell {id: {cell_id}})-[:PROVIDES]->
+										(loadbalancer:Loadbalancer)
+							WHERE loadbalancer.name = {loadbalancer_name}
+								RETURN loadbalancer. as id,
 												loadbalancer.name as name`
 
 	db, err := conn.OpenPool()
@@ -424,7 +441,7 @@ func _getLoadbalancerByName(conn neo4j.ConnPool, customerName *string, CellID in
 	}
 	_name := output[1].(string)
 
-	loadbalancer = &models.Loadbalancer{ID: output[0].(int64),
+	loadbalancer = &models.Loadbalancer{ID: models.ULID(output[0].(string)),
 		Name: &_name}
 
 	stmt.Close()

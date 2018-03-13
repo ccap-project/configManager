@@ -51,7 +51,7 @@ type AddComponentHostgroupCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload int64 `json:"body,omitempty"`
+	Payload models.ULID `json:"body,omitempty"`
 }
 
 // NewAddComponentHostgroupCreated creates AddComponentHostgroupCreated with default headers values
@@ -60,13 +60,13 @@ func NewAddComponentHostgroupCreated() *AddComponentHostgroupCreated {
 }
 
 // WithPayload adds the payload to the add component hostgroup created response
-func (o *AddComponentHostgroupCreated) WithPayload(payload int64) *AddComponentHostgroupCreated {
+func (o *AddComponentHostgroupCreated) WithPayload(payload models.ULID) *AddComponentHostgroupCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add component hostgroup created response
-func (o *AddComponentHostgroupCreated) SetPayload(payload int64) {
+func (o *AddComponentHostgroupCreated) SetPayload(payload models.ULID) {
 	o.Payload = payload
 }
 

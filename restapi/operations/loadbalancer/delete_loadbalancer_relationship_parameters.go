@@ -36,7 +36,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -57,21 +57,30 @@ type DeleteLoadbalancerRelationshipParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*ID of cell that needs to be updated
+	/*Cell ID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	CellID int64
-	/*ID of listener that will be used
+	CellID string
+	/*ListenerID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	ListenerID int64
-	/*ID of loadbalancer that will be used
+	ListenerID string
+	/*LoadbalancerID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	LoadbalancerID int64
+	LoadbalancerID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -80,17 +89,17 @@ func (o *DeleteLoadbalancerRelationshipParams) BindRequest(r *http.Request, rout
 	var res []error
 	o.HTTPRequest = r
 
-	rCellID, rhkCellID, _ := route.Params.GetOK("cell_id")
+	rCellID, rhkCellID, _ := route.Params.GetOK("cellId")
 	if err := o.bindCellID(rCellID, rhkCellID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	rListenerID, rhkListenerID, _ := route.Params.GetOK("listener_id")
+	rListenerID, rhkListenerID, _ := route.Params.GetOK("listenerId")
 	if err := o.bindListenerID(rListenerID, rhkListenerID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	rLoadbalancerID, rhkLoadbalancerID, _ := route.Params.GetOK("loadbalancer_id")
+	rLoadbalancerID, rhkLoadbalancerID, _ := route.Params.GetOK("loadbalancerId")
 	if err := o.bindLoadbalancerID(rLoadbalancerID, rhkLoadbalancerID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -107,11 +116,28 @@ func (o *DeleteLoadbalancerRelationshipParams) bindCellID(rawData []string, hasK
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("cell_id", "path", "int64", raw)
+	o.CellID = raw
+
+	if err := o.validateCellID(formats); err != nil {
+		return err
 	}
-	o.CellID = value
+
+	return nil
+}
+
+func (o *DeleteLoadbalancerRelationshipParams) validateCellID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("cellId", "path", o.CellID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("cellId", "path", o.CellID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("cellId", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -122,11 +148,28 @@ func (o *DeleteLoadbalancerRelationshipParams) bindListenerID(rawData []string, 
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("listener_id", "path", "int64", raw)
+	o.ListenerID = raw
+
+	if err := o.validateListenerID(formats); err != nil {
+		return err
 	}
-	o.ListenerID = value
+
+	return nil
+}
+
+func (o *DeleteLoadbalancerRelationshipParams) validateListenerID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("listenerId", "path", o.ListenerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("listenerId", "path", o.ListenerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("listenerId", "path", o.ListenerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -137,11 +180,28 @@ func (o *DeleteLoadbalancerRelationshipParams) bindLoadbalancerID(rawData []stri
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("loadbalancer_id", "path", "int64", raw)
+	o.LoadbalancerID = raw
+
+	if err := o.validateLoadbalancerID(formats); err != nil {
+		return err
 	}
-	o.LoadbalancerID = value
+
+	return nil
+}
+
+func (o *DeleteLoadbalancerRelationshipParams) validateLoadbalancerID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("loadbalancerId", "path", o.LoadbalancerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("loadbalancerId", "path", o.LoadbalancerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("loadbalancerId", "path", o.LoadbalancerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

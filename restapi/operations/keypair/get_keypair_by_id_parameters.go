@@ -36,7 +36,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -57,11 +57,14 @@ type GetKeypairByIDParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*ID of keypair to return
+	/*KeypairID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	KeypairID int64
+	KeypairID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -70,7 +73,7 @@ func (o *GetKeypairByIDParams) BindRequest(r *http.Request, route *middleware.Ma
 	var res []error
 	o.HTTPRequest = r
 
-	rKeypairID, rhkKeypairID, _ := route.Params.GetOK("keypair_id")
+	rKeypairID, rhkKeypairID, _ := route.Params.GetOK("keypairId")
 	if err := o.bindKeypairID(rKeypairID, rhkKeypairID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -87,11 +90,28 @@ func (o *GetKeypairByIDParams) bindKeypairID(rawData []string, hasKey bool, form
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("keypair_id", "path", "int64", raw)
+	o.KeypairID = raw
+
+	if err := o.validateKeypairID(formats); err != nil {
+		return err
 	}
-	o.KeypairID = value
+
+	return nil
+}
+
+func (o *GetKeypairByIDParams) validateKeypairID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("keypairId", "path", o.KeypairID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("keypairId", "path", o.KeypairID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("keypairId", "path", o.KeypairID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -36,13 +36,11 @@ import (
 	"net/url"
 	golangswaggerpaths "path"
 	"strings"
-
-	"github.com/go-openapi/swag"
 )
 
 // DeleteKeypairURL generates an URL for the delete keypair operation
 type DeleteKeypairURL struct {
-	KeypairID int64
+	KeypairID string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -70,9 +68,9 @@ func (o *DeleteKeypairURL) Build() (*url.URL, error) {
 
 	var _path = "/keypair/{keypair_id}"
 
-	keypairID := swag.FormatInt64(o.KeypairID)
+	keypairID := o.KeypairID
 	if keypairID != "" {
-		_path = strings.Replace(_path, "{keypair_id}", keypairID, -1)
+		_path = strings.Replace(_path, "{keypairId}", keypairID, -1)
 	} else {
 		return nil, errors.New("KeypairID is required on DeleteKeypairURL")
 	}

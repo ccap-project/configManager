@@ -37,6 +37,7 @@ import (
 	"configManager/neo4j"
 	"configManager/restapi/operations/provider"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 )
@@ -51,43 +52,53 @@ type addCellProvider struct {
 
 func (ctx *addCellProvider) Handle(params provider.AddProviderParams, principal *models.Customer) middleware.Responder {
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell),
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}}),
 										(providertype:ProviderType {name: {providertype}})
-							WHERE id(cell) = {cell_id}
 							CREATE (cell)-[:USE]->(provider:Provider {
+								id: {provider_id},
 								name: {provider_name},
 							 	domain_name: {domain_name},
 								tenantname: {tenant_name},
 								auth_url: {auth_url},
 								username: {username},
 								password: {password}})-[:PROVIDER_IS]->(providertype)
-							RETURN	id(provider) AS id,
+							RETURN	provider.id AS id,
 											provider.name AS name`
 
-	Provider := getProvider(ctx.rt.DB(), principal.Name, params.CellID)
-	log.Printf("Here =>>>> %#v\n", Provider)
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"provider_name": swag.StringValue(params.Body.Name),
+		"cell_id":       params.CellID})
+
+	Provider := getProvider(ctx.rt.DB(), principal.Name, &params.CellID)
 
 	if Provider != nil {
-		log.Println("provider already exists !")
+		ctxLogger.Warn("provider already exists !")
 		return provider.NewAddProviderConflict().WithPayload(models.APIResponse{Message: "provider already exists"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j: ", err)
 		return provider.NewAddProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return provider.NewAddProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
+
+	ulid := configManager.GetULID()
+
+	ctxLogger = ctxLogger.WithFields(logrus.Fields{
+		"cell_id": ulid})
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"name":          swag.StringValue(principal.Name),
 		"cell_id":       params.CellID,
+		"provider_id":   ulid,
 		"provider_name": swag.StringValue(params.Body.Name),
 		"domain_name":   swag.StringValue(params.Body.DomainName),
 		"tenant_name":   swag.StringValue(params.Body.TenantName),
@@ -97,21 +108,17 @@ func (ctx *addCellProvider) Handle(params provider.AddProviderParams, principal 
 		"providertype":  swag.StringValue(params.Body.Type)})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return provider.NewAddProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 	if err != nil {
-		log.Printf("An error occurred getting next row: %s", err)
+		ctxLogger.Error("An error occurred getting next row: ", err)
 		return provider.NewAddProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
-	log.Printf("= Output(%#v)", output)
-
-	log.Printf("customer(%s) name(%s) ", swag.StringValue(principal.Name), swag.StringValue(params.Body.Name))
-
-	return provider.NewAddProviderCreated().WithPayload(output[0].(int64))
+	return provider.NewAddProviderCreated().WithPayload(models.ULID(output[0].(string)))
 }
 
 func NewGetProvider(rt *configManager.Runtime) provider.GetProviderHandler {
@@ -124,25 +131,28 @@ type getCellProvider struct {
 
 func (ctx *getCellProvider) Handle(params provider.GetProviderParams, principal *models.Customer) middleware.Responder {
 
-	Provider := getProvider(ctx.rt.DB(), principal.Name, params.CellID)
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID})
+
+	Provider := getProvider(ctx.rt.DB(), principal.Name, &params.CellID)
 
 	if Provider == nil {
-		log.Println("provider does not exists !")
+		ctxLogger.Warn("provider does not exists !")
 		return provider.NewGetProviderNotFound()
 	}
 
 	return provider.NewGetProviderOK().WithPayload(Provider)
 }
 
-func getProvider(conn neo4j.ConnPool, customerName *string, CellID int64) *models.Provider {
+func getProvider(conn neo4j.ConnPool, customerName *string, CellID *string) *models.Provider {
 
 	var provider *models.Provider
 	provider = nil
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)-[:USE]->(provider:Provider)
-							WHERE id(cell) = {cell_id}
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})-[:USE]->(provider:Provider)
 							MATCH (provider)-[:PROVIDER_IS]->(provider_type:ProviderType)
-								RETURN ID(provider) as id,
+								RETURN provider.id as id,
 												provider.name as name,
 												provider.domain_name as domain_name,
 												provider.tenantname as tenantname,
@@ -189,7 +199,7 @@ func getProvider(conn neo4j.ConnPool, customerName *string, CellID int64) *model
 	provider.Username = new(string)
 	provider.Password = new(string)
 
-	provider.ID = output[0].(int64)
+	provider.ID = models.ULID(output[0].(string))
 	*provider.Name = output[1].(string)
 	*provider.DomainName = output[2].(string)
 	*provider.TenantName = output[3].(string)
@@ -212,8 +222,7 @@ type updateCellProvider struct {
 func (ctx *updateCellProvider) Handle(params provider.UpdateProviderParams, principal *models.Customer) middleware.Responder {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell)-[rel:USE]->(provider:Provider)-[rel2:PROVIDER_IS]->(provider_type:ProviderType)
-							WHERE id(cell) = {cell_id}
+							(cell:Cell {id: {cell_id}})-[rel:USE]->(provider:Provider)-[rel2:PROVIDER_IS]->(provider_type:ProviderType)
 						MATCH (newProviderType:ProviderType)
 							WHERE newProviderType.name = {providertype}
 							SET provider.name={name},
@@ -227,24 +236,28 @@ func (ctx *updateCellProvider) Handle(params provider.UpdateProviderParams, prin
 							CREATE (cell)-[:USE]->(provider)-[:PROVIDER_IS]->(newProviderType)
 							return provider`
 
-	Provider := getProvider(ctx.rt.DB(), principal.Name, params.CellID)
-	log.Printf("UpdateCellProvider =>>>> %#v\n", Provider)
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"provider_name": swag.StringValue(params.Body.Name),
+		"cell_id":       params.CellID})
+
+	Provider := getProvider(ctx.rt.DB(), principal.Name, &params.CellID)
 
 	if Provider == nil {
-		log.Println("provider does not exists !")
+		ctxLogger.Warn("provider does not exists !")
 		return provider.NewUpdateProviderNotFound().WithPayload(models.APIResponse{Message: "provider does not exists"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j: ", err)
 		return provider.NewUpdateProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return provider.NewUpdateProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
@@ -260,19 +273,15 @@ func (ctx *updateCellProvider) Handle(params provider.UpdateProviderParams, prin
 		"type":          swag.StringValue(params.Body.Type)})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return provider.NewUpdateProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
-	output, _, err := rows.NextNeo()
+	_, _, err = rows.NextNeo()
 	if err != nil {
-		log.Printf("An error occurred getting next row: %s", err)
+		ctxLogger.Error("An error occurred getting next row: ", err)
 		return provider.NewUpdateProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
-
-	log.Printf("= Output(%#v)", output)
-
-	//log.Printf("customer(%s) name(%s) ", swag.StringValue(principal.Name), swag.StringValue(params.Body.Name))
 
 	return provider.NewUpdateProviderOK()
 }

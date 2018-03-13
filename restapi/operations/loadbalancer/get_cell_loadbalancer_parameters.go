@@ -36,7 +36,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -57,16 +57,22 @@ type GetCellLoadbalancerParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*ID of cell that needs to be updated
+	/*Cell ID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	CellID int64
-	/*ID of loadbalancer that will be used
+	CellID string
+	/*LoadbalancerID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	LoadbalancerID int64
+	LoadbalancerID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -75,12 +81,12 @@ func (o *GetCellLoadbalancerParams) BindRequest(r *http.Request, route *middlewa
 	var res []error
 	o.HTTPRequest = r
 
-	rCellID, rhkCellID, _ := route.Params.GetOK("cell_id")
+	rCellID, rhkCellID, _ := route.Params.GetOK("cellId")
 	if err := o.bindCellID(rCellID, rhkCellID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	rLoadbalancerID, rhkLoadbalancerID, _ := route.Params.GetOK("loadbalancer_id")
+	rLoadbalancerID, rhkLoadbalancerID, _ := route.Params.GetOK("loadbalancerId")
 	if err := o.bindLoadbalancerID(rLoadbalancerID, rhkLoadbalancerID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -97,11 +103,28 @@ func (o *GetCellLoadbalancerParams) bindCellID(rawData []string, hasKey bool, fo
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("cell_id", "path", "int64", raw)
+	o.CellID = raw
+
+	if err := o.validateCellID(formats); err != nil {
+		return err
 	}
-	o.CellID = value
+
+	return nil
+}
+
+func (o *GetCellLoadbalancerParams) validateCellID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("cellId", "path", o.CellID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("cellId", "path", o.CellID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("cellId", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -112,11 +135,28 @@ func (o *GetCellLoadbalancerParams) bindLoadbalancerID(rawData []string, hasKey 
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("loadbalancer_id", "path", "int64", raw)
+	o.LoadbalancerID = raw
+
+	if err := o.validateLoadbalancerID(formats); err != nil {
+		return err
 	}
-	o.LoadbalancerID = value
+
+	return nil
+}
+
+func (o *GetCellLoadbalancerParams) validateLoadbalancerID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("loadbalancerId", "path", o.LoadbalancerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("loadbalancerId", "path", o.LoadbalancerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("loadbalancerId", "path", o.LoadbalancerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

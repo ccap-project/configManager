@@ -44,7 +44,7 @@ import (
 type Host struct {
 
 	// id
-	ID int64 `json:"id,omitempty"`
+	ID ULID `json:"id,omitempty"`
 
 	// name
 	// Required: true
@@ -58,6 +58,11 @@ type Host struct {
 func (m *Host) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateID(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if err := m.validateName(formats); err != nil {
 		// prop
 		res = append(res, err)
@@ -66,6 +71,22 @@ func (m *Host) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Host) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ID) { // not required
+		return nil
+	}
+
+	if err := m.ID.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("id")
+		}
+		return err
+	}
+
 	return nil
 }
 

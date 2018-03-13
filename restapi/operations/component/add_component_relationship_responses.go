@@ -47,11 +47,6 @@ const AddComponentRelationshipCreatedCode int = 201
 swagger:response addComponentRelationshipCreated
 */
 type AddComponentRelationshipCreated struct {
-
-	/*
-	  In: Body
-	*/
-	Payload int64 `json:"body,omitempty"`
 }
 
 // NewAddComponentRelationshipCreated creates AddComponentRelationshipCreated with default headers values
@@ -59,26 +54,12 @@ func NewAddComponentRelationshipCreated() *AddComponentRelationshipCreated {
 	return &AddComponentRelationshipCreated{}
 }
 
-// WithPayload adds the payload to the add component relationship created response
-func (o *AddComponentRelationshipCreated) WithPayload(payload int64) *AddComponentRelationshipCreated {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the add component relationship created response
-func (o *AddComponentRelationshipCreated) SetPayload(payload int64) {
-	o.Payload = payload
-}
-
 // WriteResponse to the client
 func (o *AddComponentRelationshipCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.WriteHeader(201)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
-	}
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
 
+	rw.WriteHeader(201)
 }
 
 // AddComponentRelationshipNotFoundCode is the HTTP code returned for type AddComponentRelationshipNotFound

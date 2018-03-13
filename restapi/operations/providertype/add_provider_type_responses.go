@@ -93,7 +93,7 @@ type AddProviderTypeCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload models.ProviderTypeID `json:"body,omitempty"`
+	Payload models.ULID `json:"body,omitempty"`
 }
 
 // NewAddProviderTypeCreated creates AddProviderTypeCreated with default headers values
@@ -102,13 +102,13 @@ func NewAddProviderTypeCreated() *AddProviderTypeCreated {
 }
 
 // WithPayload adds the payload to the add provider type created response
-func (o *AddProviderTypeCreated) WithPayload(payload models.ProviderTypeID) *AddProviderTypeCreated {
+func (o *AddProviderTypeCreated) WithPayload(payload models.ULID) *AddProviderTypeCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add provider type created response
-func (o *AddProviderTypeCreated) SetPayload(payload models.ProviderTypeID) {
+func (o *AddProviderTypeCreated) SetPayload(payload models.ULID) {
 	o.Payload = payload
 }
 

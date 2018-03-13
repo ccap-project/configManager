@@ -52,7 +52,7 @@ type Provider struct {
 	DomainName *string `json:"domain_name"`
 
 	// id
-	ID int64 `json:"id,omitempty"`
+	ID ULID `json:"id,omitempty"`
 
 	// name
 	// Required: true
@@ -85,6 +85,11 @@ func (m *Provider) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateDomainName(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateID(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -132,6 +137,22 @@ func (m *Provider) validateAuthURL(formats strfmt.Registry) error {
 func (m *Provider) validateDomainName(formats strfmt.Registry) error {
 
 	if err := validate.Required("domain_name", "body", m.DomainName); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Provider) validateID(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ID) { // not required
+		return nil
+	}
+
+	if err := m.ID.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("id")
+		}
 		return err
 	}
 

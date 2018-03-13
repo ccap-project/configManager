@@ -36,7 +36,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -57,21 +57,30 @@ type DeleteComponentListenerParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*ID of cell that will be used
+	/*Cell ID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	CellID int64
-	/*ID of component that will be used
+	CellID string
+	/*Component ID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	ComponentID int64
-	/*listener that will be deleted
+	ComponentID string
+	/*ListenerID
 	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
 	  In: path
 	*/
-	ListenerID int64
+	ListenerID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -80,17 +89,17 @@ func (o *DeleteComponentListenerParams) BindRequest(r *http.Request, route *midd
 	var res []error
 	o.HTTPRequest = r
 
-	rCellID, rhkCellID, _ := route.Params.GetOK("cell_id")
+	rCellID, rhkCellID, _ := route.Params.GetOK("cellId")
 	if err := o.bindCellID(rCellID, rhkCellID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	rComponentID, rhkComponentID, _ := route.Params.GetOK("component_id")
+	rComponentID, rhkComponentID, _ := route.Params.GetOK("componentId")
 	if err := o.bindComponentID(rComponentID, rhkComponentID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	rListenerID, rhkListenerID, _ := route.Params.GetOK("listener_id")
+	rListenerID, rhkListenerID, _ := route.Params.GetOK("listenerId")
 	if err := o.bindListenerID(rListenerID, rhkListenerID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -107,11 +116,28 @@ func (o *DeleteComponentListenerParams) bindCellID(rawData []string, hasKey bool
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("cell_id", "path", "int64", raw)
+	o.CellID = raw
+
+	if err := o.validateCellID(formats); err != nil {
+		return err
 	}
-	o.CellID = value
+
+	return nil
+}
+
+func (o *DeleteComponentListenerParams) validateCellID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("cellId", "path", o.CellID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("cellId", "path", o.CellID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("cellId", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -122,11 +148,28 @@ func (o *DeleteComponentListenerParams) bindComponentID(rawData []string, hasKey
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("component_id", "path", "int64", raw)
+	o.ComponentID = raw
+
+	if err := o.validateComponentID(formats); err != nil {
+		return err
 	}
-	o.ComponentID = value
+
+	return nil
+}
+
+func (o *DeleteComponentListenerParams) validateComponentID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("componentId", "path", o.ComponentID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("componentId", "path", o.ComponentID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("componentId", "path", o.ComponentID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -137,11 +180,28 @@ func (o *DeleteComponentListenerParams) bindListenerID(rawData []string, hasKey 
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("listener_id", "path", "int64", raw)
+	o.ListenerID = raw
+
+	if err := o.validateListenerID(formats); err != nil {
+		return err
 	}
-	o.ListenerID = value
+
+	return nil
+}
+
+func (o *DeleteComponentListenerParams) validateListenerID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("listenerId", "path", o.ListenerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("listenerId", "path", o.ListenerID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("listenerId", "path", o.ListenerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
 
 	return nil
 }

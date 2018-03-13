@@ -38,9 +38,9 @@ import (
 
 	"configManager"
 	"configManager/models"
-	"configManager/neo4j"
 	"configManager/restapi/operations/cell"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/johnnadratowski/golang-neo4j-bolt-driver/structures/graph"
@@ -56,48 +56,55 @@ type addCell struct {
 
 func (ctx *addCell) Handle(params cell.AddCellParams, principal *models.Customer) middleware.Responder {
 
-	cypher := `MATCH (c:Customer {name: {name} })
-							CREATE (c)-[:OWN]->(cell:Cell { name: {cell_name} })
-							RETURN	id(cell) AS id,
-											cell.name AS name`
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name)})
 
-	if getCellByName(ctx.rt.DB(), principal.Name, params.Body.Name) != nil {
-		log.Println("cell already exists !")
+	cypher := `MATCH (c:Customer {name: {name}})
+							CREATE (c)-[:OWN]->(cell:Cell { name: {cell_name}, id: {cell_id} })
+							RETURN	cell.id AS id`
+
+	if getCellByName(ctx.rt, principal.Name, params.Body.Name) != nil {
+		ctxLogger.Error("cell already exists !")
 		return cell.NewAddCellConflict().WithPayload(models.APIResponse{Message: "cell already exists"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j:", err)
 		return cell.NewAddCellInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: %s", err)
 		return cell.NewAddCellInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
-	rows, err := stmt.QueryNeo(map[string]interface{}{"name": swag.StringValue(principal.Name),
-		"cell_name": swag.StringValue(params.Body.Name)})
+	ulid := configManager.GetULID()
+
+	ctxLogger = ctxLogger.WithFields(logrus.Fields{
+		"cell_id": ulid})
+
+	rows, err := stmt.QueryNeo(map[string]interface{}{
+		"name":      swag.StringValue(principal.Name),
+		"cell_name": swag.StringValue(params.Body.Name),
+		"cell_id":   ulid})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: %s", err)
 		return cell.NewAddCellInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 	if err != nil {
-		log.Printf("An error occurred getting next row: %s", err)
+		ctxLogger.Error("An error occurred getting next row: %s", err)
 		return cell.NewAddCellInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
-	log.Printf("= Output(%#v)", output)
+	ctxLogger.Info("OK")
 
-	log.Printf("customer(%s) name(%s)", swag.StringValue(principal.Name), swag.StringValue(params.Body.Name))
-
-	return cell.NewAddCellCreated().WithPayload(output[0].(int64))
+	return cell.NewAddCellCreated().WithPayload(models.ULID(output[0].(string)))
 }
 
 func NewDeployCellByID(rt *configManager.Runtime) cell.DeployCellByIDHandler {
@@ -110,25 +117,29 @@ type deployCellByID struct {
 
 func (ctx *deployCellByID) Handle(params cell.DeployCellByIDParams, principal *models.Customer) middleware.Responder {
 
-	Cell := _getCellByID(ctx.rt.DB(), principal.Name, params.CellID)
+	Cell := _getCellByID(ctx.rt, principal.Name, &params.CellID)
+
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID})
 
 	if Cell == nil {
-		log.Println("cell does not exists !")
+		ctxLogger.Error("cell does not exists !")
 		return cell.NewDeployCellByIDNotFound()
 	}
 
-	EntireCell := getCellRecursive(ctx.rt.DB(), principal.Name, params.CellID)
+	EntireCell := getCellRecursive(ctx.rt, principal.Name, &params.CellID)
 
 	log.Printf("DeployCell(%#v)", EntireCell)
 
 	if EntireCell == nil {
-		log.Print("cell is empty")
+		ctxLogger.Warn("cell is empty")
 		return cell.NewDeployCellByIDNoContent()
 	}
 
 	jsonOut, err := json.Marshal(EntireCell)
 	if err != nil {
-		log.Println("decoding cell, ", err)
+		ctxLogger.Error("decoding cell, ", err)
 		return cell.NewDeployCellByIDInternalServerError()
 	}
 
@@ -138,7 +149,7 @@ func (ctx *deployCellByID) Handle(params cell.DeployCellByIDParams, principal *m
 	requestRes, err := http.Post("http://127.0.0.1:8080/v1/deploy", "application/json", jsonString)
 
 	if err != nil {
-		log.Println("deploying cell, ", err)
+		ctxLogger.Error("deploying cell, ", err)
 		return cell.NewDeployCellByIDInternalServerError()
 	}
 	defer requestRes.Body.Close()
@@ -151,7 +162,7 @@ func (ctx *deployCellByID) Handle(params cell.DeployCellByIDParams, principal *m
 	response.Payload.Message = buf.String()
 
 	if err != nil {
-		log.Println("reading deploy cell response, ", err)
+		ctxLogger.Error("reading deploy cell response, ", err)
 		return cell.NewDeployCellByIDInternalServerError()
 	}
 	return response
@@ -167,23 +178,27 @@ type deployCellAppByID struct {
 
 func (ctx *deployCellAppByID) Handle(params cell.DeployCellAppByIDParams, principal *models.Customer) middleware.Responder {
 
-	Cell := _getCellByID(ctx.rt.DB(), principal.Name, params.CellID)
+	Cell := _getCellByID(ctx.rt, principal.Name, &params.CellID)
+
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID})
 
 	if Cell == nil {
-		log.Println("cell does not exists !")
+		ctxLogger.Error("cell does not exists !")
 		return cell.NewDeployCellAppByIDNotFound()
 	}
 
-	EntireCell := getCellRecursive(ctx.rt.DB(), principal.Name, params.CellID)
+	EntireCell := getCellRecursive(ctx.rt, principal.Name, &params.CellID)
 
 	if EntireCell == nil {
-		log.Print("cell is empty")
+		ctxLogger.Error("cell is empty")
 		return cell.NewDeployCellAppByIDNoContent()
 	}
 
 	jsonOut, err := json.Marshal(EntireCell)
 	if err != nil {
-		log.Println("decoding cell, ", err)
+		ctxLogger.Error("decoding cell, ", err)
 		return cell.NewDeployCellAppByIDInternalServerError()
 	}
 
@@ -193,7 +208,7 @@ func (ctx *deployCellAppByID) Handle(params cell.DeployCellAppByIDParams, princi
 	requestRes, err := http.Post("http://127.0.0.1:8080/v1/application/deploy", "application/json", jsonString)
 
 	if err != nil {
-		log.Println("deploying cell, ", err)
+		ctxLogger.Error("deploying cell, ", err)
 		return cell.NewDeployCellAppByIDInternalServerError()
 	}
 	defer requestRes.Body.Close()
@@ -206,7 +221,7 @@ func (ctx *deployCellAppByID) Handle(params cell.DeployCellAppByIDParams, princi
 	response.Payload.Message = buf.String()
 
 	if err != nil {
-		log.Println("reading deploy cell response, ", err)
+		ctxLogger.Error("reading deploy cell response, ", err)
 		return cell.NewDeployCellAppByIDInternalServerError()
 	}
 	return response
@@ -222,30 +237,34 @@ type getCellByID struct {
 
 func (ctx *getCellByID) Handle(params cell.GetCellByIDParams, principal *models.Customer) middleware.Responder {
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:HAS]->(k:Cell)
-								WHERE ID(k) = {kid}
-								RETURN ID(c) as id,
-												k.name as name,
-												k.public_key as public_key`
+	cypher := `MATCH (c:Customer {name: {customer_name} })-[:HAS]->(cell:Cell {cell_id})
+								RETURN cell.id as id,
+												cell.name as name,
+												cell.public_key as public_key`
+
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID})
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j:", err)
 		return cell.NewAddCellInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: %s", err)
 		return cell.NewGetCellByIDInternalServerError()
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.QueryNeo(map[string]interface{}{"name": swag.StringValue(principal.Name),
-		"kid": params.CellID})
+	rows, err := stmt.QueryNeo(map[string]interface{}{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: %s", err)
 		return cell.NewGetCellByIDInternalServerError()
 	}
 
@@ -254,7 +273,7 @@ func (ctx *getCellByID) Handle(params cell.GetCellByIDParams, principal *models.
 		return cell.NewGetCellByIDNotFound()
 	}
 	_name := output[1].(string)
-	_cell := &models.Cell{ID: output[0].(int64),
+	_cell := &models.Cell{ID: models.ULID(output[0].(string)),
 		Name: &_name}
 
 	return cell.NewGetCellByIDOK().WithPayload(_cell)
@@ -270,17 +289,21 @@ type getCellFullByID struct {
 
 func (ctx *getCellFullByID) Handle(params cell.GetCellFullByIDParams, principal *models.Customer) middleware.Responder {
 
-	Cell := _getCellByID(ctx.rt.DB(), principal.Name, params.CellID)
+	Cell := _getCellByID(ctx.rt, principal.Name, &params.CellID)
+
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID})
 
 	if Cell == nil {
-		log.Println("cell does not exists !")
+		ctxLogger.Error("cell does not exists !")
 		return cell.NewDeployCellByIDNotFound()
 	}
 
-	FullCell := getCellFull(ctx.rt.DB(), principal.Name, params.CellID)
+	FullCell := getCellFull(ctx.rt, principal.Name, &params.CellID)
 
 	if FullCell == nil {
-		log.Print("cell is empty")
+		ctxLogger.Error("cell is empty")
 		return cell.NewDeployCellByIDNotFound()
 	}
 
@@ -295,16 +318,19 @@ type findCellByCustomer struct {
 	rt *configManager.Runtime
 }
 
-//func FindCellByCustomer(params cell.FindCellByCustomerParams, principal *models.Customer) middleware.Responder {
 func (ctx *findCellByCustomer) Handle(params cell.FindCellByCustomerParams, principal *models.Customer) middleware.Responder {
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)
-								RETURN ID(cell) as id,
+								WHERE EXISTS(cell.id)
+								RETURN cell.id as id,
 												cell.name as name`
+
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name)})
 
 	db, err := ctx.rt.DB().OpenPool()
 
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j:", err)
 		return cell.NewFindCellByCustomerInternalServerError()
 	}
 	defer db.Close()
@@ -315,7 +341,7 @@ func (ctx *findCellByCustomer) Handle(params cell.FindCellByCustomerParams, prin
 	log.Printf("= data(%#v)", data)
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Errorf("An error occurred querying Neo: %s", err)
 		return cell.NewFindCellByCustomerInternalServerError()
 
 	} else if len(data) == 0 {
@@ -328,7 +354,7 @@ func (ctx *findCellByCustomer) Handle(params cell.FindCellByCustomerParams, prin
 		_name := row[1].(string)
 
 		res[idx] = &models.Cell{
-			ID:   row[0].(int64),
+			ID:   models.ULID(row[0].(string)),
 			Name: &_name}
 	}
 
@@ -337,34 +363,39 @@ func (ctx *findCellByCustomer) Handle(params cell.FindCellByCustomerParams, prin
 	return cell.NewFindCellByCustomerOK().WithPayload(res)
 }
 
-func getCellByName(conn neo4j.ConnPool, customerName *string, cellName *string) *models.Cell {
+func getCellByName(rt *configManager.Runtime, customerName *string, cellName *string) *models.Cell {
 
 	var cell *models.Cell
 	cell = nil
 
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)
-								WHERE cell.name = {cell_name}
-								RETURN ID(cell) as id,
+								WHERE EXISTS(cell.id) AND cell.name = {cell_name}
+								RETURN cell.id as id,
 												cell.name as name`
 
-	db, err := conn.OpenPool()
+	ctxLogger := rt.Logger().WithFields(logrus.Fields{
+		"customer_name": customerName,
+		"cell_name":     cellName})
+
+	db, err := rt.DB().OpenPool()
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j:", err)
 		return cell
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Errorf("An error occurred preparing statement: %s", err)
 		return cell
 	}
 
-	rows, err := stmt.QueryNeo(map[string]interface{}{"name": swag.StringValue(customerName),
+	rows, err := stmt.QueryNeo(map[string]interface{}{
+		"name":      swag.StringValue(customerName),
 		"cell_name": swag.StringValue(cellName)})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Errorf("An error occurred querying Neo: %s", err)
 		return cell
 	}
 
@@ -374,7 +405,7 @@ func getCellByName(conn neo4j.ConnPool, customerName *string, cellName *string) 
 	}
 	_name := output[1].(string)
 
-	cell = &models.Cell{ID: output[0].(int64),
+	cell = &models.Cell{ID: models.ULID(output[0].(string)),
 		Name: &_name}
 
 	stmt.Close()
@@ -382,27 +413,30 @@ func getCellByName(conn neo4j.ConnPool, customerName *string, cellName *string) 
 	return cell
 }
 
-func _getCellByID(conn neo4j.ConnPool, customerName *string, cellID int64) *models.Cell {
+func _getCellByID(rt *configManager.Runtime, customerName *string, cellID *string) *models.Cell {
 
 	var cell *models.Cell
 	cell = nil
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)
-								WHERE id(cell) = {cell_id}
-								RETURN ID(cell) as id,
+	ctxLogger := rt.Logger().WithFields(logrus.Fields{
+		"customer": customerName,
+		"cell_id":  cellID})
+
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})
+								RETURN cell.id as id,
 												cell.name as name`
 
-	db, err := conn.OpenPool()
+	db, err := rt.DB().OpenPool()
 
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j:", err)
 		return cell
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Errorf("An error occurred preparing statement: %s", err)
 		return cell
 	}
 	defer stmt.Close()
@@ -412,7 +446,7 @@ func _getCellByID(conn neo4j.ConnPool, customerName *string, cellID int64) *mode
 		"cell_id": cellID})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Errorf("An error occurred querying Neo: %s", err)
 		return cell
 	}
 
@@ -423,7 +457,7 @@ func _getCellByID(conn neo4j.ConnPool, customerName *string, cellID int64) *mode
 	_name := output[1].(string)
 
 	cell = &models.Cell{
-		ID:   output[0].(int64),
+		ID:   models.ULID(output[0].(string)),
 		Name: &_name}
 
 	return cell
@@ -432,9 +466,8 @@ func _getCellByID(conn neo4j.ConnPool, customerName *string, cellID int64) *mode
 /*
  * Return cell structure in ui format
  */
-func getCellFull(conn neo4j.ConnPool, customerName *string, cellID int64) *models.FullCell {
-	cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell)
-							WHERE id(cell) = {cell_id}
+func getCellFull(rt *configManager.Runtime, customerName *string, cellID *string) *models.FullCell {
+	cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell {id: {cell_id}})
 							MATCH (cell)-[:DEPLOY_WITH]->(keypair:Keypair),
 										(cell)-[:USE]->(provider:Provider),
 										(provider)-[:PROVIDER_IS]->(provider_type:ProviderType),
@@ -444,10 +477,15 @@ func getCellFull(conn neo4j.ConnPool, customerName *string, cellID int64) *model
 							OPTIONAL MATCH (cell)-->(host)-->(option:Option)
 							RETURN *`
 
+	ctxLogger := rt.Logger().WithFields(logrus.Fields{
+		"customer": customerName,
+		"cell_id":  cellID})
+
+	conn := rt.DB()
 	db, err := conn.OpenPool()
 
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j:", err)
 		return nil
 	}
 	defer db.Close()
@@ -457,7 +495,7 @@ func getCellFull(conn neo4j.ConnPool, customerName *string, cellID int64) *model
 		"cell_id":       cellID})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Errorf("An error occurred querying Neo: %s", err)
 		return nil
 	}
 
@@ -479,7 +517,7 @@ func getCellFull(conn neo4j.ConnPool, customerName *string, cellID int64) *model
 			}
 		}
 
-		res.Keypair = getCellKeypair(conn, customerName, cellID)
+		res.Keypair = getCellKeypair(rt, customerName, cellID)
 
 		if res.Provider.Name == nil {
 			providerNode := getNodeByLabel(row, "Provider")
@@ -497,7 +535,7 @@ func getCellFull(conn neo4j.ConnPool, customerName *string, cellID int64) *model
 		}
 
 		// Component
-		C, err := _findCellComponents(conn, customerName, cellID)
+		C, err := _findCellComponents(rt, customerName, cellID)
 		res.Components = C
 		log.Printf(">>>>>>>>>>>>>>>>> %#v<<<<<<  %v<<<<<<<<<<<<", C, err)
 		//componentNode := getNodeByLabel(row, "Component")
@@ -510,9 +548,8 @@ func getCellFull(conn neo4j.ConnPool, customerName *string, cellID int64) *model
 /*
  * Return cell structure in deploy format
  */
-func getCellRecursive(conn neo4j.ConnPool, customerName *string, cellID int64) *models.EntireCell {
-	cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell)
-							WHERE id(cell) = {cell_id}
+func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *string) *models.EntireCell {
+	cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell {id: {cell_id}})
 							MATCH (cell)-[:DEPLOY_WITH]->(keypair:Keypair),
 										(cell)-[:USE]->(provider:Provider),
 										(provider)-[:PROVIDER_IS]->(provider_type:ProviderType),
@@ -536,10 +573,15 @@ func getCellRecursive(conn neo4j.ConnPool, customerName *string, cellID int64) *
 								RETURN *
 								ORDER BY component.name, role.order`
 	*/
-	db, err := conn.OpenPool()
+
+	ctxLogger := rt.Logger().WithFields(logrus.Fields{
+		"customer": customerName,
+		"cell_id":  cellID})
+
+	db, err := rt.DB().OpenPool()
 
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j:", err)
 		return nil
 	}
 	defer db.Close()
@@ -549,7 +591,7 @@ func getCellRecursive(conn neo4j.ConnPool, customerName *string, cellID int64) *
 		"cell_id":       cellID})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Errorf("An error occurred querying Neo: %s", err)
 		return nil
 	}
 
@@ -737,18 +779,6 @@ func getNodeByLabel(row []interface{}, nodeName string) map[string]interface{} {
 
 	return res
 }
-
-/*
-func _getComponentByName(components []*models.Component, componentName string) *models.Component {
-	for _, component := range components {
-		if strings.Compare(componentName, *component.Name) == 0 {
-			return component
-		}
-	}
-
-	return nil
-}
-*/
 
 func getHostByName(hosts []*models.Host, hostName string) *models.Host {
 	for _, host := range hosts {
