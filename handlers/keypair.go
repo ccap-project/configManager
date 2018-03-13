@@ -110,7 +110,7 @@ func (ctx *addCellKeypair) Handle(params keypair.AddCellKeypairParams, principal
 	}
 
 	ctxLogger.Info("OK")
-	return keypair.NewAddCellKeypairCreated().WithPayload(output[0].(int64))
+	return keypair.NewAddCellKeypairCreated().WithPayload(models.ULID(output[0].(string)))
 }
 
 func NewAddKeypair(rt *configManager.Runtime) keypair.AddKeypairHandler {
