@@ -189,7 +189,7 @@ func (ctx *addComponentRelationship) Handle(params component.AddComponentRelatio
 		return component.NewAddComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
 	}
 
-	return component.NewAddComponentRelationshipCreated().WithPayload(1)
+	return component.NewAddComponentRelationshipCreated()
 }
 
 func NewDeleteCellComponentRelationship(rt *configManager.Runtime) component.DeleteComponentRelationshipHandler {
