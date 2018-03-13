@@ -51,7 +51,7 @@ type AddCellHostCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload int64 `json:"body,omitempty"`
+	Payload models.ULID `json:"body,omitempty"`
 }
 
 // NewAddCellHostCreated creates AddCellHostCreated with default headers values
@@ -60,13 +60,13 @@ func NewAddCellHostCreated() *AddCellHostCreated {
 }
 
 // WithPayload adds the payload to the add cell host created response
-func (o *AddCellHostCreated) WithPayload(payload int64) *AddCellHostCreated {
+func (o *AddCellHostCreated) WithPayload(payload models.ULID) *AddCellHostCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add cell host created response
-func (o *AddCellHostCreated) SetPayload(payload int64) {
+func (o *AddCellHostCreated) SetPayload(payload models.ULID) {
 	o.Payload = payload
 }
 

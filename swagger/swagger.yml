@@ -835,7 +835,7 @@ paths:
         201:
           description: "Created"
           schema:
-            type: integer
+            $ref: "#/definitions/ULID"
         405:
           description: "Invalid input"
           schema:
@@ -1743,7 +1743,7 @@ definitions:
       - name
     properties:
       id:
-        type: "integer"
+        $ref: "#/definitions/ULID"
       name:
         type: "string"
       options:
