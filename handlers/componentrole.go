@@ -348,7 +348,7 @@ func addComponentRoleParameters(rt *configManager.Runtime, customer *string, cel
 func _findComponentRoles(rt *configManager.Runtime, ComponentID *string) ([]*models.Role, middleware.Responder) {
 
 	cypher := `MATCH (component:Component {id: {component_id}})-[:USE]->(role:Role)
-								RETURN id(role) as id,
+								RETURN role.id as id,
 												role.name as name,
 												role.url as url,
 												role.version as version,
