@@ -1556,7 +1556,7 @@ paths:
         201:
           description: "Created"
           schema:
-            type: integer
+            $ref: "#/definitions/ULID"
         409:
           description: "Already exists"
           schema:
@@ -1805,7 +1805,7 @@ definitions:
       - type
     properties:
       id:
-        type: integer
+        $ref: "#/definitions/ULID"
       auth_url:
         type: string
       domain_name:
@@ -1911,7 +1911,7 @@ definitions:
       - algorithm
     properties:
       id:
-        type: integer
+        $ref: "#/definitions/ULID"
       name:
         type: "string"
       port:
