@@ -51,7 +51,7 @@ type AddLoadbalancerCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload int64 `json:"body,omitempty"`
+	Payload models.ULID `json:"body,omitempty"`
 }
 
 // NewAddLoadbalancerCreated creates AddLoadbalancerCreated with default headers values
@@ -60,13 +60,13 @@ func NewAddLoadbalancerCreated() *AddLoadbalancerCreated {
 }
 
 // WithPayload adds the payload to the add loadbalancer created response
-func (o *AddLoadbalancerCreated) WithPayload(payload int64) *AddLoadbalancerCreated {
+func (o *AddLoadbalancerCreated) WithPayload(payload models.ULID) *AddLoadbalancerCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add loadbalancer created response
-func (o *AddLoadbalancerCreated) SetPayload(payload int64) {
+func (o *AddLoadbalancerCreated) SetPayload(payload models.ULID) {
 	o.Payload = payload
 }
 

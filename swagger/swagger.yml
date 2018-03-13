@@ -896,8 +896,6 @@ paths:
       responses:
         201:
           description: "Created"
-          schema:
-            type: integer
         404:
           description: "Invalid input"
           schema:
@@ -1420,7 +1418,7 @@ paths:
         201:
           description: "Created"
           schema:
-            type: integer
+            $ref: "#/definitions/ULID"
         405:
           description: "Invalid input"
           schema:
@@ -1446,12 +1444,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
-        - name: "loadbalancer_id"
-          in: "path"
-          description: "ID of loadbalancer that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/LoadbalancerID'
       responses:
         200:
           description: "successful operation"
@@ -1479,12 +1472,7 @@ paths:
       parameters:
         - $ref: '#/parameters/CellID'
         - $ref: '#/parameters/ListenerID'
-        - name: "loadbalancer_id"
-          in: "path"
-          description: "ID of loadbalancer that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/LoadbalancerID'
       responses:
         200:
           description: "successful operation"
@@ -1508,12 +1496,7 @@ paths:
       parameters:
         - $ref: '#/parameters/CellID'
         - $ref: '#/parameters/ListenerID'
-        - name: "loadbalancer_id"
-          in: "path"
-          description: "ID of loadbalancer that will be used"
-          required: true
-          type: "integer"
-          format: "int64"
+        - $ref: '#/parameters/LoadbalancerID'
       responses:
         200:
           description: "successful operation"
@@ -1683,6 +1666,16 @@ parameters:
     name: "listenerId"
     in: "path"
     description: "ListenerID"
+    required: true
+    type: "string"
+    minLength: 26
+    maxLength: 26
+    pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
+
+  LoadbalancerID:
+    name: "loadbalancerId"
+    in: "path"
+    description: "LoadbalancerID"
     required: true
     type: "string"
     minLength: 26

@@ -355,10 +355,7 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "Created",
-            "schema": {
-              "type": "integer"
-            }
+            "description": "Created"
           },
           "404": {
             "description": "Invalid input",
@@ -1572,7 +1569,7 @@ func init() {
           "201": {
             "description": "Created",
             "schema": {
-              "type": "integer"
+              "$ref": "#/definitions/ULID"
             }
           },
           "405": {
@@ -1616,12 +1613,7 @@ func init() {
             "$ref": "#/parameters/CellID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of loadbalancer that will be used",
-            "name": "loadbalancer_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/LoadbalancerID"
           }
         ],
         "responses": {
@@ -1669,12 +1661,7 @@ func init() {
             "$ref": "#/parameters/ListenerID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of loadbalancer that will be used",
-            "name": "loadbalancer_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/LoadbalancerID"
           }
         ],
         "responses": {
@@ -1717,12 +1704,7 @@ func init() {
             "$ref": "#/parameters/ListenerID"
           },
           {
-            "type": "integer",
-            "format": "int64",
-            "description": "ID of loadbalancer that will be used",
-            "name": "loadbalancer_id",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/LoadbalancerID"
           }
         ],
         "responses": {
@@ -3029,6 +3011,16 @@ func init() {
       "type": "string",
       "description": "ListenerID",
       "name": "listenerId",
+      "in": "path",
+      "required": true
+    },
+    "LoadbalancerID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "LoadbalancerID",
+      "name": "loadbalancerId",
       "in": "path",
       "required": true
     },

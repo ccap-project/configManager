@@ -36,15 +36,13 @@ import (
 	"net/url"
 	golangswaggerpaths "path"
 	"strings"
-
-	"github.com/go-openapi/swag"
 )
 
 // AddLoadbalancerRelationshipURL generates an URL for the add loadbalancer relationship operation
 type AddLoadbalancerRelationshipURL struct {
 	CellID         string
 	ListenerID     string
-	LoadbalancerID int64
+	LoadbalancerID string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -84,9 +82,9 @@ func (o *AddLoadbalancerRelationshipURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("ListenerID is required on AddLoadbalancerRelationshipURL")
 	}
-	loadbalancerID := swag.FormatInt64(o.LoadbalancerID)
+	loadbalancerID := o.LoadbalancerID
 	if loadbalancerID != "" {
-		_path = strings.Replace(_path, "{loadbalancer_id}", loadbalancerID, -1)
+		_path = strings.Replace(_path, "{loadbalancerId}", loadbalancerID, -1)
 	} else {
 		return nil, errors.New("LoadbalancerID is required on AddLoadbalancerRelationshipURL")
 	}
