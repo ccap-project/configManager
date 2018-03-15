@@ -2950,7 +2950,7 @@ func init() {
       "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
       "type": "string",
       "description": "Cell ID",
-      "name": "cellId",
+      "name": "cell_id",
       "in": "path",
       "required": true
     },
@@ -2960,7 +2960,7 @@ func init() {
       "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
       "type": "string",
       "description": "Component ID",
-      "name": "componentId",
+      "name": "component_id",
       "in": "path",
       "required": true
     },
@@ -2970,7 +2970,7 @@ func init() {
       "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
       "type": "string",
       "description": "Customer ID",
-      "name": "customerId",
+      "name": "customer_id",
       "in": "path",
       "required": true
     },
@@ -2980,7 +2980,7 @@ func init() {
       "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
       "type": "string",
       "description": "Entity ID",
-      "name": "entityId",
+      "name": "entity_id",
       "in": "path",
       "required": true
     },
@@ -2990,7 +2990,7 @@ func init() {
       "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
       "type": "string",
       "description": "Hostgroup ID",
-      "name": "hostgroupId",
+      "name": "hostgroup_id",
       "in": "path",
       "required": true
     },
@@ -3000,7 +3000,7 @@ func init() {
       "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
       "type": "string",
       "description": "KeypairID",
-      "name": "keypairId",
+      "name": "keypair_id",
       "in": "path",
       "required": true
     },
@@ -3010,7 +3010,7 @@ func init() {
       "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
       "type": "string",
       "description": "ListenerID",
-      "name": "listenerId",
+      "name": "listener_id",
       "in": "path",
       "required": true
     },
@@ -3020,7 +3020,7 @@ func init() {
       "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
       "type": "string",
       "description": "LoadbalancerID",
-      "name": "loadbalancerId",
+      "name": "loadbalancer_id",
       "in": "path",
       "required": true
     },
@@ -3030,7 +3030,7 @@ func init() {
       "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
       "type": "string",
       "description": "ProvidertypeID",
-      "name": "providertypeId",
+      "name": "providertype_id",
       "in": "path",
       "required": true
     }

@@ -81,14 +81,14 @@ func (ctx *addCellKeypair) Handle(params keypair.AddCellKeypairParams, principal
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
-		ctxLogger.Error("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j: ", err)
 		return keypair.NewAddCellKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return keypair.NewAddCellKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
@@ -98,14 +98,14 @@ func (ctx *addCellKeypair) Handle(params keypair.AddCellKeypairParams, principal
 		"cell_id":       params.CellID})
 
 	if err != nil {
-		ctxLogger.Error("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return keypair.NewAddCellKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 
 	if err != nil {
-		ctxLogger.Error("An error occurred getting next row: %s", err)
+		ctxLogger.Error("An error occurred getting next row: ", err)
 		return keypair.NewAddCellKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
@@ -139,18 +139,18 @@ func (ctx *addKeypair) Handle(params keypair.AddKeypairParams, principal *models
 
 	ctxLogger = ctx.rt.Logger().WithFields(logrus.Fields{
 		"customer_name": swag.StringValue(principal.Name),
-		"keypair_name":  params.Body.Name})
+		"keypair_name":  swag.StringValue(params.Body.Name)})
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
-		ctxLogger.Error("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j: ", err)
 		return keypair.NewAddKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return keypair.NewAddKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
@@ -166,13 +166,13 @@ func (ctx *addKeypair) Handle(params keypair.AddKeypairParams, principal *models
 		"public_key": swag.StringValue(params.Body.PublicKey)})
 
 	if err != nil {
-		ctxLogger.Error("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return keypair.NewAddKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 	if err != nil {
-		ctxLogger.Error("An error occurred getting next row: %s", err)
+		ctxLogger.Error("An error occurred getting next row: ", err)
 		return keypair.NewAddKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 
@@ -202,14 +202,14 @@ func (ctx *getKeypairByID) Handle(params keypair.GetKeypairByIDParams, principal
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
-		ctxLogger.Error("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j: ", err)
 		return keypair.NewGetKeypairByIDInternalServerError()
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return keypair.NewGetKeypairByIDInternalServerError()
 	}
 
@@ -218,7 +218,7 @@ func (ctx *getKeypairByID) Handle(params keypair.GetKeypairByIDParams, principal
 		"kid":  params.KeypairID})
 
 	if err != nil {
-		ctxLogger.Error("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return keypair.NewGetKeypairByIDInternalServerError()
 	}
 
@@ -260,7 +260,7 @@ func (ctx *findKeypairByCustomer) Handle(params keypair.FindKeypairByCustomerPar
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
-		ctxLogger.Error("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j: ", err)
 		return keypair.NewFindKeypairByCustomerInternalServerError()
 	}
 	defer db.Close()
@@ -269,7 +269,7 @@ func (ctx *findKeypairByCustomer) Handle(params keypair.FindKeypairByCustomerPar
 		"name": swag.StringValue(principal.Name)})
 
 	if err != nil {
-		ctxLogger.Error("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return keypair.NewFindKeypairByCustomerInternalServerError()
 
 	} else if len(data) == 0 {
@@ -297,7 +297,7 @@ func getCellKeypair(ctx *configManager.Runtime, customerName *string, CellID *st
 	keypair = nil
 
 	ctxLogger := ctx.Logger().WithFields(logrus.Fields{
-		"customer_name": customerName,
+		"customer_name": swag.StringValue(customerName),
 		"cell_id":       CellID})
 
 	cypher := `MATCH (c:Customer {name: {customer_name} })-[:OWN]->(cell:Cell{id: {cell_id}})-[:DEPLOY_WITH]->(keypair)
@@ -307,14 +307,14 @@ func getCellKeypair(ctx *configManager.Runtime, customerName *string, CellID *st
 
 	db, err := ctx.DB().OpenPool()
 	if err != nil {
-		ctxLogger.Error("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j: ", err)
 		return keypair
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return keypair
 	}
 
@@ -323,7 +323,7 @@ func getCellKeypair(ctx *configManager.Runtime, customerName *string, CellID *st
 		"cell_id":       CellID})
 
 	if err != nil {
-		ctxLogger.Error("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return keypair
 	}
 
@@ -361,14 +361,14 @@ func getKeypairByName(ctx *configManager.Runtime, customerName *string, keypairN
 
 	db, err := ctx.DB().OpenPool()
 	if err != nil {
-		ctxLogger.Error("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j: ", err)
 		return keypair
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return keypair
 	}
 
@@ -377,7 +377,7 @@ func getKeypairByName(ctx *configManager.Runtime, customerName *string, keypairN
 		"kname": swag.StringValue(keypairName)})
 
 	if err != nil {
-		ctxLogger.Error("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return keypair
 	}
 

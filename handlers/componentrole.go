@@ -34,6 +34,7 @@ import (
 
 	"configManager"
 	"configManager/models"
+	"configManager/neo4j"
 	"configManager/restapi/operations/role"
 
 	"github.com/Sirupsen/logrus"
@@ -91,6 +92,7 @@ func (ctx *addComponentRole) Handle(params role.AddComponentRoleParams, principa
 		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
+	defer stmt.Close()
 
 	if params.Body.Order == nil {
 		params.Body.Order = swag.Int64(99)
@@ -123,9 +125,9 @@ func (ctx *addComponentRole) Handle(params role.AddComponentRoleParams, principa
 
 	stmt.Close()
 
-	err = addComponentRoleParameters(ctx.rt, principal.Name, &params.CellID, &params.ComponentID, params.Body.Name, params.Body.Params)
+	err = addComponentRoleParameters(ctx.rt.Logger(), db, principal.Name, &params.CellID, &params.ComponentID, params.Body.Name, params.Body.Params)
 	if err != nil {
-		ctxLogger.Error("An error occurred adding Role parameters: %s", err)
+		ctxLogger.Error("An error occurred adding Role parameters: ", err)
 		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
 	tx.Commit()
@@ -279,9 +281,10 @@ func (ctx *updateComponentRole) Handle(params role.UpdateComponentRoleParams, pr
 		ctxLogger.Error("Error occurred querying Neo: ", err)
 		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
+	stmt.Close()
 
 	if len(params.Body.Params) > 0 {
-		err = addComponentRoleParameters(ctx.rt, principal.Name, &params.CellID, &params.ComponentID, params.Body.Name, params.Body.Params)
+		err = addComponentRoleParameters(ctx.rt.Logger(), db, principal.Name, &params.CellID, &params.ComponentID, params.Body.Name, params.Body.Params)
 		if err != nil {
 			ctxLogger.Error("An error occurred adding Role parameters: %s", err)
 			return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -293,7 +296,14 @@ func (ctx *updateComponentRole) Handle(params role.UpdateComponentRoleParams, pr
 	return role.NewUpdateComponentRoleOK()
 }
 
-func addComponentRoleParameters(rt *configManager.Runtime, customer *string, cellID *string, componentID *string, roleName *string, params []*models.Parameter) error {
+func addComponentRoleParameters(
+	logger logrus.FieldLogger,
+	db neo4j.Conn,
+	customer *string,
+	cellID *string,
+	componentID *string,
+	roleName *string,
+	params []*models.Parameter) error {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell {id: {cell_id}})-[:PROVIDES]->
@@ -301,32 +311,26 @@ func addComponentRoleParameters(rt *configManager.Runtime, customer *string, cel
 						CREATE (role)-[:PARAM]->(param:Parameter {id: {param_id}, name: {param_name}, value: {param_val}} )
 							RETURN param.id as id`
 
-	ctxLogger := rt.Logger().WithFields(logrus.Fields{
-		"customer_name": customer,
-		"cell_id":       cellID,
-		"component_id":  componentID,
-		"roleName":      roleName})
-
-	db, err := rt.DB().OpenPool()
-	if err != nil {
-		ctxLogger.Error("error connecting to neo4j: ", err)
-		return err
-	}
-	defer db.Close()
+	ctxLogger := logger.WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(customer),
+		"cell_id":       swag.StringValue(cellID),
+		"component_id":  swag.StringValue(componentID),
+		"roleName":      swag.StringValue(roleName)})
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return err
 	}
+	defer stmt.Close()
 
 	// add parameters
 	for _, param := range params {
 		ulid := configManager.GetULID()
 		_, err := stmt.ExecNeo(map[string]interface{}{
 			"customer_name": swag.StringValue(customer),
-			"cell_id":       cellID,
-			"component_id":  componentID,
+			"cell_id":       swag.StringValue(cellID),
+			"component_id":  swag.StringValue(componentID),
 			"role_name":     swag.StringValue(roleName),
 			"param_id":      ulid,
 			"param_name":    swag.StringValue(param.Name),
@@ -337,7 +341,7 @@ func addComponentRoleParameters(rt *configManager.Runtime, customer *string, cel
 			return err
 		} else {
 			ctxLogger.WithFields(logrus.Fields{
-				"param_name": param.Name,
+				"param_name": swag.StringValue(param.Name),
 				"param_id":   ulid}).Info("OK")
 		}
 	}
@@ -355,7 +359,7 @@ func _findComponentRoles(rt *configManager.Runtime, ComponentID *string) ([]*mod
 												role.order as order`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
-		"component_id": ComponentID})
+		"component_id": swag.StringValue(ComponentID)})
 
 	db, err := rt.DB().OpenPool()
 	if err != nil {
@@ -365,7 +369,7 @@ func _findComponentRoles(rt *configManager.Runtime, ComponentID *string) ([]*mod
 	defer db.Close()
 
 	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
-		"component_id": ComponentID})
+		"component_id": swag.StringValue(ComponentID)})
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
@@ -417,7 +421,7 @@ func findComponentRoleParameters(rt *configManager.Runtime, roleID *string) ([]*
 											param.value as value`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
-		"role_id": roleID})
+		"role_id": swag.StringValue(roleID)})
 
 	db, err := rt.DB().OpenPool()
 	if err != nil {
@@ -427,7 +431,7 @@ func findComponentRoleParameters(rt *configManager.Runtime, roleID *string) ([]*
 	defer db.Close()
 
 	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
-		"role_id": roleID})
+		"role_id": swag.StringValue(roleID)})
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
@@ -469,10 +473,10 @@ func _getComponentRoleByName(rt *configManager.Runtime, customer *string, cellID
 										role.order as order`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
-		"customer_name": customer,
-		"cell_id":       cellID,
-		"role_name":     roleName,
-		"component_id":  componentID})
+		"customer_name": swag.StringValue(customer),
+		"cell_id":       swag.StringValue(cellID),
+		"role_name":     swag.StringValue(roleName),
+		"component_id":  swag.StringValue(componentID)})
 
 	db, err := rt.DB().OpenPool()
 	if err != nil {
@@ -490,8 +494,8 @@ func _getComponentRoleByName(rt *configManager.Runtime, customer *string, cellID
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"customer_name": swag.StringValue(customer),
-		"cell_id":       cellID,
-		"component_id":  componentID,
+		"cell_id":       swag.StringValue(cellID),
+		"component_id":  swag.StringValue(componentID),
 		"role_name":     swag.StringValue(roleName)})
 
 	if err != nil {

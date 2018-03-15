@@ -339,7 +339,7 @@ func _addProviderType(rt *configManager.Runtime, name string, fields []string) e
 		return fmt.Errorf("An error occurred querying Neo: %s", err)
 	}
 
-	rt.Logger().Info("Provider %s has been created", name)
+	rt.Logger().Infof("Provider %s has been created", name)
 
 	return nil
 }

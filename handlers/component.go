@@ -320,7 +320,7 @@ func _findCellComponents(rt *configManager.Runtime, customerName *string, CellID
 
 	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
 		"name":    swag.StringValue(customerName),
-		"cell_id": CellID})
+		"cell_id": swag.StringValue(CellID)})
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
@@ -373,8 +373,8 @@ func _getCellComponent(rt *configManager.Runtime, customerName *string, CellID *
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"name":         swag.StringValue(customerName),
-		"cell_id":      CellID,
-		"component_id": ComponentID})
+		"cell_id":      swag.StringValue(CellID),
+		"component_id": swag.StringValue(ComponentID)})
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
@@ -431,7 +431,7 @@ func _getComponentByName(rt *configManager.Runtime, customerName *string, CellID
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"name":           swag.StringValue(customerName),
-		"cell_id":        CellID,
+		"cell_id":        swag.StringValue(CellID),
 		"component_name": swag.StringValue(componentName)})
 
 	if err != nil {
@@ -460,8 +460,8 @@ func _getEntityType(rt *configManager.Runtime, CellID *string, EntityID *string)
 						RETURN labels(entity)`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
-		"cell_id":   CellID,
-		"entity_id": EntityID})
+		"cell_id":   swag.StringValue(CellID),
+		"entity_id": swag.StringValue(EntityID)})
 
 	db, err := rt.DB().OpenPool()
 
@@ -478,8 +478,8 @@ func _getEntityType(rt *configManager.Runtime, CellID *string, EntityID *string)
 	}
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
-		"cell_id":   CellID,
-		"entity_id": EntityID})
+		"cell_id":   swag.StringValue(CellID),
+		"entity_id": swag.StringValue(EntityID)})
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
