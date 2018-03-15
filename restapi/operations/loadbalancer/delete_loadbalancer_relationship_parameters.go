@@ -89,17 +89,17 @@ func (o *DeleteLoadbalancerRelationshipParams) BindRequest(r *http.Request, rout
 	var res []error
 	o.HTTPRequest = r
 
-	rCellID, rhkCellID, _ := route.Params.GetOK("cellId")
+	rCellID, rhkCellID, _ := route.Params.GetOK("cell_id")
 	if err := o.bindCellID(rCellID, rhkCellID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	rListenerID, rhkListenerID, _ := route.Params.GetOK("listenerId")
+	rListenerID, rhkListenerID, _ := route.Params.GetOK("listener_id")
 	if err := o.bindListenerID(rListenerID, rhkListenerID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	rLoadbalancerID, rhkLoadbalancerID, _ := route.Params.GetOK("loadbalancerId")
+	rLoadbalancerID, rhkLoadbalancerID, _ := route.Params.GetOK("loadbalancer_id")
 	if err := o.bindLoadbalancerID(rLoadbalancerID, rhkLoadbalancerID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -127,15 +127,15 @@ func (o *DeleteLoadbalancerRelationshipParams) bindCellID(rawData []string, hasK
 
 func (o *DeleteLoadbalancerRelationshipParams) validateCellID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("cellId", "path", o.CellID, 26); err != nil {
+	if err := validate.MinLength("cell_id", "path", o.CellID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("cellId", "path", o.CellID, 26); err != nil {
+	if err := validate.MaxLength("cell_id", "path", o.CellID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("cellId", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("cell_id", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 
@@ -159,15 +159,15 @@ func (o *DeleteLoadbalancerRelationshipParams) bindListenerID(rawData []string, 
 
 func (o *DeleteLoadbalancerRelationshipParams) validateListenerID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("listenerId", "path", o.ListenerID, 26); err != nil {
+	if err := validate.MinLength("listener_id", "path", o.ListenerID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("listenerId", "path", o.ListenerID, 26); err != nil {
+	if err := validate.MaxLength("listener_id", "path", o.ListenerID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("listenerId", "path", o.ListenerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("listener_id", "path", o.ListenerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 
@@ -191,15 +191,15 @@ func (o *DeleteLoadbalancerRelationshipParams) bindLoadbalancerID(rawData []stri
 
 func (o *DeleteLoadbalancerRelationshipParams) validateLoadbalancerID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("loadbalancerId", "path", o.LoadbalancerID, 26); err != nil {
+	if err := validate.MinLength("loadbalancer_id", "path", o.LoadbalancerID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("loadbalancerId", "path", o.LoadbalancerID, 26); err != nil {
+	if err := validate.MaxLength("loadbalancer_id", "path", o.LoadbalancerID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("loadbalancerId", "path", o.LoadbalancerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("loadbalancer_id", "path", o.LoadbalancerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 

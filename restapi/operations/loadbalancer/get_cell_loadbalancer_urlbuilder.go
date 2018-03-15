@@ -71,13 +71,13 @@ func (o *GetCellLoadbalancerURL) Build() (*url.URL, error) {
 
 	cellID := o.CellID
 	if cellID != "" {
-		_path = strings.Replace(_path, "{cellId}", cellID, -1)
+		_path = strings.Replace(_path, "{cell_id}", cellID, -1)
 	} else {
 		return nil, errors.New("CellID is required on GetCellLoadbalancerURL")
 	}
 	loadbalancerID := o.LoadbalancerID
 	if loadbalancerID != "" {
-		_path = strings.Replace(_path, "{loadbalancerId}", loadbalancerID, -1)
+		_path = strings.Replace(_path, "{loadbalancer_id}", loadbalancerID, -1)
 	} else {
 		return nil, errors.New("LoadbalancerID is required on GetCellLoadbalancerURL")
 	}

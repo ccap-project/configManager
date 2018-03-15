@@ -72,19 +72,19 @@ func (o *DeleteLoadbalancerRelationshipURL) Build() (*url.URL, error) {
 
 	cellID := o.CellID
 	if cellID != "" {
-		_path = strings.Replace(_path, "{cellId}", cellID, -1)
+		_path = strings.Replace(_path, "{cell_id}", cellID, -1)
 	} else {
 		return nil, errors.New("CellID is required on DeleteLoadbalancerRelationshipURL")
 	}
 	listenerID := o.ListenerID
 	if listenerID != "" {
-		_path = strings.Replace(_path, "{listenerId}", listenerID, -1)
+		_path = strings.Replace(_path, "{listener_id}", listenerID, -1)
 	} else {
 		return nil, errors.New("ListenerID is required on DeleteLoadbalancerRelationshipURL")
 	}
 	loadbalancerID := o.LoadbalancerID
 	if loadbalancerID != "" {
-		_path = strings.Replace(_path, "{loadbalancerId}", loadbalancerID, -1)
+		_path = strings.Replace(_path, "{loadbalancer_id}", loadbalancerID, -1)
 	} else {
 		return nil, errors.New("LoadbalancerID is required on DeleteLoadbalancerRelationshipURL")
 	}

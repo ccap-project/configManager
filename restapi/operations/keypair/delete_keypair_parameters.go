@@ -73,7 +73,7 @@ func (o *DeleteKeypairParams) BindRequest(r *http.Request, route *middleware.Mat
 	var res []error
 	o.HTTPRequest = r
 
-	rKeypairID, rhkKeypairID, _ := route.Params.GetOK("keypairId")
+	rKeypairID, rhkKeypairID, _ := route.Params.GetOK("keypair_id")
 	if err := o.bindKeypairID(rKeypairID, rhkKeypairID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -101,15 +101,15 @@ func (o *DeleteKeypairParams) bindKeypairID(rawData []string, hasKey bool, forma
 
 func (o *DeleteKeypairParams) validateKeypairID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("keypairId", "path", o.KeypairID, 26); err != nil {
+	if err := validate.MinLength("keypair_id", "path", o.KeypairID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("keypairId", "path", o.KeypairID, 26); err != nil {
+	if err := validate.MaxLength("keypair_id", "path", o.KeypairID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("keypairId", "path", o.KeypairID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("keypair_id", "path", o.KeypairID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 

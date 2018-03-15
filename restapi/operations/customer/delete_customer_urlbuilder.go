@@ -70,7 +70,7 @@ func (o *DeleteCustomerURL) Build() (*url.URL, error) {
 
 	customerID := o.CustomerID
 	if customerID != "" {
-		_path = strings.Replace(_path, "{customerId}", customerID, -1)
+		_path = strings.Replace(_path, "{customer_id}", customerID, -1)
 	} else {
 		return nil, errors.New("CustomerID is required on DeleteCustomerURL")
 	}

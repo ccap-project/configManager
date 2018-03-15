@@ -70,7 +70,7 @@ func (o *GetProviderTypeByIDURL) Build() (*url.URL, error) {
 
 	providertypeID := o.ProvidertypeID
 	if providertypeID != "" {
-		_path = strings.Replace(_path, "{providertypeId}", providertypeID, -1)
+		_path = strings.Replace(_path, "{providertype_id}", providertypeID, -1)
 	} else {
 		return nil, errors.New("ProvidertypeID is required on GetProviderTypeByIDURL")
 	}

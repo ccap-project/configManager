@@ -72,19 +72,19 @@ func (o *UpdateComponentListenerURL) Build() (*url.URL, error) {
 
 	cellID := o.CellID
 	if cellID != "" {
-		_path = strings.Replace(_path, "{cellId}", cellID, -1)
+		_path = strings.Replace(_path, "{cell_id}", cellID, -1)
 	} else {
 		return nil, errors.New("CellID is required on UpdateComponentListenerURL")
 	}
 	componentID := o.ComponentID
 	if componentID != "" {
-		_path = strings.Replace(_path, "{componentId}", componentID, -1)
+		_path = strings.Replace(_path, "{component_id}", componentID, -1)
 	} else {
 		return nil, errors.New("ComponentID is required on UpdateComponentListenerURL")
 	}
 	listenerID := o.ListenerID
 	if listenerID != "" {
-		_path = strings.Replace(_path, "{listenerId}", listenerID, -1)
+		_path = strings.Replace(_path, "{listener_id}", listenerID, -1)
 	} else {
 		return nil, errors.New("ListenerID is required on UpdateComponentListenerURL")
 	}

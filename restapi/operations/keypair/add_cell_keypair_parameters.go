@@ -78,7 +78,7 @@ func (o *AddCellKeypairParams) BindRequest(r *http.Request, route *middleware.Ma
 	var res []error
 	o.HTTPRequest = r
 
-	rCellID, rhkCellID, _ := route.Params.GetOK("cellId")
+	rCellID, rhkCellID, _ := route.Params.GetOK("cell_id")
 	if err := o.bindCellID(rCellID, rhkCellID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -111,15 +111,15 @@ func (o *AddCellKeypairParams) bindCellID(rawData []string, hasKey bool, formats
 
 func (o *AddCellKeypairParams) validateCellID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("cellId", "path", o.CellID, 26); err != nil {
+	if err := validate.MinLength("cell_id", "path", o.CellID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("cellId", "path", o.CellID, 26); err != nil {
+	if err := validate.MaxLength("cell_id", "path", o.CellID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("cellId", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("cell_id", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 

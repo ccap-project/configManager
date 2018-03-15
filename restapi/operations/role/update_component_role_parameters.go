@@ -119,12 +119,12 @@ func (o *UpdateComponentRoleParams) BindRequest(r *http.Request, route *middlewa
 		res = append(res, errors.Required("body", "body"))
 	}
 
-	rCellID, rhkCellID, _ := route.Params.GetOK("cellId")
+	rCellID, rhkCellID, _ := route.Params.GetOK("cell_id")
 	if err := o.bindCellID(rCellID, rhkCellID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	rComponentID, rhkComponentID, _ := route.Params.GetOK("componentId")
+	rComponentID, rhkComponentID, _ := route.Params.GetOK("component_id")
 	if err := o.bindComponentID(rComponentID, rhkComponentID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -157,15 +157,15 @@ func (o *UpdateComponentRoleParams) bindCellID(rawData []string, hasKey bool, fo
 
 func (o *UpdateComponentRoleParams) validateCellID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("cellId", "path", o.CellID, 26); err != nil {
+	if err := validate.MinLength("cell_id", "path", o.CellID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("cellId", "path", o.CellID, 26); err != nil {
+	if err := validate.MaxLength("cell_id", "path", o.CellID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("cellId", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("cell_id", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 
@@ -189,15 +189,15 @@ func (o *UpdateComponentRoleParams) bindComponentID(rawData []string, hasKey boo
 
 func (o *UpdateComponentRoleParams) validateComponentID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("componentId", "path", o.ComponentID, 26); err != nil {
+	if err := validate.MinLength("component_id", "path", o.ComponentID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("componentId", "path", o.ComponentID, 26); err != nil {
+	if err := validate.MaxLength("component_id", "path", o.ComponentID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("componentId", "path", o.ComponentID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("component_id", "path", o.ComponentID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 

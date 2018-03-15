@@ -73,7 +73,7 @@ func (o *DeleteProviderTypeParams) BindRequest(r *http.Request, route *middlewar
 	var res []error
 	o.HTTPRequest = r
 
-	rProvidertypeID, rhkProvidertypeID, _ := route.Params.GetOK("providertypeId")
+	rProvidertypeID, rhkProvidertypeID, _ := route.Params.GetOK("providertype_id")
 	if err := o.bindProvidertypeID(rProvidertypeID, rhkProvidertypeID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -101,15 +101,15 @@ func (o *DeleteProviderTypeParams) bindProvidertypeID(rawData []string, hasKey b
 
 func (o *DeleteProviderTypeParams) validateProvidertypeID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("providertypeId", "path", o.ProvidertypeID, 26); err != nil {
+	if err := validate.MinLength("providertype_id", "path", o.ProvidertypeID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("providertypeId", "path", o.ProvidertypeID, 26); err != nil {
+	if err := validate.MaxLength("providertype_id", "path", o.ProvidertypeID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("providertypeId", "path", o.ProvidertypeID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("providertype_id", "path", o.ProvidertypeID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 

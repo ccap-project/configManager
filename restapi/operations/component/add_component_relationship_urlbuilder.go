@@ -72,19 +72,19 @@ func (o *AddComponentRelationshipURL) Build() (*url.URL, error) {
 
 	cellID := o.CellID
 	if cellID != "" {
-		_path = strings.Replace(_path, "{cellId}", cellID, -1)
+		_path = strings.Replace(_path, "{cell_id}", cellID, -1)
 	} else {
 		return nil, errors.New("CellID is required on AddComponentRelationshipURL")
 	}
 	componentID := o.ComponentID
 	if componentID != "" {
-		_path = strings.Replace(_path, "{componentId}", componentID, -1)
+		_path = strings.Replace(_path, "{component_id}", componentID, -1)
 	} else {
 		return nil, errors.New("ComponentID is required on AddComponentRelationshipURL")
 	}
 	entityID := o.EntityID
 	if entityID != "" {
-		_path = strings.Replace(_path, "{entityId}", entityID, -1)
+		_path = strings.Replace(_path, "{entity_id}", entityID, -1)
 	} else {
 		return nil, errors.New("EntityID is required on AddComponentRelationshipURL")
 	}

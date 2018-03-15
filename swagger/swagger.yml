@@ -1603,7 +1603,7 @@ paths:
 
 parameters:
   CellID:
-    name: "cellId"
+    name: "cell_id"
     in: "path"
     description: "Cell ID"
     required: true
@@ -1613,7 +1613,7 @@ parameters:
     pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
 
   ComponentID:
-    name: "componentId"
+    name: "component_id"
     in: "path"
     description: "Component ID"
     required: true
@@ -1623,7 +1623,7 @@ parameters:
     pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
 
   CustomerID:
-    name: "customerId"
+    name: "customer_id"
     in: "path"
     description: "Customer ID"
     required: true
@@ -1633,7 +1633,7 @@ parameters:
     pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
 
   EntityID:
-    name: "entityId"
+    name: "entity_id"
     in: "path"
     description: "Entity ID"
     required: true
@@ -1643,7 +1643,7 @@ parameters:
     pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
 
   HostgroupID:
-    name: "hostgroupId"
+    name: "hostgroup_id"
     in: "path"
     description: "Hostgroup ID"
     required: true
@@ -1653,7 +1653,7 @@ parameters:
     pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
 
   KeypairID:
-    name: "keypairId"
+    name: "keypair_id"
     in: "path"
     description: "KeypairID"
     required: true
@@ -1663,7 +1663,7 @@ parameters:
     pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
 
   ListenerID:
-    name: "listenerId"
+    name: "listener_id"
     in: "path"
     description: "ListenerID"
     required: true
@@ -1673,7 +1673,7 @@ parameters:
     pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
 
   LoadbalancerID:
-    name: "loadbalancerId"
+    name: "loadbalancer_id"
     in: "path"
     description: "LoadbalancerID"
     required: true
@@ -1683,7 +1683,7 @@ parameters:
     pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
 
   ProvidertypeID:
-    name: "providertypeId"
+    name: "providertype_id"
     in: "path"
     description: "ProvidertypeID"
     required: true

@@ -89,17 +89,17 @@ func (o *AddComponentRelationshipParams) BindRequest(r *http.Request, route *mid
 	var res []error
 	o.HTTPRequest = r
 
-	rCellID, rhkCellID, _ := route.Params.GetOK("cellId")
+	rCellID, rhkCellID, _ := route.Params.GetOK("cell_id")
 	if err := o.bindCellID(rCellID, rhkCellID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	rComponentID, rhkComponentID, _ := route.Params.GetOK("componentId")
+	rComponentID, rhkComponentID, _ := route.Params.GetOK("component_id")
 	if err := o.bindComponentID(rComponentID, rhkComponentID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	rEntityID, rhkEntityID, _ := route.Params.GetOK("entityId")
+	rEntityID, rhkEntityID, _ := route.Params.GetOK("entity_id")
 	if err := o.bindEntityID(rEntityID, rhkEntityID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -127,15 +127,15 @@ func (o *AddComponentRelationshipParams) bindCellID(rawData []string, hasKey boo
 
 func (o *AddComponentRelationshipParams) validateCellID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("cellId", "path", o.CellID, 26); err != nil {
+	if err := validate.MinLength("cell_id", "path", o.CellID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("cellId", "path", o.CellID, 26); err != nil {
+	if err := validate.MaxLength("cell_id", "path", o.CellID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("cellId", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("cell_id", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 
@@ -159,15 +159,15 @@ func (o *AddComponentRelationshipParams) bindComponentID(rawData []string, hasKe
 
 func (o *AddComponentRelationshipParams) validateComponentID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("componentId", "path", o.ComponentID, 26); err != nil {
+	if err := validate.MinLength("component_id", "path", o.ComponentID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("componentId", "path", o.ComponentID, 26); err != nil {
+	if err := validate.MaxLength("component_id", "path", o.ComponentID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("componentId", "path", o.ComponentID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("component_id", "path", o.ComponentID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 
@@ -191,15 +191,15 @@ func (o *AddComponentRelationshipParams) bindEntityID(rawData []string, hasKey b
 
 func (o *AddComponentRelationshipParams) validateEntityID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("entityId", "path", o.EntityID, 26); err != nil {
+	if err := validate.MinLength("entity_id", "path", o.EntityID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("entityId", "path", o.EntityID, 26); err != nil {
+	if err := validate.MaxLength("entity_id", "path", o.EntityID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("entityId", "path", o.EntityID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("entity_id", "path", o.EntityID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 

@@ -73,7 +73,7 @@ func (o *GetCustomerByIDParams) BindRequest(r *http.Request, route *middleware.M
 	var res []error
 	o.HTTPRequest = r
 
-	rCustomerID, rhkCustomerID, _ := route.Params.GetOK("customerId")
+	rCustomerID, rhkCustomerID, _ := route.Params.GetOK("customer_id")
 	if err := o.bindCustomerID(rCustomerID, rhkCustomerID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -101,15 +101,15 @@ func (o *GetCustomerByIDParams) bindCustomerID(rawData []string, hasKey bool, fo
 
 func (o *GetCustomerByIDParams) validateCustomerID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("customerId", "path", o.CustomerID, 26); err != nil {
+	if err := validate.MinLength("customer_id", "path", o.CustomerID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("customerId", "path", o.CustomerID, 26); err != nil {
+	if err := validate.MaxLength("customer_id", "path", o.CustomerID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("customerId", "path", o.CustomerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("customer_id", "path", o.CustomerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 

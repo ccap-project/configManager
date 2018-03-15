@@ -71,7 +71,7 @@ func (o *AddCellKeypairURL) Build() (*url.URL, error) {
 
 	cellID := o.CellID
 	if cellID != "" {
-		_path = strings.Replace(_path, "{cellId}", cellID, -1)
+		_path = strings.Replace(_path, "{cell_id}", cellID, -1)
 	} else {
 		return nil, errors.New("CellID is required on AddCellKeypairURL")
 	}

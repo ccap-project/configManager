@@ -70,7 +70,7 @@ func (o *DeleteKeypairURL) Build() (*url.URL, error) {
 
 	keypairID := o.KeypairID
 	if keypairID != "" {
-		_path = strings.Replace(_path, "{keypairId}", keypairID, -1)
+		_path = strings.Replace(_path, "{keypair_id}", keypairID, -1)
 	} else {
 		return nil, errors.New("KeypairID is required on DeleteKeypairURL")
 	}

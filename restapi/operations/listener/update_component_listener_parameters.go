@@ -122,17 +122,17 @@ func (o *UpdateComponentListenerParams) BindRequest(r *http.Request, route *midd
 		res = append(res, errors.Required("body", "body"))
 	}
 
-	rCellID, rhkCellID, _ := route.Params.GetOK("cellId")
+	rCellID, rhkCellID, _ := route.Params.GetOK("cell_id")
 	if err := o.bindCellID(rCellID, rhkCellID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	rComponentID, rhkComponentID, _ := route.Params.GetOK("componentId")
+	rComponentID, rhkComponentID, _ := route.Params.GetOK("component_id")
 	if err := o.bindComponentID(rComponentID, rhkComponentID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	rListenerID, rhkListenerID, _ := route.Params.GetOK("listenerId")
+	rListenerID, rhkListenerID, _ := route.Params.GetOK("listener_id")
 	if err := o.bindListenerID(rListenerID, rhkListenerID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -160,15 +160,15 @@ func (o *UpdateComponentListenerParams) bindCellID(rawData []string, hasKey bool
 
 func (o *UpdateComponentListenerParams) validateCellID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("cellId", "path", o.CellID, 26); err != nil {
+	if err := validate.MinLength("cell_id", "path", o.CellID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("cellId", "path", o.CellID, 26); err != nil {
+	if err := validate.MaxLength("cell_id", "path", o.CellID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("cellId", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("cell_id", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 
@@ -192,15 +192,15 @@ func (o *UpdateComponentListenerParams) bindComponentID(rawData []string, hasKey
 
 func (o *UpdateComponentListenerParams) validateComponentID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("componentId", "path", o.ComponentID, 26); err != nil {
+	if err := validate.MinLength("component_id", "path", o.ComponentID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("componentId", "path", o.ComponentID, 26); err != nil {
+	if err := validate.MaxLength("component_id", "path", o.ComponentID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("componentId", "path", o.ComponentID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("component_id", "path", o.ComponentID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 
@@ -224,15 +224,15 @@ func (o *UpdateComponentListenerParams) bindListenerID(rawData []string, hasKey 
 
 func (o *UpdateComponentListenerParams) validateListenerID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("listenerId", "path", o.ListenerID, 26); err != nil {
+	if err := validate.MinLength("listener_id", "path", o.ListenerID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("listenerId", "path", o.ListenerID, 26); err != nil {
+	if err := validate.MaxLength("listener_id", "path", o.ListenerID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("listenerId", "path", o.ListenerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("listener_id", "path", o.ListenerID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 

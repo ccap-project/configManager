@@ -73,7 +73,7 @@ func (o *GetProviderTypeByIDParams) BindRequest(r *http.Request, route *middlewa
 	var res []error
 	o.HTTPRequest = r
 
-	rProvidertypeID, rhkProvidertypeID, _ := route.Params.GetOK("providertypeId")
+	rProvidertypeID, rhkProvidertypeID, _ := route.Params.GetOK("providertype_id")
 	if err := o.bindProvidertypeID(rProvidertypeID, rhkProvidertypeID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -101,15 +101,15 @@ func (o *GetProviderTypeByIDParams) bindProvidertypeID(rawData []string, hasKey 
 
 func (o *GetProviderTypeByIDParams) validateProvidertypeID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("providertypeId", "path", o.ProvidertypeID, 26); err != nil {
+	if err := validate.MinLength("providertype_id", "path", o.ProvidertypeID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("providertypeId", "path", o.ProvidertypeID, 26); err != nil {
+	if err := validate.MaxLength("providertype_id", "path", o.ProvidertypeID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("providertypeId", "path", o.ProvidertypeID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("providertype_id", "path", o.ProvidertypeID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 

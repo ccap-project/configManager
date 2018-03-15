@@ -72,19 +72,19 @@ func (o *DeleteComponentHostgroupURL) Build() (*url.URL, error) {
 
 	cellID := o.CellID
 	if cellID != "" {
-		_path = strings.Replace(_path, "{cellId}", cellID, -1)
+		_path = strings.Replace(_path, "{cell_id}", cellID, -1)
 	} else {
 		return nil, errors.New("CellID is required on DeleteComponentHostgroupURL")
 	}
 	componentID := o.ComponentID
 	if componentID != "" {
-		_path = strings.Replace(_path, "{componentId}", componentID, -1)
+		_path = strings.Replace(_path, "{component_id}", componentID, -1)
 	} else {
 		return nil, errors.New("ComponentID is required on DeleteComponentHostgroupURL")
 	}
 	hostgroupID := o.HostgroupID
 	if hostgroupID != "" {
-		_path = strings.Replace(_path, "{hostgroupId}", hostgroupID, -1)
+		_path = strings.Replace(_path, "{hostgroup_id}", hostgroupID, -1)
 	} else {
 		return nil, errors.New("HostgroupID is required on DeleteComponentHostgroupURL")
 	}

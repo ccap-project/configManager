@@ -89,17 +89,17 @@ func (o *GetComponentHostgroupByIDParams) BindRequest(r *http.Request, route *mi
 	var res []error
 	o.HTTPRequest = r
 
-	rCellID, rhkCellID, _ := route.Params.GetOK("cellId")
+	rCellID, rhkCellID, _ := route.Params.GetOK("cell_id")
 	if err := o.bindCellID(rCellID, rhkCellID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	rComponentID, rhkComponentID, _ := route.Params.GetOK("componentId")
+	rComponentID, rhkComponentID, _ := route.Params.GetOK("component_id")
 	if err := o.bindComponentID(rComponentID, rhkComponentID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	rHostgroupID, rhkHostgroupID, _ := route.Params.GetOK("hostgroupId")
+	rHostgroupID, rhkHostgroupID, _ := route.Params.GetOK("hostgroup_id")
 	if err := o.bindHostgroupID(rHostgroupID, rhkHostgroupID, route.Formats); err != nil {
 		res = append(res, err)
 	}
@@ -127,15 +127,15 @@ func (o *GetComponentHostgroupByIDParams) bindCellID(rawData []string, hasKey bo
 
 func (o *GetComponentHostgroupByIDParams) validateCellID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("cellId", "path", o.CellID, 26); err != nil {
+	if err := validate.MinLength("cell_id", "path", o.CellID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("cellId", "path", o.CellID, 26); err != nil {
+	if err := validate.MaxLength("cell_id", "path", o.CellID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("cellId", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("cell_id", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 
@@ -159,15 +159,15 @@ func (o *GetComponentHostgroupByIDParams) bindComponentID(rawData []string, hasK
 
 func (o *GetComponentHostgroupByIDParams) validateComponentID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("componentId", "path", o.ComponentID, 26); err != nil {
+	if err := validate.MinLength("component_id", "path", o.ComponentID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("componentId", "path", o.ComponentID, 26); err != nil {
+	if err := validate.MaxLength("component_id", "path", o.ComponentID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("componentId", "path", o.ComponentID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("component_id", "path", o.ComponentID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 
@@ -191,15 +191,15 @@ func (o *GetComponentHostgroupByIDParams) bindHostgroupID(rawData []string, hasK
 
 func (o *GetComponentHostgroupByIDParams) validateHostgroupID(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("hostgroupId", "path", o.HostgroupID, 26); err != nil {
+	if err := validate.MinLength("hostgroup_id", "path", o.HostgroupID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("hostgroupId", "path", o.HostgroupID, 26); err != nil {
+	if err := validate.MaxLength("hostgroup_id", "path", o.HostgroupID, 26); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("hostgroupId", "path", o.HostgroupID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+	if err := validate.Pattern("hostgroup_id", "path", o.HostgroupID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 
