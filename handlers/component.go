@@ -128,6 +128,12 @@ func (ctx *addComponentRelationship) Handle(params component.AddComponentRelatio
 	var cypher string
 	entityType := _getEntityType(ctx.rt, &params.CellID, &params.EntityID)
 
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID,
+		"component_id":  params.ComponentID,
+		"entity_id":     params.EntityID})
+
 	switch entityType {
 	case "Loadbalancer":
 		cypher = `
@@ -136,7 +142,7 @@ func (ctx *addComponentRelationship) Handle(params component.AddComponentRelatio
 			MATCH (cell)-[:HAS]->(lb:Loadbalancer {id: {entity_id}})
 			MERGE (component)-[:CONNECT_TO]->(lb)
 			RETURN *`
-	case "Component":
+	case "Listener":
 		cypher = `
 			MATCH (customer:Customer {name: {customer_name}})-[:OWN]->
 				(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component {id: {component_id}})
@@ -145,14 +151,9 @@ func (ctx *addComponentRelationship) Handle(params component.AddComponentRelatio
 			MERGE (component)-[:CONNECT_TO]->(listener)
 			RETURN *`
 	default:
+		ctxLogger.Infof("entityType(%s)", entityType)
 		return component.NewAddComponentRelationshipNotFound().WithPayload(models.APIResponse{Message: "entity not found"})
 	}
-
-	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
-		"customer_name": swag.StringValue(principal.Name),
-		"cell_id":       params.CellID,
-		"component_id":  params.ComponentID,
-		"entity_id":     params.EntityID})
 
 	db, err := ctx.rt.DB().OpenPool()
 
@@ -183,11 +184,11 @@ func (ctx *addComponentRelationship) Handle(params component.AddComponentRelatio
 		return component.NewAddComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
 	}
 
-	_, _, err = rows.NextNeo()
-	if err != nil {
-		ctxLogger.Error("An error occurred getting next row: ", err)
-		return component.NewAddComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
-	}
+	//	_, _, err = rows.NextNeo()
+	//	if err != nil {
+	//ctxLogger.Error("An error occurred getting next row: ", err)
+	//return component.NewAddComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+	//	}
 
 	return component.NewAddComponentRelationshipCreated()
 }
@@ -307,7 +308,7 @@ func (ctx *findCellComponents) Handle(params component.FindCellComponentsParams,
 
 func _findCellComponents(rt *configManager.Runtime, customerName *string, CellID *string) ([]*models.Component, error) {
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->
-							(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component {id: {component_id}})
+							(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component)
 								RETURN component.id as id, component.name as name`
 
 	db, err := rt.DB().OpenPool()
@@ -345,14 +346,14 @@ func _getCellComponent(rt *configManager.Runtime, customerName *string, CellID *
 	component = nil
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
-		"customer_name": customerName,
-		"cell_id":       CellID,
-		"component_id":  ComponentID})
+		"customer_name": swag.StringValue(customerName),
+		"cell_id":       swag.StringValue(CellID),
+		"component_id":  swag.StringValue(ComponentID)})
 
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->
 							(cell:Cell {id: {cell_id}})-[:PROVIDES]->
 							(component:Component {id: {component_id}})
-								RETURN ID(component) as id,
+								RETURN component.id as id,
 												component.name as name`
 
 	db, err := rt.DB().OpenPool()
@@ -407,13 +408,13 @@ func _getComponentByName(rt *configManager.Runtime, customerName *string, CellID
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->
 							(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component:Component)
 							WHERE component.name = {component_name}
-								RETURN ID(component) as id,
+								RETURN component.id as id,
 												component.name as name`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
-		"customer_name":  customerName,
-		"cell_id":        CellID,
-		"component_name": componentName})
+		"customer_name":  swag.StringValue(customerName),
+		"cell_id":        swag.StringValue(CellID),
+		"component_name": swag.StringValue(componentName)})
 
 	db, err := rt.DB().OpenPool()
 
@@ -456,7 +457,7 @@ func _getComponentByName(rt *configManager.Runtime, customerName *string, CellID
 
 func _getEntityType(rt *configManager.Runtime, CellID *string, EntityID *string) string {
 
-	cypher := `MATCH (cell:Cell{id: {cell_id}})-->(entity {id: {entity_id}})
+	cypher := `MATCH (cell:Cell{id: {cell_id}})-[*]->(entity {id: {entity_id}})
 						RETURN labels(entity)`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
