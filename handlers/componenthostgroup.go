@@ -87,6 +87,7 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
+	defer stmt.Close()
 
 	if params.Body.Order == nil {
 		params.Body.Order = new(int64)
@@ -95,9 +96,9 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 
 	ulid := configManager.GetULID()
 
-	ctxLogger = ctx.rt.Logger().WithFields(logrus.Fields{
+	ctxLogger = ctxLogger.WithFields(logrus.Fields{
 		"hostgroup_id":   ulid,
-		"hostgroup_name": params.Body.Name})
+		"hostgroup_name": swag.StringValue(params.Body.Name)})
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"customer_name":               swag.StringValue(principal.Name),
@@ -119,12 +120,11 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 	}
 
 	output, _, err := rows.NextNeo()
+
 	if err != nil {
 		ctxLogger.Error("An error occurred getting next row: ", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
 	}
-
-	stmt.Close()
 
 	return hostgroup.NewAddComponentHostgroupCreated().WithPayload(models.ULID(output[0].(string)))
 }
@@ -237,9 +237,9 @@ func _FindComponentHostgroups(rt *configManager.Runtime, customerName *string, C
 										hostgroup.order as order`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
-		"customer_name": customerName,
-		"cell_id":       CellID,
-		"component_id":  ComponentID})
+		"customer_name": swag.StringValue(customerName),
+		"cell_id":       swag.StringValue(CellID),
+		"component_id":  swag.StringValue(ComponentID)})
 
 	db, err := rt.DB().OpenPool()
 	if err != nil {
@@ -249,9 +249,9 @@ func _FindComponentHostgroups(rt *configManager.Runtime, customerName *string, C
 	defer db.Close()
 
 	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
-		"customer_name": *customerName,
-		"cell_id":       CellID,
-		"component_id":  ComponentID})
+		"customer_name": swag.StringValue(customerName),
+		"cell_id":       swag.StringValue(CellID),
+		"component_id":  swag.StringValue(ComponentID)})
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
@@ -394,10 +394,10 @@ func _getComponentHostgroupByID(rt *configManager.Runtime, customer *string, cel
 											hostgroup.order as order`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
-		"customer_name": customer,
-		"cell_id":       cellID,
-		"componentID":   componentID,
-		"hostgroup_id":  hostgroupID})
+		"customer_name": swag.StringValue(customer),
+		"cell_id":       swag.StringValue(cellID),
+		"component_id":  swag.StringValue(componentID),
+		"hostgroup_id":  swag.StringValue(hostgroupID)})
 
 	db, err := rt.DB().OpenPool()
 	if err != nil {
@@ -415,9 +415,9 @@ func _getComponentHostgroupByID(rt *configManager.Runtime, customer *string, cel
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"customer_name": swag.StringValue(customer),
-		"cell_id":       cellID,
-		"component_id":  componentID,
-		"hostgroup_id":  hostgroupID})
+		"cell_id":       swag.StringValue(cellID),
+		"component_id":  swag.StringValue(componentID),
+		"hostgroup_id":  swag.StringValue(hostgroupID)})
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
