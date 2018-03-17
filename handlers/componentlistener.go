@@ -220,9 +220,9 @@ func _FindComponentListeners(rt *configManager.Runtime, customerName *string, Ce
 												listener.protocol as protocol`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
-		"customer_name": customerName,
-		"cell_id":       CellID,
-		"component_id":  ComponentID})
+		"customer_name": swag.StringValue(customerName),
+		"cell_id":       swag.StringValue(CellID),
+		"component_id":  swag.StringValue(ComponentID)})
 
 	db, err := rt.DB().OpenPool()
 	if err != nil {
@@ -232,9 +232,9 @@ func _FindComponentListeners(rt *configManager.Runtime, customerName *string, Ce
 	defer db.Close()
 
 	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
-		"customer_name": *customerName,
-		"cell_id":       CellID,
-		"component_id":  ComponentID})
+		"customer_name": swag.StringValue(customerName),
+		"cell_id":       swag.StringValue(CellID),
+		"component_id":  swag.StringValue(ComponentID)})
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
@@ -338,9 +338,9 @@ func _getComponentListenerByID(rt *configManager.Runtime, customer *string, cell
 										listener.protocol as flavor`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
-		"customer_name": customer,
-		"cell_id":       cellID,
-		"listener_id":   listenerID})
+		"customer_name": swag.StringValue(customer),
+		"cell_id":       swag.StringValue(cellID),
+		"listener_id":   swag.StringValue(listenerID)})
 
 	db, err := rt.DB().OpenPool()
 	if err != nil {
@@ -358,8 +358,8 @@ func _getComponentListenerByID(rt *configManager.Runtime, customer *string, cell
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"customer_name": swag.StringValue(customer),
-		"cell_id":       cellID,
-		"listener_id":   listenerID})
+		"cell_id":       swag.StringValue(cellID),
+		"listener_id":   swag.StringValue(listenerID)})
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
