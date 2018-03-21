@@ -418,7 +418,7 @@ func _getCellByID(rt *configManager.Runtime, customerName *string, cellID *strin
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
 		"customer": swag.StringValue(customerName),
-		"cell_id":  cellID})
+		"cell_id":  swag.StringValue(cellID)})
 
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})
 								RETURN cell.id as id,
@@ -441,7 +441,7 @@ func _getCellByID(rt *configManager.Runtime, customerName *string, cellID *strin
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"name":    swag.StringValue(customerName),
-		"cell_id": cellID})
+		"cell_id": swag.StringValue(cellID)})
 
 	if err != nil {
 		ctxLogger.Errorf("An error occurred querying Neo: ", err)
@@ -477,7 +477,7 @@ func getCellFull(rt *configManager.Runtime, customerName *string, cellID *string
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
 		"customer": swag.StringValue(customerName),
-		"cell_id":  cellID})
+		"cell_id":  swag.StringValue(cellID)})
 
 	conn := rt.DB()
 	db, err := conn.OpenPool()
@@ -490,7 +490,7 @@ func getCellFull(rt *configManager.Runtime, customerName *string, cellID *string
 
 	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
 		"customer_name": swag.StringValue(customerName),
-		"cell_id":       cellID})
+		"cell_id":       swag.StringValue(cellID)})
 
 	if err != nil {
 		ctxLogger.Errorf("An error occurred querying Neo: %s", err)
