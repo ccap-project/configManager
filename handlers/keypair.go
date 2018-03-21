@@ -298,7 +298,7 @@ func getCellKeypair(ctx *configManager.Runtime, customerName *string, CellID *st
 
 	ctxLogger := ctx.Logger().WithFields(logrus.Fields{
 		"customer_name": swag.StringValue(customerName),
-		"cell_id":       CellID})
+		"cell_id":       swag.StringValue(CellID)})
 
 	cypher := `MATCH (c:Customer {name: {customer_name} })-[:OWN]->(cell:Cell{id: {cell_id}})-[:DEPLOY_WITH]->(keypair)
 								RETURN keypair.id as id,
@@ -320,7 +320,7 @@ func getCellKeypair(ctx *configManager.Runtime, customerName *string, CellID *st
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"customer_name": swag.StringValue(customerName),
-		"cell_id":       CellID})
+		"cell_id":       swag.StringValue(CellID)})
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
