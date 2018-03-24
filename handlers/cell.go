@@ -472,7 +472,9 @@ func getCellFull(rt *configManager.Runtime, customerName *string, cellID *string
 										(cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role)
 							OPTIONAL MATCH (role)-->(parameter:Parameter)
 							OPTIONAL MATCH (component)-->(hostgroup:Hostgroup)
+							OPTIONAL MATCH (component)-->(listener:Listener)
 							OPTIONAL MATCH (cell)-->(host)-->(option:Option)
+							OPTIONAL MATCH (cell)-->(loadbalancer)
 							RETURN *`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
@@ -531,11 +533,7 @@ func getCellFull(rt *configManager.Runtime, customerName *string, cellID *string
 		}
 
 		// Component
-		C, err := _findCellComponents(rt, customerName, cellID)
-		res.Components = C
-		log.Printf(">>>>>>>>>>>>>>>>> %#v<<<<<<  %v<<<<<<<<<<<<", C, err)
-		//componentNode := getNodeByLabel(row, "Component")
-
+		res.Components, _ = _findCellComponents(rt, customerName, cellID)
 	}
 
 	return (res)

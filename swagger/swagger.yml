@@ -1729,6 +1729,14 @@ definitions:
       order:
         type: integer
         default: 99
+      listeners:
+        type: array
+        items:
+          $ref: "#/definitions/Listener"
+      relationships:
+        type: array
+        items:
+          type: string
 
   Host:
     type: "object"
@@ -1779,6 +1787,10 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/Role"
+      listeners:
+        type: array
+        items:
+          $ref: "#/definitions/Listener"
 
   Keypair:
     type: "object"
@@ -1946,6 +1958,10 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/Hostgroup"
+      loadbalancers:
+        type: array
+        items:
+          $ref: "#/definitions/Loadbalancer"
 
   FullCell:
     type: "object"
@@ -1962,6 +1978,10 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/Component"
+      loadbalancers:
+        type: array
+        items:
+          $ref: "#/definitions/Loadbalancer"
 
   ApiResponse:
     type: "object"

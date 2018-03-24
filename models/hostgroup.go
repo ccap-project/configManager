@@ -64,6 +64,9 @@ type Hostgroup struct {
 	// Required: true
 	Image *string `json:"image"`
 
+	// listeners
+	Listeners HostgroupListeners `json:"listeners"`
+
 	// name
 	// Required: true
 	Name *string `json:"name"`

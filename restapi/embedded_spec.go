@@ -2596,12 +2596,24 @@ func init() {
         "id": {
           "$ref": "#/definitions/ULID"
         },
+        "listeners": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Listener"
+          }
+        },
         "name": {
           "type": "string"
         },
         "order": {
           "type": "integer",
           "default": 99
+        },
+        "relationships": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "roles": {
           "type": "array",
@@ -2646,6 +2658,12 @@ func init() {
         "keypair": {
           "$ref": "#/definitions/Keypair"
         },
+        "loadbalancers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Loadbalancer"
+          }
+        },
         "name": {
           "type": "string"
         },
@@ -2668,6 +2686,12 @@ func init() {
         },
         "keypair": {
           "$ref": "#/definitions/Keypair"
+        },
+        "loadbalancers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Loadbalancer"
+          }
         },
         "name": {
           "type": "string"
@@ -2725,6 +2749,12 @@ func init() {
         },
         "image": {
           "type": "string"
+        },
+        "listeners": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Listener"
+          }
         },
         "name": {
           "type": "string"

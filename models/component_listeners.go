@@ -32,110 +32,42 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"strconv"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
 )
 
-// EntireCell entire cell
-// swagger:model EntireCell
-type EntireCell struct {
+// ComponentListeners component listeners
+// swagger:model componentListeners
+type ComponentListeners []*Listener
 
-	// customer name
-	CustomerName string `json:"customer_name,omitempty"`
-
-	// hostgroups
-	Hostgroups EntireCellHostgroups `json:"hostgroups"`
-
-	// hosts
-	Hosts EntireCellHosts `json:"hosts"`
-
-	// keypair
-	Keypair *Keypair `json:"keypair,omitempty"`
-
-	// loadbalancers
-	Loadbalancers EntireCellLoadbalancers `json:"loadbalancers"`
-
-	// name
-	Name string `json:"name,omitempty"`
-
-	// provider
-	Provider *Provider `json:"provider,omitempty"`
-}
-
-// Validate validates this entire cell
-func (m *EntireCell) Validate(formats strfmt.Registry) error {
+// Validate validates this component listeners
+func (m ComponentListeners) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateKeypair(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
+	for i := 0; i < len(m); i++ {
 
-	if err := m.validateProvider(formats); err != nil {
-		// prop
-		res = append(res, err)
+		if swag.IsZero(m[i]) { // not required
+			continue
+		}
+
+		if m[i] != nil {
+
+			if err := m[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName(strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *EntireCell) validateKeypair(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Keypair) { // not required
-		return nil
-	}
-
-	if m.Keypair != nil {
-
-		if err := m.Keypair.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("keypair")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *EntireCell) validateProvider(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Provider) { // not required
-		return nil
-	}
-
-	if m.Provider != nil {
-
-		if err := m.Provider.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("provider")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *EntireCell) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *EntireCell) UnmarshalBinary(b []byte) error {
-	var res EntireCell
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
 	return nil
 }

@@ -341,6 +341,43 @@ func _findCellComponents(rt *configManager.Runtime, customerName *string, CellID
 	return res, nil
 }
 
+func _findCellComponentRelationships(rt *configManager.Runtime, customerName *string, CellID *string, ComponentID *string) ([]string, error) {
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->
+							(cell:Cell {id: {cell_id}})-[:PROVIDES]->
+							(component:Component {id: {component_id}})-[:CONNECT_TO]->(listener:Listener)
+								RETURN listener.id as listener_id`
+
+	db, err := rt.DB().OpenPool()
+
+	if err != nil {
+		log.Println("error connecting to neo4j:", err)
+		return nil, err
+	}
+	defer db.Close()
+
+	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
+		"name":         swag.StringValue(customerName),
+		"cell_id":      swag.StringValue(CellID),
+		"component_id": swag.StringValue(ComponentID)})
+
+	if err != nil {
+		log.Printf("An error occurred querying Neo: %s", err)
+		return nil, err
+
+	} else if len(data) == 0 {
+		return nil, nil
+	}
+
+	res := make([]string, len(data))
+
+	for idx, row := range data {
+		rel := row[0].(string)
+		res[idx] = rel
+	}
+
+	return res, nil
+}
+
 func _getCellComponent(rt *configManager.Runtime, customerName *string, CellID *string, ComponentID *string) (*models.Component, error) {
 	var component *models.Component
 	component = nil
@@ -390,12 +427,16 @@ func _getCellComponent(rt *configManager.Runtime, customerName *string, CellID *
 	_name := output[1].(string)
 	_hostgroups, _ := _FindComponentHostgroups(rt, customerName, CellID, ComponentID)
 	_roles, _ := _findComponentRoles(rt, ComponentID)
+	_listeners, _ := _FindComponentListeners(rt, customerName, CellID, ComponentID)
+	_relationships, _ := _findCellComponentRelationships(rt, customerName, CellID, ComponentID)
 
 	component = &models.Component{
-		ID:         models.ULID(output[0].(string)),
-		Name:       &_name,
-		Hostgroups: _hostgroups,
-		Roles:      _roles}
+		ID:            models.ULID(output[0].(string)),
+		Name:          &_name,
+		Hostgroups:    _hostgroups,
+		Roles:         _roles,
+		Listeners:     _listeners,
+		Relationships: _relationships}
 
 	return component, nil
 }

@@ -49,12 +49,18 @@ type Component struct {
 	// id
 	ID ULID `json:"id,omitempty"`
 
+	// listeners
+	Listeners ComponentListeners `json:"listeners"`
+
 	// name
 	// Required: true
 	Name *string `json:"name"`
 
 	// order
 	Order *int64 `json:"order,omitempty"`
+
+	// relationships
+	Relationships []string `json:"relationships"`
 
 	// roles
 	Roles ComponentRoles `json:"roles"`
@@ -70,6 +76,11 @@ func (m *Component) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateName(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateRelationships(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -100,6 +111,15 @@ func (m *Component) validateName(formats strfmt.Registry) error {
 
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Component) validateRelationships(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Relationships) { // not required
+		return nil
 	}
 
 	return nil

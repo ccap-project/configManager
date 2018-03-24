@@ -51,6 +51,9 @@ type FullCell struct {
 	// keypair
 	Keypair *Keypair `json:"keypair,omitempty"`
 
+	// loadbalancers
+	Loadbalancers FullCellLoadbalancers `json:"loadbalancers"`
+
 	// name
 	Name string `json:"name,omitempty"`
 
