@@ -341,7 +341,7 @@ func _findCellComponents(rt *configManager.Runtime, customerName *string, CellID
 	return res, nil
 }
 
-func _findCellComponentRelationships(rt *configManager.Runtime, customerName *string, CellID *string, ComponentID *string) ([]string, error) {
+func _findCellComponentRelationships(rt *configManager.Runtime, customerName *string, CellID *string, ComponentID *string) ([]*models.Relationship, error) {
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->
 							(cell:Cell {id: {cell_id}})-[:PROVIDES]->
 							(component:Component {id: {component_id}})-[:CONNECT_TO]->(listener:Listener)
@@ -368,7 +368,7 @@ func _findCellComponentRelationships(rt *configManager.Runtime, customerName *st
 		return nil, nil
 	}
 
-	res := make([]models.Relationship, len(data))
+	res := make([]*models.Relationship, len(data))
 
 	for idx, row := range data {
 		relationship := &models.Relationship{
