@@ -368,11 +368,14 @@ func _findCellComponentRelationships(rt *configManager.Runtime, customerName *st
 		return nil, nil
 	}
 
-	res := make([]string, len(data))
+	res := make([]models.Relationship, len(data))
 
 	for idx, row := range data {
-		rel := row[0].(string)
-		res[idx] = rel
+		relationship := &models.Relationship{
+			ComponentID: models.ULID(swag.StringValue(ComponentID)),
+			ListenerID:  models.ULID(row[0].(string))}
+		//rel := row[0].(string)
+		res[idx] = relationship
 	}
 
 	return res, nil

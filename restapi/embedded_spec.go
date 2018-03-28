@@ -2612,7 +2612,7 @@ func init() {
         "relationships": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/Relationship"
           }
         },
         "roles": {
@@ -2933,6 +2933,17 @@ func init() {
     },
     "ProviderTypeID": {
       "type": "string"
+    },
+    "Relationship": {
+      "type": "object",
+      "properties": {
+        "component_id": {
+          "$ref": "#/definitions/ULID"
+        },
+        "listener_id": {
+          "$ref": "#/definitions/ULID"
+        }
+      }
     },
     "Role": {
       "type": "object",

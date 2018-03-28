@@ -1736,7 +1736,7 @@ definitions:
       relationships:
         type: array
         items:
-          type: string
+          $ref: "#/definitions/Relationship"
 
   Host:
     type: "object"
@@ -1851,6 +1851,14 @@ definitions:
 
   ProviderTypeID:
     type: string
+
+  Relationship:
+    type: object
+    properties:
+      component_id:
+        $ref: "#/definitions/ULID"
+      listener_id:
+        $ref: "#/definitions/ULID"
 
   Cell:
     type: object
