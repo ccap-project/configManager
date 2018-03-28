@@ -130,7 +130,7 @@ func (ctx *addLoadbalancerRelationship) Handle(params loadbalancer.AddLoadbalanc
 		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "listener not found"})
 	}
 
-	cellLoadbalancer, err := _getCellLoadbalancer(ctx.rt.DB(), principal.Name, &params.CellID, &params.LoadbalancerID)
+	cellLoadbalancer, err := _getCellLoadbalancer(ctx.rt, principal.Name, &params.CellID, &params.LoadbalancerID)
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
@@ -209,7 +209,7 @@ func (ctx *deleteLoadbalancerRelationship) Handle(params loadbalancer.DeleteLoad
 		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "listener not found"})
 	}
 
-	cellLoadbalancer, err := _getCellLoadbalancer(ctx.rt.DB(), principal.Name, &params.CellID, &params.LoadbalancerID)
+	cellLoadbalancer, err := _getCellLoadbalancer(ctx.rt, principal.Name, &params.CellID, &params.LoadbalancerID)
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
@@ -273,7 +273,7 @@ type getCellLoadbalancer struct {
 
 func (ctx *getCellLoadbalancer) Handle(params loadbalancer.GetCellLoadbalancerParams, principal *models.Customer) middleware.Responder {
 
-	cellLoadbalancer, err := _getCellLoadbalancer(ctx.rt.DB(), principal.Name, &params.CellID, &params.LoadbalancerID)
+	cellLoadbalancer, err := _getCellLoadbalancer(ctx.rt, principal.Name, &params.CellID, &params.LoadbalancerID)
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
@@ -297,7 +297,7 @@ type findCellLoadbalancers struct {
 
 func (ctx *findCellLoadbalancers) Handle(params loadbalancer.FindCellLoadbalancersParams, principal *models.Customer) middleware.Responder {
 
-	cellLoadbalancers, err := _findCellLoadbalancers(ctx.rt.DB(), principal.Name, &params.CellID)
+	cellLoadbalancers, err := _findCellLoadbalancers(ctx.rt, principal.Name, &params.CellID)
 
 	if err != nil {
 		return loadbalancer.NewFindCellLoadbalancersInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
@@ -306,25 +306,29 @@ func (ctx *findCellLoadbalancers) Handle(params loadbalancer.FindCellLoadbalance
 	return loadbalancer.NewFindCellLoadbalancersOK().WithPayload(cellLoadbalancers)
 }
 
-func _findCellLoadbalancers(conn neo4j.ConnPool, customerName *string, CellID *string) ([]*models.Loadbalancer, error) {
+func _findCellLoadbalancers(rt *configManager.Runtime, customerName *string, CellID *string) ([]*models.Loadbalancer, error) {
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})-[:HAS]->(loadbalancer)
 								RETURN loadbalancer.id as id,
 												loadbalancer.name as name`
 
-	db, err := conn.OpenPool()
+	db, err := rt.DB().OpenPool()
+
+	ctxLogger := rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(customerName),
+		"cell_id":       swag.StringValue(CellID)})
 
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j:", err)
 		return nil, err
 	}
 	defer db.Close()
 
 	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
 		"name":    swag.StringValue(customerName),
-		"cell_id": CellID})
+		"cell_id": swag.StringValue(CellID)})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: %s", err)
 		return nil, err
 
 	} else if len(data) == 0 {
@@ -335,13 +339,13 @@ func _findCellLoadbalancers(conn neo4j.ConnPool, customerName *string, CellID *s
 
 	for idx, row := range data {
 		lb_id := row[0].(string)
-		res[idx], _ = _getCellLoadbalancer(conn, customerName, CellID, &lb_id)
+		res[idx], _ = _getCellLoadbalancer(rt, customerName, CellID, &lb_id)
 	}
 
 	return res, nil
 }
 
-func _getCellLoadbalancer(conn neo4j.ConnPool, customerName *string, CellID *string, LoadbalancerID *string) (*models.Loadbalancer, error) {
+func _getCellLoadbalancer(rt *configManager.Runtime, customerName *string, CellID *string, LoadbalancerID *string) (*models.Loadbalancer, error) {
 	var loadbalancer *models.Loadbalancer
 	loadbalancer = nil
 
@@ -354,17 +358,20 @@ func _getCellLoadbalancer(conn neo4j.ConnPool, customerName *string, CellID *str
 												loadbalancer.protocol as protocol,
 												loadbalancer.algorithm as algorithm`
 
-	db, err := conn.OpenPool()
+	db, err := rt.DB().OpenPool()
+	ctxLogger := rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(customerName),
+		"cell_id":       swag.StringValue(CellID)})
 
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j:", err)
 		return loadbalancer, err
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		log.Printf("An error occurred preparing statement: %s", err)
+		ctxLogger.Error("An error occurred preparing statement: %s", err)
 		return loadbalancer, err
 	}
 
@@ -372,11 +379,11 @@ func _getCellLoadbalancer(conn neo4j.ConnPool, customerName *string, CellID *str
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"name":            swag.StringValue(customerName),
-		"cell_id":         CellID,
-		"loadbalancer_id": LoadbalancerID})
+		"cell_id":         swag.StringValue(CellID),
+		"loadbalancer_id": swag.StringValue(LoadbalancerID)})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Error("An error occurred querying Neo: %s", err)
 		return loadbalancer, err
 	}
 

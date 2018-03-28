@@ -534,6 +534,8 @@ func getCellFull(rt *configManager.Runtime, customerName *string, cellID *string
 
 		// Component
 		res.Components, _ = _findCellComponents(rt, customerName, cellID)
+		res.Loadbalancers, _ = _findCellLoadbalancers(rt, customerName, cellID)
+
 	}
 
 	return (res)
