@@ -1736,7 +1736,7 @@ definitions:
       relationships:
         type: array
         items:
-          $ref: "#/definitions/Relationship"
+          $ref: "#/definitions/ULID"
 
   Host:
     type: "object"
