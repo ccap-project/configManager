@@ -171,13 +171,11 @@ func (ctx *addComponentRelationship) Handle(params component.AddComponentRelatio
 
 	defer stmt.Close()
 
-	rows, err := stmt.QueryNeo(map[string]interface{}{
+	_, err = stmt.QueryNeo(map[string]interface{}{
 		"customer_name": swag.StringValue(principal.Name),
 		"cell_id":       params.CellID,
 		"component_id":  params.ComponentID,
 		"entity_id":     params.EntityID})
-
-	ctxLogger.Info("rows", rows)
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
@@ -307,6 +305,9 @@ func (ctx *findCellComponents) Handle(params component.FindCellComponentsParams,
 }
 
 func _findCellComponents(rt *configManager.Runtime, customerName *string, CellID *string) ([]*models.Component, error) {
+
+	var res []*models.Component
+
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->
 							(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component)
 								RETURN component.id as id, component.name as name`
@@ -331,17 +332,19 @@ func _findCellComponents(rt *configManager.Runtime, customerName *string, CellID
 		return nil, nil
 	}
 
-	res := make([]*models.Component, len(data))
-
-	for idx, row := range data {
+	for _, row := range data {
 		id := row[0].(string)
-		res[idx], _ = _getCellComponent(rt, customerName, CellID, &id)
+		c, _ := _getCellComponent(rt, customerName, CellID, &id)
+		res = append(res, c)
 	}
 
 	return res, nil
 }
 
-func _findCellComponentRelationships(rt *configManager.Runtime, customerName *string, CellID *string, ComponentID *string) ([]*models.Relationship, error) {
+func _findCellComponentRelationships(rt *configManager.Runtime, customerName *string, CellID *string, ComponentID *string) ([]models.ULID, error) {
+
+	var res []models.ULID
+
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->
 							(cell:Cell {id: {cell_id}})-[:PROVIDES]->
 							(component:Component {id: {component_id}})-[:CONNECT_TO]->(listener:Listener)
@@ -349,8 +352,13 @@ func _findCellComponentRelationships(rt *configManager.Runtime, customerName *st
 
 	db, err := rt.DB().OpenPool()
 
+	ctxLogger := rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(customerName),
+		"cell_id":       swag.StringValue(CellID),
+		"component_id":  swag.StringValue(ComponentID)})
+
 	if err != nil {
-		log.Println("error connecting to neo4j:", err)
+		ctxLogger.Error("error connecting to neo4j:", err)
 		return nil, err
 	}
 	defer db.Close()
@@ -361,21 +369,17 @@ func _findCellComponentRelationships(rt *configManager.Runtime, customerName *st
 		"component_id": swag.StringValue(ComponentID)})
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Errorf("An error occurred querying Neo: %s", err)
 		return nil, err
 
 	} else if len(data) == 0 {
 		return nil, nil
 	}
 
-	res := make([]*models.Relationship, len(data))
-
-	for idx, row := range data {
-		relationship := &models.Relationship{
-			ComponentID: models.ULID(swag.StringValue(ComponentID)),
-			ListenerID:  models.ULID(row[0].(string))}
-		//rel := row[0].(string)
-		res[idx] = relationship
+	for _, row := range data {
+		if len(row[0].(string)) > 0 {
+			res = append(res, models.ULID(row[0].(string)))
+		}
 	}
 
 	return res, nil
@@ -431,15 +435,16 @@ func _getCellComponent(rt *configManager.Runtime, customerName *string, CellID *
 	_hostgroups, _ := _FindComponentHostgroups(rt, customerName, CellID, ComponentID)
 	_roles, _ := _findComponentRoles(rt, ComponentID)
 	_listeners, _ := _FindComponentListeners(rt, customerName, CellID, ComponentID)
-	_relationships, _ := _findCellComponentRelationships(rt, customerName, CellID, ComponentID)
+	//_relationships, _ := _findCellComponentRelationships(rt, customerName, CellID, ComponentID)
 
 	component = &models.Component{
-		ID:            models.ULID(output[0].(string)),
-		Name:          &_name,
-		Hostgroups:    _hostgroups,
-		Roles:         _roles,
-		Listeners:     _listeners,
-		Relationships: _relationships}
+		ID:         models.ULID(output[0].(string)),
+		Name:       &_name,
+		Hostgroups: _hostgroups,
+		Roles:      _roles,
+		Listeners:  _listeners}
+
+	component.Relationships, _ = _findCellComponentRelationships(rt, customerName, CellID, ComponentID)
 
 	return component, nil
 }
