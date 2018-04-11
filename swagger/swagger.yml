@@ -1693,21 +1693,26 @@ parameters:
     pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
 
 definitions:
-  ULID:
-    type: "string"
-    minLength: 26
-    maxLength: 26
-    pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
-
-  Customer:
+  ApiResponse:
     type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      type:
+        type: "string"
+      message:
+        type: "string"
+
+  Cell:
+    type: object
     required:
       - name
     properties:
       id:
         $ref: "#/definitions/ULID"
       name:
-        type: "string"
+        type: string
 
   Component:
     type: "object"
@@ -1737,6 +1742,60 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/ULID"
+
+  Customer:
+    type: "object"
+    required:
+      - name
+    properties:
+      id:
+        $ref: "#/definitions/ULID"
+      name:
+        type: "string"
+
+  EntireCell:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      customer_name:
+        type: "string"
+      provider:
+        $ref: "#/definitions/Provider"
+      keypair:
+        $ref: "#/definitions/Keypair"
+      hosts:
+        type: array
+        items:
+          $ref: "#/definitions/Host"
+      hostgroups:
+        type: array
+        items:
+          $ref: "#/definitions/Hostgroup"
+      loadbalancers:
+        type: array
+        items:
+          $ref: "#/definitions/Loadbalancer"
+
+  FullCell:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      customer_name:
+        type: "string"
+      provider:
+        $ref: "#/definitions/Provider"
+      keypair:
+        $ref: "#/definitions/Keypair"
+      components:
+        type: array
+        items:
+          $ref: "#/definitions/Component"
+      loadbalancers:
+        type: array
+        items:
+          $ref: "#/definitions/Loadbalancer"
 
   Host:
     type: "object"
@@ -1805,6 +1864,60 @@ definitions:
       public_key:
         type: "string"
 
+  Listener:
+    type: "object"
+    required:
+      - name
+      - port
+      - protocol
+    properties:
+      id:
+        $ref: "#/definitions/ULID"
+      name:
+        type: "string"
+      port:
+        type: "integer"
+      protocol:
+        type: "string"
+
+  Loadbalancer:
+    type: "object"
+    required:
+      - name
+      - port
+      - protocol
+      - algorithm
+    properties:
+      id:
+        $ref: "#/definitions/ULID"
+      name:
+        type: "string"
+      port:
+        type: "integer"
+      protocol:
+        type: "string"
+      algorithm:
+        type: "string"
+      type:
+        type: "string"
+      connection_drain:
+        type: "string"
+      connection_idle_timeout:
+        type: "integer"
+
+  Parameter:
+    type: "object"
+    required:
+      - name
+      - value
+    properties:
+      id:
+        $ref: "#/definitions/ULID"
+      name:
+        type: "string"
+      value:
+        type: "string"
+
   Provider:
     type: object
     required:
@@ -1860,16 +1973,6 @@ definitions:
       listener_id:
         $ref: "#/definitions/ULID"
 
-  Cell:
-    type: object
-    required:
-      - name
-    properties:
-      id:
-        $ref: "#/definitions/ULID"
-      name:
-        type: string
-
   Role:
     type: "object"
     required:
@@ -1893,111 +1996,8 @@ definitions:
         items:
           $ref: "#/definitions/Parameter"
 
-  Parameter:
-    type: "object"
-    required:
-      - name
-      - value
-    properties:
-      id:
-        $ref: "#/definitions/ULID"
-      name:
-        type: "string"
-      value:
-        type: "string"
-
-  Listener:
-    type: "object"
-    required:
-      - name
-      - port
-      - protocol
-    properties:
-      id:
-        $ref: "#/definitions/ULID"
-      name:
-        type: "string"
-      port:
-        type: "integer"
-      protocol:
-        type: "string"
-
-  Loadbalancer:
-    type: "object"
-    required:
-      - name
-      - port
-      - protocol
-      - algorithm
-    properties:
-      id:
-        $ref: "#/definitions/ULID"
-      name:
-        type: "string"
-      port:
-        type: "integer"
-      protocol:
-        type: "string"
-      algorithm:
-        type: "string"
-      type:
-        type: "string"
-      connection_drain:
-        type: "string"
-      connection_idle_timeout:
-        type: "integer"
-
-  EntireCell:
-    type: "object"
-    properties:
-      name:
-        type: "string"
-      customer_name:
-        type: "string"
-      provider:
-        $ref: "#/definitions/Provider"
-      keypair:
-        $ref: "#/definitions/Keypair"
-      hosts:
-        type: array
-        items:
-          $ref: "#/definitions/Host"
-      hostgroups:
-        type: array
-        items:
-          $ref: "#/definitions/Hostgroup"
-      loadbalancers:
-        type: array
-        items:
-          $ref: "#/definitions/Loadbalancer"
-
-  FullCell:
-    type: "object"
-    properties:
-      name:
-        type: "string"
-      customer_name:
-        type: "string"
-      provider:
-        $ref: "#/definitions/Provider"
-      keypair:
-        $ref: "#/definitions/Keypair"
-      components:
-        type: array
-        items:
-          $ref: "#/definitions/Component"
-      loadbalancers:
-        type: array
-        items:
-          $ref: "#/definitions/Loadbalancer"
-
-  ApiResponse:
-    type: "object"
-    properties:
-      code:
-        type: "integer"
-        format: "int32"
-      type:
-        type: "string"
-      message:
-        type: "string"
+  ULID:
+    type: "string"
+    minLength: 26
+    maxLength: 26
+    pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
