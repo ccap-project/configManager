@@ -211,6 +211,8 @@ func (ctx *findComponentListeners) Handle(params listener.FindComponentListeners
 
 func _FindComponentListeners(rt *configManager.Runtime, customerName *string, CellID *string, ComponentID *string) ([]*models.Listener, middleware.Responder) {
 
+	var res []*models.Listener
+
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell {id: {cell_id}})-[:PROVIDES]->
 							(component:Component {id: {component_id}})-[:LISTEN_ON]->(listener:Listener)
@@ -241,9 +243,7 @@ func _FindComponentListeners(rt *configManager.Runtime, customerName *string, Ce
 		return nil, listener.NewFindComponentListenersInternalServerError()
 	}
 
-	res := make([]*models.Listener, len(data))
-
-	for idx, row := range data {
+	for _, row := range data {
 
 		var _port int64
 
@@ -251,11 +251,13 @@ func _FindComponentListeners(rt *configManager.Runtime, customerName *string, Ce
 		_port = row[2].(int64)
 		_protocol := row[3].(string)
 
-		res[idx] = &models.Listener{
+		l := &models.Listener{
 			ID:       models.ULID(row[0].(string)),
 			Name:     &_name,
 			Port:     &_port,
 			Protocol: &_protocol}
+
+		res = append(res, l)
 	}
 	return res, nil
 }
