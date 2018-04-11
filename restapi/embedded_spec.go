@@ -2612,7 +2612,7 @@ func init() {
         "relationships": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Relationship"
+            "$ref": "#/definitions/ULID"
           }
         },
         "roles": {
