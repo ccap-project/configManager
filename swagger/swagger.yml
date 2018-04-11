@@ -1996,6 +1996,28 @@ definitions:
         items:
           $ref: "#/definitions/Parameter"
 
+  SecRule:
+    type: "object"
+    properties:
+      source_addr:
+        type: "string"
+      source_port:
+        type: "string"
+      destination_addr:
+        type: "string"
+      destination_port:
+        type: "string"
+      proto:
+        type: "string"
+
+  SecGroup:
+    type: "object"
+    properties:
+      rules:
+        type: array
+        items:
+          $ref: "#/definitions/SecRule"
+
   ULID:
     type: "string"
     minLength: 26

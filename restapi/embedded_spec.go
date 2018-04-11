@@ -2977,6 +2977,37 @@ func init() {
         }
       }
     },
+    "SecGroup": {
+      "type": "object",
+      "properties": {
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SecRule"
+          }
+        }
+      }
+    },
+    "SecRule": {
+      "type": "object",
+      "properties": {
+        "destination_addr": {
+          "type": "string"
+        },
+        "destination_port": {
+          "type": "string"
+        },
+        "proto": {
+          "type": "string"
+        },
+        "source_addr": {
+          "type": "string"
+        },
+        "source_port": {
+          "type": "string"
+        }
+      }
+    },
     "ULID": {
       "type": "string",
       "maxLength": 26,
