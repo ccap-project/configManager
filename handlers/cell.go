@@ -321,6 +321,9 @@ type findCellByCustomer struct {
 }
 
 func (ctx *findCellByCustomer) Handle(params cell.FindCellByCustomerParams, principal *models.Customer) middleware.Responder {
+
+	var res []*models.Cell
+
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell)
 								WHERE EXISTS(cell.id)
 								RETURN cell.id as id,
@@ -348,14 +351,13 @@ func (ctx *findCellByCustomer) Handle(params cell.FindCellByCustomerParams, prin
 		return cell.NewFindCellByCustomerNotFound()
 	}
 
-	res := make([]*models.Cell, len(data))
-
-	for idx, row := range data {
+	for _, row := range data {
 		_name := row[1].(string)
 
-		res[idx] = &models.Cell{
+		c := &models.Cell{
 			ID:   models.ULID(row[0].(string)),
 			Name: &_name}
+		res = append(res, c)
 	}
 
 	return cell.NewFindCellByCustomerOK().WithPayload(res)
@@ -531,12 +533,11 @@ func getCellFull(rt *configManager.Runtime, customerName *string, cellID *string
 				res.Provider.Type = copyString(providerTypeNode["name"])
 			}
 		}
-
-		// Component
-		res.Components, _ = _findCellComponents(rt, customerName, cellID)
-		res.Loadbalancers, _ = _findCellLoadbalancers(rt, customerName, cellID)
-
 	}
+
+	// Component
+	res.Components, _ = _findCellComponents(rt, customerName, cellID)
+	res.Loadbalancers, _ = _findCellLoadbalancers(rt, customerName, cellID)
 
 	return (res)
 }
@@ -584,7 +585,7 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 
 	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
 		"customer_name": swag.StringValue(customerName),
-		"cell_id":       cellID})
+		"cell_id":       swag.StringValue(cellID)})
 
 	if err != nil {
 		ctxLogger.Errorf("An error occurred querying Neo: ", err)
@@ -615,6 +616,7 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 		}
 
 		componentNode := getNodeByLabel(row, "Component")
+		componentID := componentNode["id"].(string)
 
 		if res.Keypair.Name == nil {
 			keypairNode := getNodeByLabel(row, "Keypair")
@@ -678,6 +680,8 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 			}
 
 		}
+		// Loadbalancers
+		res.Loadbalancers, _ = _findCellLoadbalancers(rt, customerName, cellID)
 
 		// Hostgroup
 		hostgroupNode := getNodeByLabel(row, "Hostgroup")
@@ -699,6 +703,8 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 				hg.BootstrapCommand = *copyString(hostgroupNode["bootstrap_command"])
 				hg.Component = *copyString(componentNode["name"])
 				hg.Count = new(int64)
+
+				hg.Listeners, _ = _FindComponentListeners(rt, customerName, cellID, &componentID)
 
 				// give ordering precedence to component value
 				if (hostgroupNode["order"] == nil && componentNode["order"] != nil) ||
