@@ -307,6 +307,9 @@ func (ctx *findCellLoadbalancers) Handle(params loadbalancer.FindCellLoadbalance
 }
 
 func _findCellLoadbalancers(rt *configManager.Runtime, customerName *string, CellID *string) ([]*models.Loadbalancer, error) {
+
+	var res []*models.Loadbalancer
+
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})-[:HAS]->(loadbalancer)
 								RETURN loadbalancer.id as id,
 												loadbalancer.name as name`
@@ -335,11 +338,11 @@ func _findCellLoadbalancers(rt *configManager.Runtime, customerName *string, Cel
 		return nil, nil
 	}
 
-	res := make([]*models.Loadbalancer, len(data))
-
-	for idx, row := range data {
+	for _, row := range data {
 		lb_id := row[0].(string)
-		res[idx], _ = _getCellLoadbalancer(rt, customerName, CellID, &lb_id)
+		lb, _ := _getCellLoadbalancer(rt, customerName, CellID, &lb_id)
+
+		res = append(res, lb)
 	}
 
 	return res, nil
