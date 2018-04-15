@@ -74,7 +74,7 @@ type DeleteComponentListenerBadRequest struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewDeleteComponentListenerBadRequest creates DeleteComponentListenerBadRequest with default headers values
@@ -83,13 +83,13 @@ func NewDeleteComponentListenerBadRequest() *DeleteComponentListenerBadRequest {
 }
 
 // WithPayload adds the payload to the delete component listener bad request response
-func (o *DeleteComponentListenerBadRequest) WithPayload(payload models.APIResponse) *DeleteComponentListenerBadRequest {
+func (o *DeleteComponentListenerBadRequest) WithPayload(payload *models.APIResponse) *DeleteComponentListenerBadRequest {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the delete component listener bad request response
-func (o *DeleteComponentListenerBadRequest) SetPayload(payload models.APIResponse) {
+func (o *DeleteComponentListenerBadRequest) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -97,11 +97,12 @@ func (o *DeleteComponentListenerBadRequest) SetPayload(payload models.APIRespons
 func (o *DeleteComponentListenerBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // DeleteComponentListenerNotFoundCode is the HTTP code returned for type DeleteComponentListenerNotFound
@@ -139,7 +140,7 @@ type DeleteComponentListenerInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewDeleteComponentListenerInternalServerError creates DeleteComponentListenerInternalServerError with default headers values
@@ -148,13 +149,13 @@ func NewDeleteComponentListenerInternalServerError() *DeleteComponentListenerInt
 }
 
 // WithPayload adds the payload to the delete component listener internal server error response
-func (o *DeleteComponentListenerInternalServerError) WithPayload(payload models.APIResponse) *DeleteComponentListenerInternalServerError {
+func (o *DeleteComponentListenerInternalServerError) WithPayload(payload *models.APIResponse) *DeleteComponentListenerInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the delete component listener internal server error response
-func (o *DeleteComponentListenerInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *DeleteComponentListenerInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -162,9 +163,10 @@ func (o *DeleteComponentListenerInternalServerError) SetPayload(payload models.A
 func (o *DeleteComponentListenerInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

@@ -116,7 +116,7 @@ type AddCellKeypairMethodNotAllowed struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddCellKeypairMethodNotAllowed creates AddCellKeypairMethodNotAllowed with default headers values
@@ -125,13 +125,13 @@ func NewAddCellKeypairMethodNotAllowed() *AddCellKeypairMethodNotAllowed {
 }
 
 // WithPayload adds the payload to the add cell keypair method not allowed response
-func (o *AddCellKeypairMethodNotAllowed) WithPayload(payload models.APIResponse) *AddCellKeypairMethodNotAllowed {
+func (o *AddCellKeypairMethodNotAllowed) WithPayload(payload *models.APIResponse) *AddCellKeypairMethodNotAllowed {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add cell keypair method not allowed response
-func (o *AddCellKeypairMethodNotAllowed) SetPayload(payload models.APIResponse) {
+func (o *AddCellKeypairMethodNotAllowed) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -139,11 +139,12 @@ func (o *AddCellKeypairMethodNotAllowed) SetPayload(payload models.APIResponse) 
 func (o *AddCellKeypairMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(405)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddCellKeypairConflictCode is the HTTP code returned for type AddCellKeypairConflict
@@ -158,7 +159,7 @@ type AddCellKeypairConflict struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddCellKeypairConflict creates AddCellKeypairConflict with default headers values
@@ -167,13 +168,13 @@ func NewAddCellKeypairConflict() *AddCellKeypairConflict {
 }
 
 // WithPayload adds the payload to the add cell keypair conflict response
-func (o *AddCellKeypairConflict) WithPayload(payload models.APIResponse) *AddCellKeypairConflict {
+func (o *AddCellKeypairConflict) WithPayload(payload *models.APIResponse) *AddCellKeypairConflict {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add cell keypair conflict response
-func (o *AddCellKeypairConflict) SetPayload(payload models.APIResponse) {
+func (o *AddCellKeypairConflict) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -181,11 +182,12 @@ func (o *AddCellKeypairConflict) SetPayload(payload models.APIResponse) {
 func (o *AddCellKeypairConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(409)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddCellKeypairInternalServerErrorCode is the HTTP code returned for type AddCellKeypairInternalServerError
@@ -200,7 +202,7 @@ type AddCellKeypairInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddCellKeypairInternalServerError creates AddCellKeypairInternalServerError with default headers values
@@ -209,13 +211,13 @@ func NewAddCellKeypairInternalServerError() *AddCellKeypairInternalServerError {
 }
 
 // WithPayload adds the payload to the add cell keypair internal server error response
-func (o *AddCellKeypairInternalServerError) WithPayload(payload models.APIResponse) *AddCellKeypairInternalServerError {
+func (o *AddCellKeypairInternalServerError) WithPayload(payload *models.APIResponse) *AddCellKeypairInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add cell keypair internal server error response
-func (o *AddCellKeypairInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *AddCellKeypairInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -223,9 +225,10 @@ func (o *AddCellKeypairInternalServerError) SetPayload(payload models.APIRespons
 func (o *AddCellKeypairInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

@@ -38,16 +38,19 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// SecGroup sec group
-// swagger:model SecGroup
-type SecGroup struct {
+// Securitygroup securitygroup
+// swagger:model Securitygroup
+type Securitygroup struct {
+
+	// name
+	Name string `json:"name,omitempty"`
 
 	// rules
-	Rules SecGroupRules `json:"rules"`
+	Rules SecuritygroupRules `json:"rules"`
 }
 
-// Validate validates this sec group
-func (m *SecGroup) Validate(formats strfmt.Registry) error {
+// Validate validates this securitygroup
+func (m *Securitygroup) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -57,7 +60,7 @@ func (m *SecGroup) Validate(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (m *SecGroup) MarshalBinary() ([]byte, error) {
+func (m *Securitygroup) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -65,8 +68,8 @@ func (m *SecGroup) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecGroup) UnmarshalBinary(b []byte) error {
-	var res SecGroup
+func (m *Securitygroup) UnmarshalBinary(b []byte) error {
+	var res Securitygroup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

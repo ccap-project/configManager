@@ -82,14 +82,14 @@ func (ctx *addCellKeypair) Handle(params keypair.AddCellKeypairParams, principal
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return keypair.NewAddCellKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return keypair.NewAddCellKeypairInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return keypair.NewAddCellKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return keypair.NewAddCellKeypairInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
@@ -99,14 +99,14 @@ func (ctx *addCellKeypair) Handle(params keypair.AddCellKeypairParams, principal
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return keypair.NewAddCellKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return keypair.NewAddCellKeypairInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 
 	if err != nil {
 		ctxLogger.Error("An error occurred getting next row: ", err)
-		return keypair.NewAddCellKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return keypair.NewAddCellKeypairInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	ctxLogger.Info("OK")
@@ -134,7 +134,7 @@ func (ctx *addKeypair) Handle(params keypair.AddKeypairParams, principal *models
 
 	if getKeypairByName(ctx.rt, principal.Name, params.Body.Name) != nil {
 		ctxLogger.Error("keypair already exists !")
-		return keypair.NewAddKeypairConflict().WithPayload(models.APIResponse{Message: "keypair name already exists"})
+		return keypair.NewAddKeypairConflict().WithPayload(&models.APIResponse{Message: "keypair name already exists"})
 	}
 
 	ctxLogger = ctx.rt.Logger().WithFields(logrus.Fields{
@@ -144,14 +144,14 @@ func (ctx *addKeypair) Handle(params keypair.AddKeypairParams, principal *models
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return keypair.NewAddKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return keypair.NewAddKeypairInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return keypair.NewAddKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return keypair.NewAddKeypairInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	ulid := configManager.GetULID()
@@ -167,13 +167,13 @@ func (ctx *addKeypair) Handle(params keypair.AddKeypairParams, principal *models
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return keypair.NewAddKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return keypair.NewAddKeypairInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 	if err != nil {
 		ctxLogger.Error("An error occurred getting next row: ", err)
-		return keypair.NewAddKeypairInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return keypair.NewAddKeypairInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	ctxLogger.Info("OK")

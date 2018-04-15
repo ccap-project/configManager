@@ -143,7 +143,7 @@ type FindCellLoadbalancersInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewFindCellLoadbalancersInternalServerError creates FindCellLoadbalancersInternalServerError with default headers values
@@ -152,13 +152,13 @@ func NewFindCellLoadbalancersInternalServerError() *FindCellLoadbalancersInterna
 }
 
 // WithPayload adds the payload to the find cell loadbalancers internal server error response
-func (o *FindCellLoadbalancersInternalServerError) WithPayload(payload models.APIResponse) *FindCellLoadbalancersInternalServerError {
+func (o *FindCellLoadbalancersInternalServerError) WithPayload(payload *models.APIResponse) *FindCellLoadbalancersInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the find cell loadbalancers internal server error response
-func (o *FindCellLoadbalancersInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *FindCellLoadbalancersInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -166,9 +166,10 @@ func (o *FindCellLoadbalancersInternalServerError) SetPayload(payload models.API
 func (o *FindCellLoadbalancersInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

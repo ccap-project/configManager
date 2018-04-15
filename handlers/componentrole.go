@@ -70,27 +70,27 @@ func (ctx *addComponentRole) Handle(params role.AddComponentRoleParams, principa
 
 	if _getComponentRoleByName(ctx.rt, principal.Name, &params.CellID, &params.ComponentID, params.Body.Name) != nil {
 		ctxLogger.Warn("role already exists !")
-		return role.NewAddComponentRoleConflict().WithPayload(models.APIResponse{Message: "role already exists"})
+		return role.NewAddComponentRoleConflict().WithPayload(&models.APIResponse{Message: "role already exists"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return role.NewAddComponentRoleInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	tx, err := db.Begin()
 	if err != nil {
 		ctxLogger.Error("An error occurred beginning transaction: ", err)
-		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return role.NewAddComponentRoleInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer tx.Rollback()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return role.NewAddComponentRoleInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer stmt.Close()
 
@@ -114,13 +114,13 @@ func (ctx *addComponentRole) Handle(params role.AddComponentRoleParams, principa
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return role.NewAddComponentRoleInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 	if err != nil {
 		ctxLogger.Error("An error occurred getting next row: ", err)
-		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return role.NewAddComponentRoleInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	stmt.Close()
@@ -128,7 +128,7 @@ func (ctx *addComponentRole) Handle(params role.AddComponentRoleParams, principa
 	err = addComponentRoleParameters(ctx.rt.Logger(), db, principal.Name, &params.CellID, &params.ComponentID, params.Body.Name, params.Body.Params)
 	if err != nil {
 		ctxLogger.Error("An error occurred adding Role parameters: ", err)
-		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return role.NewAddComponentRoleInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	tx.Commit()
 
@@ -167,14 +167,14 @@ func (ctx *deleteComponentRole) Handle(params role.DeleteComponentRoleParams, pr
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return role.NewDeleteComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return role.NewDeleteComponentRoleInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return role.NewDeleteComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return role.NewDeleteComponentRoleInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	defer stmt.Close()
@@ -187,7 +187,7 @@ func (ctx *deleteComponentRole) Handle(params role.DeleteComponentRoleParams, pr
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return role.NewAddComponentRoleInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	return role.NewDeleteComponentRoleOK()
@@ -249,21 +249,21 @@ func (ctx *updateComponentRole) Handle(params role.UpdateComponentRoleParams, pr
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return role.NewAddComponentRoleInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	tx, err := db.Begin()
 	if err != nil {
 		ctxLogger.Error("An error occurred beginning transaction: ", err)
-		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return role.NewAddComponentRoleInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer tx.Rollback()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return role.NewAddComponentRoleInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer stmt.Close()
 
@@ -279,7 +279,7 @@ func (ctx *updateComponentRole) Handle(params role.UpdateComponentRoleParams, pr
 
 	if err != nil {
 		ctxLogger.Error("Error occurred querying Neo: ", err)
-		return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return role.NewAddComponentRoleInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	stmt.Close()
 
@@ -287,7 +287,7 @@ func (ctx *updateComponentRole) Handle(params role.UpdateComponentRoleParams, pr
 		err = addComponentRoleParameters(ctx.rt.Logger(), db, principal.Name, &params.CellID, &params.ComponentID, params.Body.Name, params.Body.Params)
 		if err != nil {
 			ctxLogger.Error("An error occurred adding Role parameters: %s", err)
-			return role.NewAddComponentRoleInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+			return role.NewAddComponentRoleInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 		}
 	}
 

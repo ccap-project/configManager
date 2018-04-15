@@ -93,7 +93,7 @@ type AddLoadbalancerMethodNotAllowed struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddLoadbalancerMethodNotAllowed creates AddLoadbalancerMethodNotAllowed with default headers values
@@ -102,13 +102,13 @@ func NewAddLoadbalancerMethodNotAllowed() *AddLoadbalancerMethodNotAllowed {
 }
 
 // WithPayload adds the payload to the add loadbalancer method not allowed response
-func (o *AddLoadbalancerMethodNotAllowed) WithPayload(payload models.APIResponse) *AddLoadbalancerMethodNotAllowed {
+func (o *AddLoadbalancerMethodNotAllowed) WithPayload(payload *models.APIResponse) *AddLoadbalancerMethodNotAllowed {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add loadbalancer method not allowed response
-func (o *AddLoadbalancerMethodNotAllowed) SetPayload(payload models.APIResponse) {
+func (o *AddLoadbalancerMethodNotAllowed) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -116,11 +116,12 @@ func (o *AddLoadbalancerMethodNotAllowed) SetPayload(payload models.APIResponse)
 func (o *AddLoadbalancerMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(405)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddLoadbalancerConflictCode is the HTTP code returned for type AddLoadbalancerConflict
@@ -135,7 +136,7 @@ type AddLoadbalancerConflict struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddLoadbalancerConflict creates AddLoadbalancerConflict with default headers values
@@ -144,13 +145,13 @@ func NewAddLoadbalancerConflict() *AddLoadbalancerConflict {
 }
 
 // WithPayload adds the payload to the add loadbalancer conflict response
-func (o *AddLoadbalancerConflict) WithPayload(payload models.APIResponse) *AddLoadbalancerConflict {
+func (o *AddLoadbalancerConflict) WithPayload(payload *models.APIResponse) *AddLoadbalancerConflict {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add loadbalancer conflict response
-func (o *AddLoadbalancerConflict) SetPayload(payload models.APIResponse) {
+func (o *AddLoadbalancerConflict) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -158,11 +159,12 @@ func (o *AddLoadbalancerConflict) SetPayload(payload models.APIResponse) {
 func (o *AddLoadbalancerConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(409)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddLoadbalancerInternalServerErrorCode is the HTTP code returned for type AddLoadbalancerInternalServerError
@@ -177,7 +179,7 @@ type AddLoadbalancerInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddLoadbalancerInternalServerError creates AddLoadbalancerInternalServerError with default headers values
@@ -186,13 +188,13 @@ func NewAddLoadbalancerInternalServerError() *AddLoadbalancerInternalServerError
 }
 
 // WithPayload adds the payload to the add loadbalancer internal server error response
-func (o *AddLoadbalancerInternalServerError) WithPayload(payload models.APIResponse) *AddLoadbalancerInternalServerError {
+func (o *AddLoadbalancerInternalServerError) WithPayload(payload *models.APIResponse) *AddLoadbalancerInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add loadbalancer internal server error response
-func (o *AddLoadbalancerInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *AddLoadbalancerInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -200,9 +202,10 @@ func (o *AddLoadbalancerInternalServerError) SetPayload(payload models.APIRespon
 func (o *AddLoadbalancerInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

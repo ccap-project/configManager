@@ -32,56 +32,42 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"strconv"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
 )
 
-// SecRule sec rule
-// swagger:model SecRule
-type SecRule struct {
+// EntireCellSecuritygroups entire cell securitygroups
+// swagger:model entireCellSecuritygroups
+type EntireCellSecuritygroups []*Securitygroup
 
-	// destination addr
-	DestinationAddr string `json:"destination_addr,omitempty"`
-
-	// destination port
-	DestinationPort string `json:"destination_port,omitempty"`
-
-	// proto
-	Proto string `json:"proto,omitempty"`
-
-	// source addr
-	SourceAddr string `json:"source_addr,omitempty"`
-
-	// source port
-	SourcePort string `json:"source_port,omitempty"`
-}
-
-// Validate validates this sec rule
-func (m *SecRule) Validate(formats strfmt.Registry) error {
+// Validate validates this entire cell securitygroups
+func (m EntireCellSecuritygroups) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	for i := 0; i < len(m); i++ {
+
+		if swag.IsZero(m[i]) { // not required
+			continue
+		}
+
+		if m[i] != nil {
+
+			if err := m[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName(strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *SecRule) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *SecRule) UnmarshalBinary(b []byte) error {
-	var res SecRule
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
 	return nil
 }

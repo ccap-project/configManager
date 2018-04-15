@@ -74,7 +74,7 @@ type UpdateComponentRoleBadRequest struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewUpdateComponentRoleBadRequest creates UpdateComponentRoleBadRequest with default headers values
@@ -83,13 +83,13 @@ func NewUpdateComponentRoleBadRequest() *UpdateComponentRoleBadRequest {
 }
 
 // WithPayload adds the payload to the update component role bad request response
-func (o *UpdateComponentRoleBadRequest) WithPayload(payload models.APIResponse) *UpdateComponentRoleBadRequest {
+func (o *UpdateComponentRoleBadRequest) WithPayload(payload *models.APIResponse) *UpdateComponentRoleBadRequest {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the update component role bad request response
-func (o *UpdateComponentRoleBadRequest) SetPayload(payload models.APIResponse) {
+func (o *UpdateComponentRoleBadRequest) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -97,11 +97,12 @@ func (o *UpdateComponentRoleBadRequest) SetPayload(payload models.APIResponse) {
 func (o *UpdateComponentRoleBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // UpdateComponentRoleNotFoundCode is the HTTP code returned for type UpdateComponentRoleNotFound
@@ -162,7 +163,7 @@ type UpdateComponentRoleInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewUpdateComponentRoleInternalServerError creates UpdateComponentRoleInternalServerError with default headers values
@@ -171,13 +172,13 @@ func NewUpdateComponentRoleInternalServerError() *UpdateComponentRoleInternalSer
 }
 
 // WithPayload adds the payload to the update component role internal server error response
-func (o *UpdateComponentRoleInternalServerError) WithPayload(payload models.APIResponse) *UpdateComponentRoleInternalServerError {
+func (o *UpdateComponentRoleInternalServerError) WithPayload(payload *models.APIResponse) *UpdateComponentRoleInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the update component role internal server error response
-func (o *UpdateComponentRoleInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *UpdateComponentRoleInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -185,9 +186,10 @@ func (o *UpdateComponentRoleInternalServerError) SetPayload(payload models.APIRe
 func (o *UpdateComponentRoleInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

@@ -74,21 +74,22 @@ func (ctx *addCellProvider) Handle(params provider.AddProviderParams, principal 
 
 	if Provider != nil {
 		ctxLogger.Warn("provider already exists !")
-		return provider.NewAddProviderConflict().WithPayload(models.APIResponse{Message: "provider already exists"})
+		return provider.NewAddProviderConflict().WithPayload(&models.APIResponse{Message: "provider already exists"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return provider.NewAddProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return provider.NewAddProviderInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return provider.NewAddProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return provider.NewAddProviderInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
+	defer stmt.Close()
 
 	ulid := configManager.GetULID()
 
@@ -109,13 +110,13 @@ func (ctx *addCellProvider) Handle(params provider.AddProviderParams, principal 
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return provider.NewAddProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return provider.NewAddProviderInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 	if err != nil {
 		ctxLogger.Error("An error occurred getting next row: ", err)
-		return provider.NewAddProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return provider.NewAddProviderInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	return provider.NewAddProviderCreated().WithPayload(models.ULID(output[0].(string)))
@@ -245,21 +246,22 @@ func (ctx *updateCellProvider) Handle(params provider.UpdateProviderParams, prin
 
 	if Provider == nil {
 		ctxLogger.Warn("provider does not exists !")
-		return provider.NewUpdateProviderNotFound().WithPayload(models.APIResponse{Message: "provider does not exists"})
+		return provider.NewUpdateProviderNotFound().WithPayload(&models.APIResponse{Message: "provider does not exists"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return provider.NewUpdateProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return provider.NewUpdateProviderInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return provider.NewUpdateProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return provider.NewUpdateProviderInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
+	defer stmt.Close()
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"customer_name": swag.StringValue(principal.Name),
@@ -274,13 +276,13 @@ func (ctx *updateCellProvider) Handle(params provider.UpdateProviderParams, prin
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return provider.NewUpdateProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return provider.NewUpdateProviderInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	_, _, err = rows.NextNeo()
 	if err != nil {
 		ctxLogger.Error("An error occurred getting next row: ", err)
-		return provider.NewUpdateProviderInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return provider.NewUpdateProviderInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	return provider.NewUpdateProviderOK()

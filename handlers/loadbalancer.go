@@ -69,21 +69,21 @@ func (ctx *addCellLoadbalancer) Handle(params loadbalancer.AddLoadbalancerParams
 	// XXX: Consistency check should have more than only name...
 	if _getLoadbalancerByName(ctx.rt.DB(), principal.Name, &params.CellID, params.Body.Name) != nil {
 		ctxLogger.Warn("loadbalancer already exists !")
-		return loadbalancer.NewAddLoadbalancerConflict().WithPayload(models.APIResponse{Message: "loadbalancer already exists"})
+		return loadbalancer.NewAddLoadbalancerConflict().WithPayload(&models.APIResponse{Message: "loadbalancer already exists"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return loadbalancer.NewAddLoadbalancerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return loadbalancer.NewAddLoadbalancerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return loadbalancer.NewAddLoadbalancerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return loadbalancer.NewAddLoadbalancerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	ulid := configManager.GetULID()
@@ -102,13 +102,13 @@ func (ctx *addCellLoadbalancer) Handle(params loadbalancer.AddLoadbalancerParams
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return loadbalancer.NewAddLoadbalancerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return loadbalancer.NewAddLoadbalancerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 	if err != nil {
 		ctxLogger.Error("An error occurred getting next row: ", err)
-		return loadbalancer.NewAddLoadbalancerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return loadbalancer.NewAddLoadbalancerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	ctxLogger.Info("OK")
@@ -127,7 +127,7 @@ type addLoadbalancerRelationship struct {
 func (ctx *addLoadbalancerRelationship) Handle(params loadbalancer.AddLoadbalancerRelationshipParams, principal *models.Customer) middleware.Responder {
 
 	if _getComponentListenerByID(ctx.rt, principal.Name, &params.CellID, &params.ListenerID) == nil {
-		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "listener not found"})
+		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "listener not found"})
 	}
 
 	cellLoadbalancer, err := _getCellLoadbalancer(ctx.rt, principal.Name, &params.CellID, &params.LoadbalancerID)
@@ -138,7 +138,7 @@ func (ctx *addLoadbalancerRelationship) Handle(params loadbalancer.AddLoadbalanc
 	}
 
 	if cellLoadbalancer == nil {
-		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "loadbalancer not found"})
+		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "loadbalancer not found"})
 	}
 
 	cypher := `
@@ -161,14 +161,14 @@ func (ctx *addLoadbalancerRelationship) Handle(params loadbalancer.AddLoadbalanc
 
 	if err != nil {
 		ctxLogger.Warn("error connecting to neo4j: ", err)
-		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "failure creating relationship"})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Warn("An error occurred preparing statement: ", err)
-		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "failure creating relationship"})
 	}
 
 	defer stmt.Close()
@@ -183,13 +183,13 @@ func (ctx *addLoadbalancerRelationship) Handle(params loadbalancer.AddLoadbalanc
 
 	if err != nil {
 		ctxLogger.Warn("An error occurred querying Neo: ", err)
-		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "failure creating relationship"})
 	}
 
 	_, _, err = rows.NextNeo()
 	if err != nil {
 		ctxLogger.Warn("An error occurred getting next row: ", err)
-		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+		return loadbalancer.NewAddLoadbalancerRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "failure creating relationship"})
 	}
 
 	return loadbalancer.NewAddCellLoadbalancerRelationshipOK()
@@ -206,7 +206,7 @@ type deleteLoadbalancerRelationship struct {
 func (ctx *deleteLoadbalancerRelationship) Handle(params loadbalancer.DeleteLoadbalancerRelationshipParams, principal *models.Customer) middleware.Responder {
 
 	if _getComponentListenerByID(ctx.rt, principal.Name, &params.CellID, &params.ListenerID) == nil {
-		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "listener not found"})
+		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "listener not found"})
 	}
 
 	cellLoadbalancer, err := _getCellLoadbalancer(ctx.rt, principal.Name, &params.CellID, &params.LoadbalancerID)
@@ -217,7 +217,7 @@ func (ctx *deleteLoadbalancerRelationship) Handle(params loadbalancer.DeleteLoad
 	}
 
 	if cellLoadbalancer == nil {
-		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "loadbalancer not found"})
+		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "loadbalancer not found"})
 	}
 
 	cypher := `
@@ -237,14 +237,14 @@ func (ctx *deleteLoadbalancerRelationship) Handle(params loadbalancer.DeleteLoad
 
 	if err != nil {
 		ctxLogger.Warn("error connecting to neo4j: ", err)
-		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure deleting relationship"})
+		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "failure deleting relationship"})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Warn("An error occurred preparing statement: ", err)
-		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure deleting relationship"})
+		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "failure deleting relationship"})
 	}
 
 	defer stmt.Close()
@@ -257,7 +257,7 @@ func (ctx *deleteLoadbalancerRelationship) Handle(params loadbalancer.DeleteLoad
 
 	if err != nil {
 		ctxLogger.Warn("An error occurred querying Neo: ", err)
-		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure deleting relationship"})
+		return loadbalancer.NewDeleteLoadbalancerRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "failure deleting relationship"})
 	}
 
 	return loadbalancer.NewDeleteLoadbalancerRelationshipOK()
@@ -300,7 +300,7 @@ func (ctx *findCellLoadbalancers) Handle(params loadbalancer.FindCellLoadbalance
 	cellLoadbalancers, err := _findCellLoadbalancers(ctx.rt, principal.Name, &params.CellID)
 
 	if err != nil {
-		return loadbalancer.NewFindCellLoadbalancersInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return loadbalancer.NewFindCellLoadbalancersInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	return loadbalancer.NewFindCellLoadbalancersOK().WithPayload(cellLoadbalancers)

@@ -51,7 +51,7 @@ type AddProviderTypeOK struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddProviderTypeOK creates AddProviderTypeOK with default headers values
@@ -60,13 +60,13 @@ func NewAddProviderTypeOK() *AddProviderTypeOK {
 }
 
 // WithPayload adds the payload to the add provider type o k response
-func (o *AddProviderTypeOK) WithPayload(payload models.APIResponse) *AddProviderTypeOK {
+func (o *AddProviderTypeOK) WithPayload(payload *models.APIResponse) *AddProviderTypeOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add provider type o k response
-func (o *AddProviderTypeOK) SetPayload(payload models.APIResponse) {
+func (o *AddProviderTypeOK) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -74,11 +74,12 @@ func (o *AddProviderTypeOK) SetPayload(payload models.APIResponse) {
 func (o *AddProviderTypeOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddProviderTypeCreatedCode is the HTTP code returned for type AddProviderTypeCreated
@@ -158,7 +159,7 @@ type AddProviderTypeInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddProviderTypeInternalServerError creates AddProviderTypeInternalServerError with default headers values
@@ -167,13 +168,13 @@ func NewAddProviderTypeInternalServerError() *AddProviderTypeInternalServerError
 }
 
 // WithPayload adds the payload to the add provider type internal server error response
-func (o *AddProviderTypeInternalServerError) WithPayload(payload models.APIResponse) *AddProviderTypeInternalServerError {
+func (o *AddProviderTypeInternalServerError) WithPayload(payload *models.APIResponse) *AddProviderTypeInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add provider type internal server error response
-func (o *AddProviderTypeInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *AddProviderTypeInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -181,9 +182,10 @@ func (o *AddProviderTypeInternalServerError) SetPayload(payload models.APIRespon
 func (o *AddProviderTypeInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

@@ -32,42 +32,65 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"strconv"
-
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
 )
 
-// SecGroupRules sec group rules
-// swagger:model secGroupRules
-type SecGroupRules []*SecRule
+// Securityrule securityrule
+// swagger:model Securityrule
+type Securityrule struct {
 
-// Validate validates this sec group rules
-func (m SecGroupRules) Validate(formats strfmt.Registry) error {
+	// destination addr
+	DestinationAddr string `json:"destination_addr,omitempty"`
+
+	// destination port
+	DestinationPort string `json:"destination_port,omitempty"`
+
+	// destination securitygroup
+	DestinationSecuritygroup string `json:"destination_securitygroup,omitempty"`
+
+	// ethertype
+	Ethertype string `json:"ethertype,omitempty"`
+
+	// proto
+	Proto string `json:"proto,omitempty"`
+
+	// source addr
+	SourceAddr string `json:"source_addr,omitempty"`
+
+	// source port
+	SourcePort string `json:"source_port,omitempty"`
+
+	// source securitygroup
+	SourceSecuritygroup string `json:"source_securitygroup,omitempty"`
+}
+
+// Validate validates this securityrule
+func (m *Securityrule) Validate(formats strfmt.Registry) error {
 	var res []error
-
-	for i := 0; i < len(m); i++ {
-
-		if swag.IsZero(m[i]) { // not required
-			continue
-		}
-
-		if m[i] != nil {
-
-			if err := m[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName(strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *Securityrule) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *Securityrule) UnmarshalBinary(b []byte) error {
+	var res Securityrule
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
 	return nil
 }

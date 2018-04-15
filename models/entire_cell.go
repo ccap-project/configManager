@@ -62,6 +62,9 @@ type EntireCell struct {
 
 	// provider
 	Provider *Provider `json:"provider,omitempty"`
+
+	// securitygroups
+	Securitygroups EntireCellSecuritygroups `json:"securitygroups"`
 }
 
 // Validate validates this entire cell

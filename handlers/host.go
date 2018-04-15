@@ -63,28 +63,29 @@ func (ctx *addCellHost) Handle(params host.AddCellHostParams, principal *models.
 
 	if getCellHostByName(ctx.rt.DB(), principal.Name, &params.CellID, params.Body.Name) != nil {
 		ctxLogger.Warn("host already exists !")
-		return host.NewAddCellHostConflict().WithPayload(models.APIResponse{Message: "host already exists"})
+		return host.NewAddCellHostConflict().WithPayload(&models.APIResponse{Message: "host already exists"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j:", err)
-		return host.NewAddCellHostInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return host.NewAddCellHostInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	tx, err := db.Begin()
 	if err != nil {
 		ctxLogger.Error("An error occurred beginning transaction: %s", err)
-		return host.NewAddCellHostInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return host.NewAddCellHostInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer tx.Rollback()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: %s", err)
-		return host.NewAddCellHostInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return host.NewAddCellHostInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
+	defer stmt.Close()
 
 	ulid := configManager.GetULID()
 
@@ -99,13 +100,13 @@ func (ctx *addCellHost) Handle(params host.AddCellHostParams, principal *models.
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return host.NewAddCellHostInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return host.NewAddCellHostInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 	if err != nil {
 		ctxLogger.Error("An error occurred getting next row: ", err)
-		return host.NewAddCellHostInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return host.NewAddCellHostInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	stmt.Close()
@@ -113,7 +114,7 @@ func (ctx *addCellHost) Handle(params host.AddCellHostParams, principal *models.
 	err = addCellHostOptions(db, ctxLogger, principal.Name, &params.CellID, params.Body.Name, params.Body.Options)
 	if err != nil {
 		ctxLogger.Error("An error occurred adding Host options: ", err)
-		return host.NewAddCellHostInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return host.NewAddCellHostInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	tx.Commit()
 
@@ -176,6 +177,7 @@ func addCellHostOptions(db neo4j.Conn, ctxLogger *logrus.Entry, customer *string
 		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return err
 	}
+	defer stmt.Close()
 
 	// add parameters
 	for _, option := range options {

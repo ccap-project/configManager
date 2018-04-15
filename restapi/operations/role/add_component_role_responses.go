@@ -93,7 +93,7 @@ type AddComponentRoleMethodNotAllowed struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddComponentRoleMethodNotAllowed creates AddComponentRoleMethodNotAllowed with default headers values
@@ -102,13 +102,13 @@ func NewAddComponentRoleMethodNotAllowed() *AddComponentRoleMethodNotAllowed {
 }
 
 // WithPayload adds the payload to the add component role method not allowed response
-func (o *AddComponentRoleMethodNotAllowed) WithPayload(payload models.APIResponse) *AddComponentRoleMethodNotAllowed {
+func (o *AddComponentRoleMethodNotAllowed) WithPayload(payload *models.APIResponse) *AddComponentRoleMethodNotAllowed {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add component role method not allowed response
-func (o *AddComponentRoleMethodNotAllowed) SetPayload(payload models.APIResponse) {
+func (o *AddComponentRoleMethodNotAllowed) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -116,11 +116,12 @@ func (o *AddComponentRoleMethodNotAllowed) SetPayload(payload models.APIResponse
 func (o *AddComponentRoleMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(405)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddComponentRoleConflictCode is the HTTP code returned for type AddComponentRoleConflict
@@ -135,7 +136,7 @@ type AddComponentRoleConflict struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddComponentRoleConflict creates AddComponentRoleConflict with default headers values
@@ -144,13 +145,13 @@ func NewAddComponentRoleConflict() *AddComponentRoleConflict {
 }
 
 // WithPayload adds the payload to the add component role conflict response
-func (o *AddComponentRoleConflict) WithPayload(payload models.APIResponse) *AddComponentRoleConflict {
+func (o *AddComponentRoleConflict) WithPayload(payload *models.APIResponse) *AddComponentRoleConflict {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add component role conflict response
-func (o *AddComponentRoleConflict) SetPayload(payload models.APIResponse) {
+func (o *AddComponentRoleConflict) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -158,11 +159,12 @@ func (o *AddComponentRoleConflict) SetPayload(payload models.APIResponse) {
 func (o *AddComponentRoleConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(409)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddComponentRoleInternalServerErrorCode is the HTTP code returned for type AddComponentRoleInternalServerError
@@ -177,7 +179,7 @@ type AddComponentRoleInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddComponentRoleInternalServerError creates AddComponentRoleInternalServerError with default headers values
@@ -186,13 +188,13 @@ func NewAddComponentRoleInternalServerError() *AddComponentRoleInternalServerErr
 }
 
 // WithPayload adds the payload to the add component role internal server error response
-func (o *AddComponentRoleInternalServerError) WithPayload(payload models.APIResponse) *AddComponentRoleInternalServerError {
+func (o *AddComponentRoleInternalServerError) WithPayload(payload *models.APIResponse) *AddComponentRoleInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add component role internal server error response
-func (o *AddComponentRoleInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *AddComponentRoleInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -200,9 +202,10 @@ func (o *AddComponentRoleInternalServerError) SetPayload(payload models.APIRespo
 func (o *AddComponentRoleInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

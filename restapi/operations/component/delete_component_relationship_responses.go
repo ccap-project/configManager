@@ -74,7 +74,7 @@ type DeleteComponentRelationshipBadRequest struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewDeleteComponentRelationshipBadRequest creates DeleteComponentRelationshipBadRequest with default headers values
@@ -83,13 +83,13 @@ func NewDeleteComponentRelationshipBadRequest() *DeleteComponentRelationshipBadR
 }
 
 // WithPayload adds the payload to the delete component relationship bad request response
-func (o *DeleteComponentRelationshipBadRequest) WithPayload(payload models.APIResponse) *DeleteComponentRelationshipBadRequest {
+func (o *DeleteComponentRelationshipBadRequest) WithPayload(payload *models.APIResponse) *DeleteComponentRelationshipBadRequest {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the delete component relationship bad request response
-func (o *DeleteComponentRelationshipBadRequest) SetPayload(payload models.APIResponse) {
+func (o *DeleteComponentRelationshipBadRequest) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -97,11 +97,12 @@ func (o *DeleteComponentRelationshipBadRequest) SetPayload(payload models.APIRes
 func (o *DeleteComponentRelationshipBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // DeleteComponentRelationshipNotFoundCode is the HTTP code returned for type DeleteComponentRelationshipNotFound
@@ -116,7 +117,7 @@ type DeleteComponentRelationshipNotFound struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewDeleteComponentRelationshipNotFound creates DeleteComponentRelationshipNotFound with default headers values
@@ -125,13 +126,13 @@ func NewDeleteComponentRelationshipNotFound() *DeleteComponentRelationshipNotFou
 }
 
 // WithPayload adds the payload to the delete component relationship not found response
-func (o *DeleteComponentRelationshipNotFound) WithPayload(payload models.APIResponse) *DeleteComponentRelationshipNotFound {
+func (o *DeleteComponentRelationshipNotFound) WithPayload(payload *models.APIResponse) *DeleteComponentRelationshipNotFound {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the delete component relationship not found response
-func (o *DeleteComponentRelationshipNotFound) SetPayload(payload models.APIResponse) {
+func (o *DeleteComponentRelationshipNotFound) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -139,11 +140,12 @@ func (o *DeleteComponentRelationshipNotFound) SetPayload(payload models.APIRespo
 func (o *DeleteComponentRelationshipNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(404)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // DeleteComponentRelationshipInternalServerErrorCode is the HTTP code returned for type DeleteComponentRelationshipInternalServerError
@@ -158,7 +160,7 @@ type DeleteComponentRelationshipInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewDeleteComponentRelationshipInternalServerError creates DeleteComponentRelationshipInternalServerError with default headers values
@@ -167,13 +169,13 @@ func NewDeleteComponentRelationshipInternalServerError() *DeleteComponentRelatio
 }
 
 // WithPayload adds the payload to the delete component relationship internal server error response
-func (o *DeleteComponentRelationshipInternalServerError) WithPayload(payload models.APIResponse) *DeleteComponentRelationshipInternalServerError {
+func (o *DeleteComponentRelationshipInternalServerError) WithPayload(payload *models.APIResponse) *DeleteComponentRelationshipInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the delete component relationship internal server error response
-func (o *DeleteComponentRelationshipInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *DeleteComponentRelationshipInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -181,9 +183,10 @@ func (o *DeleteComponentRelationshipInternalServerError) SetPayload(payload mode
 func (o *DeleteComponentRelationshipInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

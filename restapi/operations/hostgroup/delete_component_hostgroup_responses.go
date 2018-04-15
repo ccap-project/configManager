@@ -74,7 +74,7 @@ type DeleteComponentHostgroupBadRequest struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewDeleteComponentHostgroupBadRequest creates DeleteComponentHostgroupBadRequest with default headers values
@@ -83,13 +83,13 @@ func NewDeleteComponentHostgroupBadRequest() *DeleteComponentHostgroupBadRequest
 }
 
 // WithPayload adds the payload to the delete component hostgroup bad request response
-func (o *DeleteComponentHostgroupBadRequest) WithPayload(payload models.APIResponse) *DeleteComponentHostgroupBadRequest {
+func (o *DeleteComponentHostgroupBadRequest) WithPayload(payload *models.APIResponse) *DeleteComponentHostgroupBadRequest {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the delete component hostgroup bad request response
-func (o *DeleteComponentHostgroupBadRequest) SetPayload(payload models.APIResponse) {
+func (o *DeleteComponentHostgroupBadRequest) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -97,11 +97,12 @@ func (o *DeleteComponentHostgroupBadRequest) SetPayload(payload models.APIRespon
 func (o *DeleteComponentHostgroupBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // DeleteComponentHostgroupNotFoundCode is the HTTP code returned for type DeleteComponentHostgroupNotFound
@@ -139,7 +140,7 @@ type DeleteComponentHostgroupInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewDeleteComponentHostgroupInternalServerError creates DeleteComponentHostgroupInternalServerError with default headers values
@@ -148,13 +149,13 @@ func NewDeleteComponentHostgroupInternalServerError() *DeleteComponentHostgroupI
 }
 
 // WithPayload adds the payload to the delete component hostgroup internal server error response
-func (o *DeleteComponentHostgroupInternalServerError) WithPayload(payload models.APIResponse) *DeleteComponentHostgroupInternalServerError {
+func (o *DeleteComponentHostgroupInternalServerError) WithPayload(payload *models.APIResponse) *DeleteComponentHostgroupInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the delete component hostgroup internal server error response
-func (o *DeleteComponentHostgroupInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *DeleteComponentHostgroupInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -162,9 +163,10 @@ func (o *DeleteComponentHostgroupInternalServerError) SetPayload(payload models.
 func (o *DeleteComponentHostgroupInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

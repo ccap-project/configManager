@@ -73,19 +73,19 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	if err != nil {
 		ctxLogger.Error("An error occurred beginning transaction: ", err)
-		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer stmt.Close()
 
@@ -116,14 +116,14 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 
 	if err != nil {
 		ctxLogger.Error("An error occurred getting next row: ", err)
-		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	return hostgroup.NewAddComponentHostgroupCreated().WithPayload(models.ULID(output[0].(string)))
@@ -158,14 +158,14 @@ func (ctx *deleteComponentHostgroup) Handle(params hostgroup.DeleteComponentHost
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return hostgroup.NewDeleteComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return hostgroup.NewDeleteComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return hostgroup.NewDeleteComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return hostgroup.NewDeleteComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	defer stmt.Close()
@@ -178,7 +178,7 @@ func (ctx *deleteComponentHostgroup) Handle(params hostgroup.DeleteComponentHost
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	return hostgroup.NewDeleteComponentHostgroupOK()
@@ -328,14 +328,14 @@ func (ctx *updateComponentHostgroup) Handle(params hostgroup.UpdateComponentHost
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer stmt.Close()
 
@@ -368,7 +368,7 @@ func (ctx *updateComponentHostgroup) Handle(params hostgroup.UpdateComponentHost
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	return hostgroup.NewUpdateComponentHostgroupOK()

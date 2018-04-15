@@ -93,7 +93,7 @@ type AddKeypairMethodNotAllowed struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddKeypairMethodNotAllowed creates AddKeypairMethodNotAllowed with default headers values
@@ -102,13 +102,13 @@ func NewAddKeypairMethodNotAllowed() *AddKeypairMethodNotAllowed {
 }
 
 // WithPayload adds the payload to the add keypair method not allowed response
-func (o *AddKeypairMethodNotAllowed) WithPayload(payload models.APIResponse) *AddKeypairMethodNotAllowed {
+func (o *AddKeypairMethodNotAllowed) WithPayload(payload *models.APIResponse) *AddKeypairMethodNotAllowed {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add keypair method not allowed response
-func (o *AddKeypairMethodNotAllowed) SetPayload(payload models.APIResponse) {
+func (o *AddKeypairMethodNotAllowed) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -116,11 +116,12 @@ func (o *AddKeypairMethodNotAllowed) SetPayload(payload models.APIResponse) {
 func (o *AddKeypairMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(405)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddKeypairConflictCode is the HTTP code returned for type AddKeypairConflict
@@ -135,7 +136,7 @@ type AddKeypairConflict struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddKeypairConflict creates AddKeypairConflict with default headers values
@@ -144,13 +145,13 @@ func NewAddKeypairConflict() *AddKeypairConflict {
 }
 
 // WithPayload adds the payload to the add keypair conflict response
-func (o *AddKeypairConflict) WithPayload(payload models.APIResponse) *AddKeypairConflict {
+func (o *AddKeypairConflict) WithPayload(payload *models.APIResponse) *AddKeypairConflict {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add keypair conflict response
-func (o *AddKeypairConflict) SetPayload(payload models.APIResponse) {
+func (o *AddKeypairConflict) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -158,11 +159,12 @@ func (o *AddKeypairConflict) SetPayload(payload models.APIResponse) {
 func (o *AddKeypairConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(409)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddKeypairInternalServerErrorCode is the HTTP code returned for type AddKeypairInternalServerError
@@ -177,7 +179,7 @@ type AddKeypairInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddKeypairInternalServerError creates AddKeypairInternalServerError with default headers values
@@ -186,13 +188,13 @@ func NewAddKeypairInternalServerError() *AddKeypairInternalServerError {
 }
 
 // WithPayload adds the payload to the add keypair internal server error response
-func (o *AddKeypairInternalServerError) WithPayload(payload models.APIResponse) *AddKeypairInternalServerError {
+func (o *AddKeypairInternalServerError) WithPayload(payload *models.APIResponse) *AddKeypairInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add keypair internal server error response
-func (o *AddKeypairInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *AddKeypairInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -200,9 +202,10 @@ func (o *AddKeypairInternalServerError) SetPayload(payload models.APIResponse) {
 func (o *AddKeypairInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

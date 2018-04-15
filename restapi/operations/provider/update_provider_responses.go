@@ -74,7 +74,7 @@ type UpdateProviderNotFound struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewUpdateProviderNotFound creates UpdateProviderNotFound with default headers values
@@ -83,13 +83,13 @@ func NewUpdateProviderNotFound() *UpdateProviderNotFound {
 }
 
 // WithPayload adds the payload to the update provider not found response
-func (o *UpdateProviderNotFound) WithPayload(payload models.APIResponse) *UpdateProviderNotFound {
+func (o *UpdateProviderNotFound) WithPayload(payload *models.APIResponse) *UpdateProviderNotFound {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the update provider not found response
-func (o *UpdateProviderNotFound) SetPayload(payload models.APIResponse) {
+func (o *UpdateProviderNotFound) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -97,11 +97,12 @@ func (o *UpdateProviderNotFound) SetPayload(payload models.APIResponse) {
 func (o *UpdateProviderNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(404)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // UpdateProviderConflictCode is the HTTP code returned for type UpdateProviderConflict
@@ -116,7 +117,7 @@ type UpdateProviderConflict struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewUpdateProviderConflict creates UpdateProviderConflict with default headers values
@@ -125,13 +126,13 @@ func NewUpdateProviderConflict() *UpdateProviderConflict {
 }
 
 // WithPayload adds the payload to the update provider conflict response
-func (o *UpdateProviderConflict) WithPayload(payload models.APIResponse) *UpdateProviderConflict {
+func (o *UpdateProviderConflict) WithPayload(payload *models.APIResponse) *UpdateProviderConflict {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the update provider conflict response
-func (o *UpdateProviderConflict) SetPayload(payload models.APIResponse) {
+func (o *UpdateProviderConflict) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -139,11 +140,12 @@ func (o *UpdateProviderConflict) SetPayload(payload models.APIResponse) {
 func (o *UpdateProviderConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(409)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // UpdateProviderInternalServerErrorCode is the HTTP code returned for type UpdateProviderInternalServerError
@@ -158,7 +160,7 @@ type UpdateProviderInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewUpdateProviderInternalServerError creates UpdateProviderInternalServerError with default headers values
@@ -167,13 +169,13 @@ func NewUpdateProviderInternalServerError() *UpdateProviderInternalServerError {
 }
 
 // WithPayload adds the payload to the update provider internal server error response
-func (o *UpdateProviderInternalServerError) WithPayload(payload models.APIResponse) *UpdateProviderInternalServerError {
+func (o *UpdateProviderInternalServerError) WithPayload(payload *models.APIResponse) *UpdateProviderInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the update provider internal server error response
-func (o *UpdateProviderInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *UpdateProviderInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -181,9 +183,10 @@ func (o *UpdateProviderInternalServerError) SetPayload(payload models.APIRespons
 func (o *UpdateProviderInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

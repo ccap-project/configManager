@@ -93,7 +93,7 @@ type AddComponentListenerMethodNotAllowed struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddComponentListenerMethodNotAllowed creates AddComponentListenerMethodNotAllowed with default headers values
@@ -102,13 +102,13 @@ func NewAddComponentListenerMethodNotAllowed() *AddComponentListenerMethodNotAll
 }
 
 // WithPayload adds the payload to the add component listener method not allowed response
-func (o *AddComponentListenerMethodNotAllowed) WithPayload(payload models.APIResponse) *AddComponentListenerMethodNotAllowed {
+func (o *AddComponentListenerMethodNotAllowed) WithPayload(payload *models.APIResponse) *AddComponentListenerMethodNotAllowed {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add component listener method not allowed response
-func (o *AddComponentListenerMethodNotAllowed) SetPayload(payload models.APIResponse) {
+func (o *AddComponentListenerMethodNotAllowed) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -116,11 +116,12 @@ func (o *AddComponentListenerMethodNotAllowed) SetPayload(payload models.APIResp
 func (o *AddComponentListenerMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(405)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddComponentListenerConflictCode is the HTTP code returned for type AddComponentListenerConflict
@@ -135,7 +136,7 @@ type AddComponentListenerConflict struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddComponentListenerConflict creates AddComponentListenerConflict with default headers values
@@ -144,13 +145,13 @@ func NewAddComponentListenerConflict() *AddComponentListenerConflict {
 }
 
 // WithPayload adds the payload to the add component listener conflict response
-func (o *AddComponentListenerConflict) WithPayload(payload models.APIResponse) *AddComponentListenerConflict {
+func (o *AddComponentListenerConflict) WithPayload(payload *models.APIResponse) *AddComponentListenerConflict {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add component listener conflict response
-func (o *AddComponentListenerConflict) SetPayload(payload models.APIResponse) {
+func (o *AddComponentListenerConflict) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -158,11 +159,12 @@ func (o *AddComponentListenerConflict) SetPayload(payload models.APIResponse) {
 func (o *AddComponentListenerConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(409)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddComponentListenerInternalServerErrorCode is the HTTP code returned for type AddComponentListenerInternalServerError
@@ -177,7 +179,7 @@ type AddComponentListenerInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddComponentListenerInternalServerError creates AddComponentListenerInternalServerError with default headers values
@@ -186,13 +188,13 @@ func NewAddComponentListenerInternalServerError() *AddComponentListenerInternalS
 }
 
 // WithPayload adds the payload to the add component listener internal server error response
-func (o *AddComponentListenerInternalServerError) WithPayload(payload models.APIResponse) *AddComponentListenerInternalServerError {
+func (o *AddComponentListenerInternalServerError) WithPayload(payload *models.APIResponse) *AddComponentListenerInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add component listener internal server error response
-func (o *AddComponentListenerInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *AddComponentListenerInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -200,9 +202,10 @@ func (o *AddComponentListenerInternalServerError) SetPayload(payload models.APIR
 func (o *AddComponentListenerInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

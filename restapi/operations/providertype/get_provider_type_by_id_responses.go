@@ -140,7 +140,7 @@ type GetProviderTypeByIDInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewGetProviderTypeByIDInternalServerError creates GetProviderTypeByIDInternalServerError with default headers values
@@ -149,13 +149,13 @@ func NewGetProviderTypeByIDInternalServerError() *GetProviderTypeByIDInternalSer
 }
 
 // WithPayload adds the payload to the get provider type by Id internal server error response
-func (o *GetProviderTypeByIDInternalServerError) WithPayload(payload models.APIResponse) *GetProviderTypeByIDInternalServerError {
+func (o *GetProviderTypeByIDInternalServerError) WithPayload(payload *models.APIResponse) *GetProviderTypeByIDInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get provider type by Id internal server error response
-func (o *GetProviderTypeByIDInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *GetProviderTypeByIDInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -163,9 +163,10 @@ func (o *GetProviderTypeByIDInternalServerError) SetPayload(payload models.APIRe
 func (o *GetProviderTypeByIDInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

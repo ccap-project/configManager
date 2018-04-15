@@ -117,7 +117,7 @@ type GetCellFullByIDMethodNotAllowed struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewGetCellFullByIDMethodNotAllowed creates GetCellFullByIDMethodNotAllowed with default headers values
@@ -126,13 +126,13 @@ func NewGetCellFullByIDMethodNotAllowed() *GetCellFullByIDMethodNotAllowed {
 }
 
 // WithPayload adds the payload to the get cell full by Id method not allowed response
-func (o *GetCellFullByIDMethodNotAllowed) WithPayload(payload models.APIResponse) *GetCellFullByIDMethodNotAllowed {
+func (o *GetCellFullByIDMethodNotAllowed) WithPayload(payload *models.APIResponse) *GetCellFullByIDMethodNotAllowed {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get cell full by Id method not allowed response
-func (o *GetCellFullByIDMethodNotAllowed) SetPayload(payload models.APIResponse) {
+func (o *GetCellFullByIDMethodNotAllowed) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -140,11 +140,12 @@ func (o *GetCellFullByIDMethodNotAllowed) SetPayload(payload models.APIResponse)
 func (o *GetCellFullByIDMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(405)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // GetCellFullByIDInternalServerErrorCode is the HTTP code returned for type GetCellFullByIDInternalServerError
@@ -159,7 +160,7 @@ type GetCellFullByIDInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewGetCellFullByIDInternalServerError creates GetCellFullByIDInternalServerError with default headers values
@@ -168,13 +169,13 @@ func NewGetCellFullByIDInternalServerError() *GetCellFullByIDInternalServerError
 }
 
 // WithPayload adds the payload to the get cell full by Id internal server error response
-func (o *GetCellFullByIDInternalServerError) WithPayload(payload models.APIResponse) *GetCellFullByIDInternalServerError {
+func (o *GetCellFullByIDInternalServerError) WithPayload(payload *models.APIResponse) *GetCellFullByIDInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get cell full by Id internal server error response
-func (o *GetCellFullByIDInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *GetCellFullByIDInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -182,9 +183,10 @@ func (o *GetCellFullByIDInternalServerError) SetPayload(payload models.APIRespon
 func (o *GetCellFullByIDInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

@@ -93,19 +93,19 @@ func init() {
           "405": {
             "description": "Invalid input",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "409": {
             "description": "Already exists",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -145,13 +145,13 @@ func init() {
           "405": {
             "description": "Invalid input",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -261,19 +261,19 @@ func init() {
           "405": {
             "description": "Invalid input",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "409": {
             "description": "Already exists",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -318,7 +318,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -360,19 +360,19 @@ func init() {
           "404": {
             "description": "Invalid input",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "409": {
             "description": "Already exists",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -406,19 +406,19 @@ func init() {
           "400": {
             "description": "Invalid cell id, component id or entity id",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "404": {
             "description": "Entity does not exists",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -469,19 +469,19 @@ func init() {
           "405": {
             "description": "Invalid input",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "409": {
             "description": "Already exists",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -523,7 +523,7 @@ func init() {
           "400": {
             "description": "Invalid cell id or component id",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "404": {
@@ -532,7 +532,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -581,7 +581,7 @@ func init() {
           "400": {
             "description": "Invalid cell id or role id",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "404": {
@@ -590,7 +590,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -624,7 +624,7 @@ func init() {
           "400": {
             "description": "Invalid cell id, component id or hostgroup id",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "404": {
@@ -633,7 +633,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -675,13 +675,13 @@ func init() {
           "400": {
             "description": "Invalid cell id or component id",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -732,19 +732,19 @@ func init() {
           "405": {
             "description": "Invalid input",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "409": {
             "description": "Already exists",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -786,7 +786,7 @@ func init() {
           "400": {
             "description": "Invalid cell id or component id",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "404": {
@@ -795,7 +795,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -844,7 +844,7 @@ func init() {
           "400": {
             "description": "Invalid cell id or listener id",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "404": {
@@ -853,7 +853,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -887,7 +887,7 @@ func init() {
           "400": {
             "description": "Invalid cell id, component id or listener id",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "404": {
@@ -896,7 +896,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -938,13 +938,13 @@ func init() {
           "400": {
             "description": "Invalid cell id",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -995,19 +995,19 @@ func init() {
           "405": {
             "description": "Invalid input",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "409": {
             "description": "Already exists",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1062,7 +1062,7 @@ func init() {
           "400": {
             "description": "Invalid cell id or role id",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "404": {
@@ -1074,7 +1074,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1115,7 +1115,7 @@ func init() {
           "400": {
             "description": "Invalid cell id or role id",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "404": {
@@ -1124,7 +1124,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1166,13 +1166,13 @@ func init() {
           "400": {
             "description": "Invalid cell id or role id",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1217,7 +1217,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1248,7 +1248,7 @@ func init() {
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "204": {
@@ -1260,13 +1260,13 @@ func init() {
           "405": {
             "description": "Invalid input",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1297,7 +1297,7 @@ func init() {
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "204": {
@@ -1309,13 +1309,13 @@ func init() {
           "405": {
             "description": "Invalid input",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1355,13 +1355,13 @@ func init() {
           "405": {
             "description": "Invalid input",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1409,19 +1409,19 @@ func init() {
           "405": {
             "description": "Invalid input",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "409": {
             "description": "Already exists",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1466,7 +1466,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1515,19 +1515,19 @@ func init() {
           "405": {
             "description": "Invalid input",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "409": {
             "description": "Already exists",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1575,19 +1575,19 @@ func init() {
           "405": {
             "description": "Invalid input",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "409": {
             "description": "Already exists",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1632,7 +1632,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1671,13 +1671,13 @@ func init() {
           "404": {
             "description": "loadbalancer or component not found",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1714,13 +1714,13 @@ func init() {
           "404": {
             "description": "loadbalancer or entity not found",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1765,7 +1765,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1845,19 +1845,19 @@ func init() {
           "404": {
             "description": "Does not exists",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "409": {
             "description": "Already exists",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1903,13 +1903,13 @@ func init() {
           "409": {
             "description": "Already exists",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -1949,7 +1949,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -2027,13 +2027,13 @@ func init() {
           "409": {
             "description": "Already exists",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -2161,7 +2161,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -2206,19 +2206,19 @@ func init() {
           "405": {
             "description": "Invalid input",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "409": {
             "description": "Already exists",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -2261,7 +2261,7 @@ func init() {
           "500": {
             "description": "InternalError",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -2366,7 +2366,7 @@ func init() {
           "500": {
             "description": "InternalError",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -2438,7 +2438,7 @@ func init() {
           "200": {
             "description": "Already exists",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "201": {
@@ -2453,7 +2453,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -2491,7 +2491,7 @@ func init() {
           "500": {
             "description": "Internal error",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -2544,7 +2544,7 @@ func init() {
           "500": {
             "description": "InternalError",
             "schema": {
-              "$ref": "#definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponse"
             }
           }
         }
@@ -2669,6 +2669,12 @@ func init() {
         },
         "provider": {
           "$ref": "#/definitions/Provider"
+        },
+        "securitygroups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Securitygroup"
+          }
         }
       }
     },
@@ -2770,6 +2776,12 @@ func init() {
           "type": "array",
           "items": {
             "$ref": "#/definitions/Role"
+          }
+        },
+        "securitygroups": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
         "username": {
@@ -2977,24 +2989,33 @@ func init() {
         }
       }
     },
-    "SecGroup": {
+    "Securitygroup": {
       "type": "object",
       "properties": {
+        "name": {
+          "type": "string"
+        },
         "rules": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/SecRule"
+            "$ref": "#/definitions/Securityrule"
           }
         }
       }
     },
-    "SecRule": {
+    "Securityrule": {
       "type": "object",
       "properties": {
         "destination_addr": {
           "type": "string"
         },
         "destination_port": {
+          "type": "string"
+        },
+        "destination_securitygroup": {
+          "type": "string"
+        },
+        "ethertype": {
           "type": "string"
         },
         "proto": {
@@ -3004,6 +3025,9 @@ func init() {
           "type": "string"
         },
         "source_port": {
+          "type": "string"
+        },
+        "source_securitygroup": {
           "type": "string"
         }
       }

@@ -117,7 +117,7 @@ type GetCellByIDMethodNotAllowed struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewGetCellByIDMethodNotAllowed creates GetCellByIDMethodNotAllowed with default headers values
@@ -126,13 +126,13 @@ func NewGetCellByIDMethodNotAllowed() *GetCellByIDMethodNotAllowed {
 }
 
 // WithPayload adds the payload to the get cell by Id method not allowed response
-func (o *GetCellByIDMethodNotAllowed) WithPayload(payload models.APIResponse) *GetCellByIDMethodNotAllowed {
+func (o *GetCellByIDMethodNotAllowed) WithPayload(payload *models.APIResponse) *GetCellByIDMethodNotAllowed {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get cell by Id method not allowed response
-func (o *GetCellByIDMethodNotAllowed) SetPayload(payload models.APIResponse) {
+func (o *GetCellByIDMethodNotAllowed) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -140,11 +140,12 @@ func (o *GetCellByIDMethodNotAllowed) SetPayload(payload models.APIResponse) {
 func (o *GetCellByIDMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(405)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // GetCellByIDInternalServerErrorCode is the HTTP code returned for type GetCellByIDInternalServerError
@@ -159,7 +160,7 @@ type GetCellByIDInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewGetCellByIDInternalServerError creates GetCellByIDInternalServerError with default headers values
@@ -168,13 +169,13 @@ func NewGetCellByIDInternalServerError() *GetCellByIDInternalServerError {
 }
 
 // WithPayload adds the payload to the get cell by Id internal server error response
-func (o *GetCellByIDInternalServerError) WithPayload(payload models.APIResponse) *GetCellByIDInternalServerError {
+func (o *GetCellByIDInternalServerError) WithPayload(payload *models.APIResponse) *GetCellByIDInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get cell by Id internal server error response
-func (o *GetCellByIDInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *GetCellByIDInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -182,9 +183,10 @@ func (o *GetCellByIDInternalServerError) SetPayload(payload models.APIResponse) 
 func (o *GetCellByIDInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

@@ -74,7 +74,7 @@ type DeleteLoadbalancerRelationshipNotFound struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewDeleteLoadbalancerRelationshipNotFound creates DeleteLoadbalancerRelationshipNotFound with default headers values
@@ -83,13 +83,13 @@ func NewDeleteLoadbalancerRelationshipNotFound() *DeleteLoadbalancerRelationship
 }
 
 // WithPayload adds the payload to the delete loadbalancer relationship not found response
-func (o *DeleteLoadbalancerRelationshipNotFound) WithPayload(payload models.APIResponse) *DeleteLoadbalancerRelationshipNotFound {
+func (o *DeleteLoadbalancerRelationshipNotFound) WithPayload(payload *models.APIResponse) *DeleteLoadbalancerRelationshipNotFound {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the delete loadbalancer relationship not found response
-func (o *DeleteLoadbalancerRelationshipNotFound) SetPayload(payload models.APIResponse) {
+func (o *DeleteLoadbalancerRelationshipNotFound) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -97,11 +97,12 @@ func (o *DeleteLoadbalancerRelationshipNotFound) SetPayload(payload models.APIRe
 func (o *DeleteLoadbalancerRelationshipNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(404)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // DeleteLoadbalancerRelationshipInternalServerErrorCode is the HTTP code returned for type DeleteLoadbalancerRelationshipInternalServerError
@@ -116,7 +117,7 @@ type DeleteLoadbalancerRelationshipInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewDeleteLoadbalancerRelationshipInternalServerError creates DeleteLoadbalancerRelationshipInternalServerError with default headers values
@@ -125,13 +126,13 @@ func NewDeleteLoadbalancerRelationshipInternalServerError() *DeleteLoadbalancerR
 }
 
 // WithPayload adds the payload to the delete loadbalancer relationship internal server error response
-func (o *DeleteLoadbalancerRelationshipInternalServerError) WithPayload(payload models.APIResponse) *DeleteLoadbalancerRelationshipInternalServerError {
+func (o *DeleteLoadbalancerRelationshipInternalServerError) WithPayload(payload *models.APIResponse) *DeleteLoadbalancerRelationshipInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the delete loadbalancer relationship internal server error response
-func (o *DeleteLoadbalancerRelationshipInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *DeleteLoadbalancerRelationshipInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -139,9 +140,10 @@ func (o *DeleteLoadbalancerRelationshipInternalServerError) SetPayload(payload m
 func (o *DeleteLoadbalancerRelationshipInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

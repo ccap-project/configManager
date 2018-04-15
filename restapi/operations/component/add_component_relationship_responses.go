@@ -74,7 +74,7 @@ type AddComponentRelationshipNotFound struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddComponentRelationshipNotFound creates AddComponentRelationshipNotFound with default headers values
@@ -83,13 +83,13 @@ func NewAddComponentRelationshipNotFound() *AddComponentRelationshipNotFound {
 }
 
 // WithPayload adds the payload to the add component relationship not found response
-func (o *AddComponentRelationshipNotFound) WithPayload(payload models.APIResponse) *AddComponentRelationshipNotFound {
+func (o *AddComponentRelationshipNotFound) WithPayload(payload *models.APIResponse) *AddComponentRelationshipNotFound {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add component relationship not found response
-func (o *AddComponentRelationshipNotFound) SetPayload(payload models.APIResponse) {
+func (o *AddComponentRelationshipNotFound) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -97,11 +97,12 @@ func (o *AddComponentRelationshipNotFound) SetPayload(payload models.APIResponse
 func (o *AddComponentRelationshipNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(404)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddComponentRelationshipConflictCode is the HTTP code returned for type AddComponentRelationshipConflict
@@ -116,7 +117,7 @@ type AddComponentRelationshipConflict struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddComponentRelationshipConflict creates AddComponentRelationshipConflict with default headers values
@@ -125,13 +126,13 @@ func NewAddComponentRelationshipConflict() *AddComponentRelationshipConflict {
 }
 
 // WithPayload adds the payload to the add component relationship conflict response
-func (o *AddComponentRelationshipConflict) WithPayload(payload models.APIResponse) *AddComponentRelationshipConflict {
+func (o *AddComponentRelationshipConflict) WithPayload(payload *models.APIResponse) *AddComponentRelationshipConflict {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add component relationship conflict response
-func (o *AddComponentRelationshipConflict) SetPayload(payload models.APIResponse) {
+func (o *AddComponentRelationshipConflict) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -139,11 +140,12 @@ func (o *AddComponentRelationshipConflict) SetPayload(payload models.APIResponse
 func (o *AddComponentRelationshipConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(409)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddComponentRelationshipInternalServerErrorCode is the HTTP code returned for type AddComponentRelationshipInternalServerError
@@ -158,7 +160,7 @@ type AddComponentRelationshipInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddComponentRelationshipInternalServerError creates AddComponentRelationshipInternalServerError with default headers values
@@ -167,13 +169,13 @@ func NewAddComponentRelationshipInternalServerError() *AddComponentRelationshipI
 }
 
 // WithPayload adds the payload to the add component relationship internal server error response
-func (o *AddComponentRelationshipInternalServerError) WithPayload(payload models.APIResponse) *AddComponentRelationshipInternalServerError {
+func (o *AddComponentRelationshipInternalServerError) WithPayload(payload *models.APIResponse) *AddComponentRelationshipInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add component relationship internal server error response
-func (o *AddComponentRelationshipInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *AddComponentRelationshipInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -181,9 +183,10 @@ func (o *AddComponentRelationshipInternalServerError) SetPayload(payload models.
 func (o *AddComponentRelationshipInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

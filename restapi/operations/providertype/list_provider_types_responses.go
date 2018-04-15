@@ -97,7 +97,7 @@ type ListProviderTypesInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewListProviderTypesInternalServerError creates ListProviderTypesInternalServerError with default headers values
@@ -106,13 +106,13 @@ func NewListProviderTypesInternalServerError() *ListProviderTypesInternalServerE
 }
 
 // WithPayload adds the payload to the list provider types internal server error response
-func (o *ListProviderTypesInternalServerError) WithPayload(payload models.APIResponse) *ListProviderTypesInternalServerError {
+func (o *ListProviderTypesInternalServerError) WithPayload(payload *models.APIResponse) *ListProviderTypesInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the list provider types internal server error response
-func (o *ListProviderTypesInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *ListProviderTypesInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -120,9 +120,10 @@ func (o *ListProviderTypesInternalServerError) SetPayload(payload models.APIResp
 func (o *ListProviderTypesInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

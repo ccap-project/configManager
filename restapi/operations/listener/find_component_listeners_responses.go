@@ -97,7 +97,7 @@ type FindComponentListenersBadRequest struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewFindComponentListenersBadRequest creates FindComponentListenersBadRequest with default headers values
@@ -106,13 +106,13 @@ func NewFindComponentListenersBadRequest() *FindComponentListenersBadRequest {
 }
 
 // WithPayload adds the payload to the find component listeners bad request response
-func (o *FindComponentListenersBadRequest) WithPayload(payload models.APIResponse) *FindComponentListenersBadRequest {
+func (o *FindComponentListenersBadRequest) WithPayload(payload *models.APIResponse) *FindComponentListenersBadRequest {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the find component listeners bad request response
-func (o *FindComponentListenersBadRequest) SetPayload(payload models.APIResponse) {
+func (o *FindComponentListenersBadRequest) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -120,11 +120,12 @@ func (o *FindComponentListenersBadRequest) SetPayload(payload models.APIResponse
 func (o *FindComponentListenersBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // FindComponentListenersInternalServerErrorCode is the HTTP code returned for type FindComponentListenersInternalServerError
@@ -139,7 +140,7 @@ type FindComponentListenersInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewFindComponentListenersInternalServerError creates FindComponentListenersInternalServerError with default headers values
@@ -148,13 +149,13 @@ func NewFindComponentListenersInternalServerError() *FindComponentListenersInter
 }
 
 // WithPayload adds the payload to the find component listeners internal server error response
-func (o *FindComponentListenersInternalServerError) WithPayload(payload models.APIResponse) *FindComponentListenersInternalServerError {
+func (o *FindComponentListenersInternalServerError) WithPayload(payload *models.APIResponse) *FindComponentListenersInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the find component listeners internal server error response
-func (o *FindComponentListenersInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *FindComponentListenersInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -162,9 +163,10 @@ func (o *FindComponentListenersInternalServerError) SetPayload(payload models.AP
 func (o *FindComponentListenersInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

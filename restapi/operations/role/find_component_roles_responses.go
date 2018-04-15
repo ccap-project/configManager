@@ -97,7 +97,7 @@ type FindComponentRolesBadRequest struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewFindComponentRolesBadRequest creates FindComponentRolesBadRequest with default headers values
@@ -106,13 +106,13 @@ func NewFindComponentRolesBadRequest() *FindComponentRolesBadRequest {
 }
 
 // WithPayload adds the payload to the find component roles bad request response
-func (o *FindComponentRolesBadRequest) WithPayload(payload models.APIResponse) *FindComponentRolesBadRequest {
+func (o *FindComponentRolesBadRequest) WithPayload(payload *models.APIResponse) *FindComponentRolesBadRequest {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the find component roles bad request response
-func (o *FindComponentRolesBadRequest) SetPayload(payload models.APIResponse) {
+func (o *FindComponentRolesBadRequest) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -120,11 +120,12 @@ func (o *FindComponentRolesBadRequest) SetPayload(payload models.APIResponse) {
 func (o *FindComponentRolesBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // FindComponentRolesInternalServerErrorCode is the HTTP code returned for type FindComponentRolesInternalServerError
@@ -139,7 +140,7 @@ type FindComponentRolesInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewFindComponentRolesInternalServerError creates FindComponentRolesInternalServerError with default headers values
@@ -148,13 +149,13 @@ func NewFindComponentRolesInternalServerError() *FindComponentRolesInternalServe
 }
 
 // WithPayload adds the payload to the find component roles internal server error response
-func (o *FindComponentRolesInternalServerError) WithPayload(payload models.APIResponse) *FindComponentRolesInternalServerError {
+func (o *FindComponentRolesInternalServerError) WithPayload(payload *models.APIResponse) *FindComponentRolesInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the find component roles internal server error response
-func (o *FindComponentRolesInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *FindComponentRolesInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -162,9 +163,10 @@ func (o *FindComponentRolesInternalServerError) SetPayload(payload models.APIRes
 func (o *FindComponentRolesInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

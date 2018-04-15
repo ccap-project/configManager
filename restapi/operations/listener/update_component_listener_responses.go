@@ -74,7 +74,7 @@ type UpdateComponentListenerBadRequest struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewUpdateComponentListenerBadRequest creates UpdateComponentListenerBadRequest with default headers values
@@ -83,13 +83,13 @@ func NewUpdateComponentListenerBadRequest() *UpdateComponentListenerBadRequest {
 }
 
 // WithPayload adds the payload to the update component listener bad request response
-func (o *UpdateComponentListenerBadRequest) WithPayload(payload models.APIResponse) *UpdateComponentListenerBadRequest {
+func (o *UpdateComponentListenerBadRequest) WithPayload(payload *models.APIResponse) *UpdateComponentListenerBadRequest {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the update component listener bad request response
-func (o *UpdateComponentListenerBadRequest) SetPayload(payload models.APIResponse) {
+func (o *UpdateComponentListenerBadRequest) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -97,11 +97,12 @@ func (o *UpdateComponentListenerBadRequest) SetPayload(payload models.APIRespons
 func (o *UpdateComponentListenerBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // UpdateComponentListenerNotFoundCode is the HTTP code returned for type UpdateComponentListenerNotFound
@@ -139,7 +140,7 @@ type UpdateComponentListenerInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewUpdateComponentListenerInternalServerError creates UpdateComponentListenerInternalServerError with default headers values
@@ -148,13 +149,13 @@ func NewUpdateComponentListenerInternalServerError() *UpdateComponentListenerInt
 }
 
 // WithPayload adds the payload to the update component listener internal server error response
-func (o *UpdateComponentListenerInternalServerError) WithPayload(payload models.APIResponse) *UpdateComponentListenerInternalServerError {
+func (o *UpdateComponentListenerInternalServerError) WithPayload(payload *models.APIResponse) *UpdateComponentListenerInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the update component listener internal server error response
-func (o *UpdateComponentListenerInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *UpdateComponentListenerInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -162,9 +163,10 @@ func (o *UpdateComponentListenerInternalServerError) SetPayload(payload models.A
 func (o *UpdateComponentListenerInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

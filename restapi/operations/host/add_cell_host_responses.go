@@ -93,7 +93,7 @@ type AddCellHostMethodNotAllowed struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddCellHostMethodNotAllowed creates AddCellHostMethodNotAllowed with default headers values
@@ -102,13 +102,13 @@ func NewAddCellHostMethodNotAllowed() *AddCellHostMethodNotAllowed {
 }
 
 // WithPayload adds the payload to the add cell host method not allowed response
-func (o *AddCellHostMethodNotAllowed) WithPayload(payload models.APIResponse) *AddCellHostMethodNotAllowed {
+func (o *AddCellHostMethodNotAllowed) WithPayload(payload *models.APIResponse) *AddCellHostMethodNotAllowed {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add cell host method not allowed response
-func (o *AddCellHostMethodNotAllowed) SetPayload(payload models.APIResponse) {
+func (o *AddCellHostMethodNotAllowed) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -116,11 +116,12 @@ func (o *AddCellHostMethodNotAllowed) SetPayload(payload models.APIResponse) {
 func (o *AddCellHostMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(405)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddCellHostConflictCode is the HTTP code returned for type AddCellHostConflict
@@ -135,7 +136,7 @@ type AddCellHostConflict struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddCellHostConflict creates AddCellHostConflict with default headers values
@@ -144,13 +145,13 @@ func NewAddCellHostConflict() *AddCellHostConflict {
 }
 
 // WithPayload adds the payload to the add cell host conflict response
-func (o *AddCellHostConflict) WithPayload(payload models.APIResponse) *AddCellHostConflict {
+func (o *AddCellHostConflict) WithPayload(payload *models.APIResponse) *AddCellHostConflict {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add cell host conflict response
-func (o *AddCellHostConflict) SetPayload(payload models.APIResponse) {
+func (o *AddCellHostConflict) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -158,11 +159,12 @@ func (o *AddCellHostConflict) SetPayload(payload models.APIResponse) {
 func (o *AddCellHostConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(409)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddCellHostInternalServerErrorCode is the HTTP code returned for type AddCellHostInternalServerError
@@ -177,7 +179,7 @@ type AddCellHostInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddCellHostInternalServerError creates AddCellHostInternalServerError with default headers values
@@ -186,13 +188,13 @@ func NewAddCellHostInternalServerError() *AddCellHostInternalServerError {
 }
 
 // WithPayload adds the payload to the add cell host internal server error response
-func (o *AddCellHostInternalServerError) WithPayload(payload models.APIResponse) *AddCellHostInternalServerError {
+func (o *AddCellHostInternalServerError) WithPayload(payload *models.APIResponse) *AddCellHostInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add cell host internal server error response
-func (o *AddCellHostInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *AddCellHostInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -200,9 +202,10 @@ func (o *AddCellHostInternalServerError) SetPayload(payload models.APIResponse) 
 func (o *AddCellHostInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

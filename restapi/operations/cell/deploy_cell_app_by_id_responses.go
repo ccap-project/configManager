@@ -51,7 +51,7 @@ type DeployCellAppByIDOK struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewDeployCellAppByIDOK creates DeployCellAppByIDOK with default headers values
@@ -60,13 +60,13 @@ func NewDeployCellAppByIDOK() *DeployCellAppByIDOK {
 }
 
 // WithPayload adds the payload to the deploy cell app by Id o k response
-func (o *DeployCellAppByIDOK) WithPayload(payload models.APIResponse) *DeployCellAppByIDOK {
+func (o *DeployCellAppByIDOK) WithPayload(payload *models.APIResponse) *DeployCellAppByIDOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the deploy cell app by Id o k response
-func (o *DeployCellAppByIDOK) SetPayload(payload models.APIResponse) {
+func (o *DeployCellAppByIDOK) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -74,11 +74,12 @@ func (o *DeployCellAppByIDOK) SetPayload(payload models.APIResponse) {
 func (o *DeployCellAppByIDOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // DeployCellAppByIDNoContentCode is the HTTP code returned for type DeployCellAppByIDNoContent
@@ -139,7 +140,7 @@ type DeployCellAppByIDMethodNotAllowed struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewDeployCellAppByIDMethodNotAllowed creates DeployCellAppByIDMethodNotAllowed with default headers values
@@ -148,13 +149,13 @@ func NewDeployCellAppByIDMethodNotAllowed() *DeployCellAppByIDMethodNotAllowed {
 }
 
 // WithPayload adds the payload to the deploy cell app by Id method not allowed response
-func (o *DeployCellAppByIDMethodNotAllowed) WithPayload(payload models.APIResponse) *DeployCellAppByIDMethodNotAllowed {
+func (o *DeployCellAppByIDMethodNotAllowed) WithPayload(payload *models.APIResponse) *DeployCellAppByIDMethodNotAllowed {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the deploy cell app by Id method not allowed response
-func (o *DeployCellAppByIDMethodNotAllowed) SetPayload(payload models.APIResponse) {
+func (o *DeployCellAppByIDMethodNotAllowed) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -162,11 +163,12 @@ func (o *DeployCellAppByIDMethodNotAllowed) SetPayload(payload models.APIRespons
 func (o *DeployCellAppByIDMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(405)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // DeployCellAppByIDInternalServerErrorCode is the HTTP code returned for type DeployCellAppByIDInternalServerError
@@ -181,7 +183,7 @@ type DeployCellAppByIDInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewDeployCellAppByIDInternalServerError creates DeployCellAppByIDInternalServerError with default headers values
@@ -190,13 +192,13 @@ func NewDeployCellAppByIDInternalServerError() *DeployCellAppByIDInternalServerE
 }
 
 // WithPayload adds the payload to the deploy cell app by Id internal server error response
-func (o *DeployCellAppByIDInternalServerError) WithPayload(payload models.APIResponse) *DeployCellAppByIDInternalServerError {
+func (o *DeployCellAppByIDInternalServerError) WithPayload(payload *models.APIResponse) *DeployCellAppByIDInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the deploy cell app by Id internal server error response
-func (o *DeployCellAppByIDInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *DeployCellAppByIDInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -204,9 +206,10 @@ func (o *DeployCellAppByIDInternalServerError) SetPayload(payload models.APIResp
 func (o *DeployCellAppByIDInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

@@ -143,7 +143,7 @@ type FindKeypairByCustomerInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewFindKeypairByCustomerInternalServerError creates FindKeypairByCustomerInternalServerError with default headers values
@@ -152,13 +152,13 @@ func NewFindKeypairByCustomerInternalServerError() *FindKeypairByCustomerInterna
 }
 
 // WithPayload adds the payload to the find keypair by customer internal server error response
-func (o *FindKeypairByCustomerInternalServerError) WithPayload(payload models.APIResponse) *FindKeypairByCustomerInternalServerError {
+func (o *FindKeypairByCustomerInternalServerError) WithPayload(payload *models.APIResponse) *FindKeypairByCustomerInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the find keypair by customer internal server error response
-func (o *FindKeypairByCustomerInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *FindKeypairByCustomerInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -166,9 +166,10 @@ func (o *FindKeypairByCustomerInternalServerError) SetPayload(payload models.API
 func (o *FindKeypairByCustomerInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

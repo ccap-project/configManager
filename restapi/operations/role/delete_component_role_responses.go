@@ -74,7 +74,7 @@ type DeleteComponentRoleBadRequest struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewDeleteComponentRoleBadRequest creates DeleteComponentRoleBadRequest with default headers values
@@ -83,13 +83,13 @@ func NewDeleteComponentRoleBadRequest() *DeleteComponentRoleBadRequest {
 }
 
 // WithPayload adds the payload to the delete component role bad request response
-func (o *DeleteComponentRoleBadRequest) WithPayload(payload models.APIResponse) *DeleteComponentRoleBadRequest {
+func (o *DeleteComponentRoleBadRequest) WithPayload(payload *models.APIResponse) *DeleteComponentRoleBadRequest {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the delete component role bad request response
-func (o *DeleteComponentRoleBadRequest) SetPayload(payload models.APIResponse) {
+func (o *DeleteComponentRoleBadRequest) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -97,11 +97,12 @@ func (o *DeleteComponentRoleBadRequest) SetPayload(payload models.APIResponse) {
 func (o *DeleteComponentRoleBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // DeleteComponentRoleNotFoundCode is the HTTP code returned for type DeleteComponentRoleNotFound
@@ -139,7 +140,7 @@ type DeleteComponentRoleInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewDeleteComponentRoleInternalServerError creates DeleteComponentRoleInternalServerError with default headers values
@@ -148,13 +149,13 @@ func NewDeleteComponentRoleInternalServerError() *DeleteComponentRoleInternalSer
 }
 
 // WithPayload adds the payload to the delete component role internal server error response
-func (o *DeleteComponentRoleInternalServerError) WithPayload(payload models.APIResponse) *DeleteComponentRoleInternalServerError {
+func (o *DeleteComponentRoleInternalServerError) WithPayload(payload *models.APIResponse) *DeleteComponentRoleInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the delete component role internal server error response
-func (o *DeleteComponentRoleInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *DeleteComponentRoleInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -162,9 +163,10 @@ func (o *DeleteComponentRoleInternalServerError) SetPayload(payload models.APIRe
 func (o *DeleteComponentRoleInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

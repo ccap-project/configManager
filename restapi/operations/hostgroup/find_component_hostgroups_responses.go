@@ -97,7 +97,7 @@ type FindComponentHostgroupsBadRequest struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewFindComponentHostgroupsBadRequest creates FindComponentHostgroupsBadRequest with default headers values
@@ -106,13 +106,13 @@ func NewFindComponentHostgroupsBadRequest() *FindComponentHostgroupsBadRequest {
 }
 
 // WithPayload adds the payload to the find component hostgroups bad request response
-func (o *FindComponentHostgroupsBadRequest) WithPayload(payload models.APIResponse) *FindComponentHostgroupsBadRequest {
+func (o *FindComponentHostgroupsBadRequest) WithPayload(payload *models.APIResponse) *FindComponentHostgroupsBadRequest {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the find component hostgroups bad request response
-func (o *FindComponentHostgroupsBadRequest) SetPayload(payload models.APIResponse) {
+func (o *FindComponentHostgroupsBadRequest) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -120,11 +120,12 @@ func (o *FindComponentHostgroupsBadRequest) SetPayload(payload models.APIRespons
 func (o *FindComponentHostgroupsBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // FindComponentHostgroupsInternalServerErrorCode is the HTTP code returned for type FindComponentHostgroupsInternalServerError
@@ -139,7 +140,7 @@ type FindComponentHostgroupsInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewFindComponentHostgroupsInternalServerError creates FindComponentHostgroupsInternalServerError with default headers values
@@ -148,13 +149,13 @@ func NewFindComponentHostgroupsInternalServerError() *FindComponentHostgroupsInt
 }
 
 // WithPayload adds the payload to the find component hostgroups internal server error response
-func (o *FindComponentHostgroupsInternalServerError) WithPayload(payload models.APIResponse) *FindComponentHostgroupsInternalServerError {
+func (o *FindComponentHostgroupsInternalServerError) WithPayload(payload *models.APIResponse) *FindComponentHostgroupsInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the find component hostgroups internal server error response
-func (o *FindComponentHostgroupsInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *FindComponentHostgroupsInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -162,9 +163,10 @@ func (o *FindComponentHostgroupsInternalServerError) SetPayload(payload models.A
 func (o *FindComponentHostgroupsInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

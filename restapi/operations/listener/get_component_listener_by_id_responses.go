@@ -94,7 +94,7 @@ type GetComponentListenerByIDBadRequest struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewGetComponentListenerByIDBadRequest creates GetComponentListenerByIDBadRequest with default headers values
@@ -103,13 +103,13 @@ func NewGetComponentListenerByIDBadRequest() *GetComponentListenerByIDBadRequest
 }
 
 // WithPayload adds the payload to the get component listener by Id bad request response
-func (o *GetComponentListenerByIDBadRequest) WithPayload(payload models.APIResponse) *GetComponentListenerByIDBadRequest {
+func (o *GetComponentListenerByIDBadRequest) WithPayload(payload *models.APIResponse) *GetComponentListenerByIDBadRequest {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get component listener by Id bad request response
-func (o *GetComponentListenerByIDBadRequest) SetPayload(payload models.APIResponse) {
+func (o *GetComponentListenerByIDBadRequest) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -117,11 +117,12 @@ func (o *GetComponentListenerByIDBadRequest) SetPayload(payload models.APIRespon
 func (o *GetComponentListenerByIDBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // GetComponentListenerByIDNotFoundCode is the HTTP code returned for type GetComponentListenerByIDNotFound
@@ -159,7 +160,7 @@ type GetComponentListenerByIDInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewGetComponentListenerByIDInternalServerError creates GetComponentListenerByIDInternalServerError with default headers values
@@ -168,13 +169,13 @@ func NewGetComponentListenerByIDInternalServerError() *GetComponentListenerByIDI
 }
 
 // WithPayload adds the payload to the get component listener by Id internal server error response
-func (o *GetComponentListenerByIDInternalServerError) WithPayload(payload models.APIResponse) *GetComponentListenerByIDInternalServerError {
+func (o *GetComponentListenerByIDInternalServerError) WithPayload(payload *models.APIResponse) *GetComponentListenerByIDInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get component listener by Id internal server error response
-func (o *GetComponentListenerByIDInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *GetComponentListenerByIDInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -182,9 +183,10 @@ func (o *GetComponentListenerByIDInternalServerError) SetPayload(payload models.
 func (o *GetComponentListenerByIDInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

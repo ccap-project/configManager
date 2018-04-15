@@ -74,7 +74,7 @@ type AddLoadbalancerRelationshipNotFound struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddLoadbalancerRelationshipNotFound creates AddLoadbalancerRelationshipNotFound with default headers values
@@ -83,13 +83,13 @@ func NewAddLoadbalancerRelationshipNotFound() *AddLoadbalancerRelationshipNotFou
 }
 
 // WithPayload adds the payload to the add loadbalancer relationship not found response
-func (o *AddLoadbalancerRelationshipNotFound) WithPayload(payload models.APIResponse) *AddLoadbalancerRelationshipNotFound {
+func (o *AddLoadbalancerRelationshipNotFound) WithPayload(payload *models.APIResponse) *AddLoadbalancerRelationshipNotFound {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add loadbalancer relationship not found response
-func (o *AddLoadbalancerRelationshipNotFound) SetPayload(payload models.APIResponse) {
+func (o *AddLoadbalancerRelationshipNotFound) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -97,11 +97,12 @@ func (o *AddLoadbalancerRelationshipNotFound) SetPayload(payload models.APIRespo
 func (o *AddLoadbalancerRelationshipNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(404)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddLoadbalancerRelationshipInternalServerErrorCode is the HTTP code returned for type AddLoadbalancerRelationshipInternalServerError
@@ -116,7 +117,7 @@ type AddLoadbalancerRelationshipInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddLoadbalancerRelationshipInternalServerError creates AddLoadbalancerRelationshipInternalServerError with default headers values
@@ -125,13 +126,13 @@ func NewAddLoadbalancerRelationshipInternalServerError() *AddLoadbalancerRelatio
 }
 
 // WithPayload adds the payload to the add loadbalancer relationship internal server error response
-func (o *AddLoadbalancerRelationshipInternalServerError) WithPayload(payload models.APIResponse) *AddLoadbalancerRelationshipInternalServerError {
+func (o *AddLoadbalancerRelationshipInternalServerError) WithPayload(payload *models.APIResponse) *AddLoadbalancerRelationshipInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add loadbalancer relationship internal server error response
-func (o *AddLoadbalancerRelationshipInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *AddLoadbalancerRelationshipInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -139,9 +140,10 @@ func (o *AddLoadbalancerRelationshipInternalServerError) SetPayload(payload mode
 func (o *AddLoadbalancerRelationshipInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

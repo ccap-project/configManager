@@ -140,7 +140,7 @@ type GetKeypairByIDInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewGetKeypairByIDInternalServerError creates GetKeypairByIDInternalServerError with default headers values
@@ -149,13 +149,13 @@ func NewGetKeypairByIDInternalServerError() *GetKeypairByIDInternalServerError {
 }
 
 // WithPayload adds the payload to the get keypair by Id internal server error response
-func (o *GetKeypairByIDInternalServerError) WithPayload(payload models.APIResponse) *GetKeypairByIDInternalServerError {
+func (o *GetKeypairByIDInternalServerError) WithPayload(payload *models.APIResponse) *GetKeypairByIDInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get keypair by Id internal server error response
-func (o *GetKeypairByIDInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *GetKeypairByIDInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -163,9 +163,10 @@ func (o *GetKeypairByIDInternalServerError) SetPayload(payload models.APIRespons
 func (o *GetKeypairByIDInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

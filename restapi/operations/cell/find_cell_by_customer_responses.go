@@ -143,7 +143,7 @@ type FindCellByCustomerInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewFindCellByCustomerInternalServerError creates FindCellByCustomerInternalServerError with default headers values
@@ -152,13 +152,13 @@ func NewFindCellByCustomerInternalServerError() *FindCellByCustomerInternalServe
 }
 
 // WithPayload adds the payload to the find cell by customer internal server error response
-func (o *FindCellByCustomerInternalServerError) WithPayload(payload models.APIResponse) *FindCellByCustomerInternalServerError {
+func (o *FindCellByCustomerInternalServerError) WithPayload(payload *models.APIResponse) *FindCellByCustomerInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the find cell by customer internal server error response
-func (o *FindCellByCustomerInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *FindCellByCustomerInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -166,9 +166,10 @@ func (o *FindCellByCustomerInternalServerError) SetPayload(payload models.APIRes
 func (o *FindCellByCustomerInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

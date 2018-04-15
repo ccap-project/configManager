@@ -97,7 +97,7 @@ type DeleteCustomerInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewDeleteCustomerInternalServerError creates DeleteCustomerInternalServerError with default headers values
@@ -106,13 +106,13 @@ func NewDeleteCustomerInternalServerError() *DeleteCustomerInternalServerError {
 }
 
 // WithPayload adds the payload to the delete customer internal server error response
-func (o *DeleteCustomerInternalServerError) WithPayload(payload models.APIResponse) *DeleteCustomerInternalServerError {
+func (o *DeleteCustomerInternalServerError) WithPayload(payload *models.APIResponse) *DeleteCustomerInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the delete customer internal server error response
-func (o *DeleteCustomerInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *DeleteCustomerInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -120,9 +120,10 @@ func (o *DeleteCustomerInternalServerError) SetPayload(payload models.APIRespons
 func (o *DeleteCustomerInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

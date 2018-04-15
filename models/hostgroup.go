@@ -81,6 +81,9 @@ type Hostgroup struct {
 	// roles
 	Roles HostgroupRoles `json:"roles"`
 
+	// securitygroups
+	Securitygroups []string `json:"securitygroups"`
+
 	// username
 	// Required: true
 	Username *string `json:"username"`
@@ -116,6 +119,11 @@ func (m *Hostgroup) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNetwork(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateSecuritygroups(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -187,6 +195,15 @@ func (m *Hostgroup) validateNetwork(formats strfmt.Registry) error {
 
 	if err := validate.Required("network", "body", m.Network); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Hostgroup) validateSecuritygroups(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Securitygroups) { // not required
+		return nil
 	}
 
 	return nil

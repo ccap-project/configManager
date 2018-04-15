@@ -94,7 +94,7 @@ type GetComponentHostgroupByIDBadRequest struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewGetComponentHostgroupByIDBadRequest creates GetComponentHostgroupByIDBadRequest with default headers values
@@ -103,13 +103,13 @@ func NewGetComponentHostgroupByIDBadRequest() *GetComponentHostgroupByIDBadReque
 }
 
 // WithPayload adds the payload to the get component hostgroup by Id bad request response
-func (o *GetComponentHostgroupByIDBadRequest) WithPayload(payload models.APIResponse) *GetComponentHostgroupByIDBadRequest {
+func (o *GetComponentHostgroupByIDBadRequest) WithPayload(payload *models.APIResponse) *GetComponentHostgroupByIDBadRequest {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get component hostgroup by Id bad request response
-func (o *GetComponentHostgroupByIDBadRequest) SetPayload(payload models.APIResponse) {
+func (o *GetComponentHostgroupByIDBadRequest) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -117,11 +117,12 @@ func (o *GetComponentHostgroupByIDBadRequest) SetPayload(payload models.APIRespo
 func (o *GetComponentHostgroupByIDBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // GetComponentHostgroupByIDNotFoundCode is the HTTP code returned for type GetComponentHostgroupByIDNotFound
@@ -159,7 +160,7 @@ type GetComponentHostgroupByIDInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewGetComponentHostgroupByIDInternalServerError creates GetComponentHostgroupByIDInternalServerError with default headers values
@@ -168,13 +169,13 @@ func NewGetComponentHostgroupByIDInternalServerError() *GetComponentHostgroupByI
 }
 
 // WithPayload adds the payload to the get component hostgroup by Id internal server error response
-func (o *GetComponentHostgroupByIDInternalServerError) WithPayload(payload models.APIResponse) *GetComponentHostgroupByIDInternalServerError {
+func (o *GetComponentHostgroupByIDInternalServerError) WithPayload(payload *models.APIResponse) *GetComponentHostgroupByIDInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get component hostgroup by Id internal server error response
-func (o *GetComponentHostgroupByIDInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *GetComponentHostgroupByIDInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -182,9 +183,10 @@ func (o *GetComponentHostgroupByIDInternalServerError) SetPayload(payload models
 func (o *GetComponentHostgroupByIDInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

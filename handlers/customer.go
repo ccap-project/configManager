@@ -55,21 +55,22 @@ func (ctx *addCustomer) Handle(params customer.AddCustomerParams) middleware.Res
 
 	if _getCustomerByName(ctx.rt.DB(), params.Body.Name) != nil {
 		log.Println("customer already exists !")
-		return customer.NewAddCustomerConflict().WithPayload(models.APIResponse{Message: "customer name already exists"})
+		return customer.NewAddCustomerConflict().WithPayload(&models.APIResponse{Message: "customer name already exists"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
-		return customer.NewAddCustomerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return customer.NewAddCustomerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		log.Printf("An error occurred preparing statement: %s", err)
-		return customer.NewAddCustomerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return customer.NewAddCustomerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
+	defer stmt.Close()
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"id":   configManager.GetULID(),
@@ -77,14 +78,14 @@ func (ctx *addCustomer) Handle(params customer.AddCustomerParams) middleware.Res
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
-		return customer.NewAddCustomerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return customer.NewAddCustomerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 
 	if err != nil {
 		log.Printf("An error occurred getting next row: %s", err)
-		return customer.NewAddCustomerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return customer.NewAddCustomerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	return customer.NewAddCustomerCreated().WithPayload(models.ULID(output[0].(string)))
@@ -105,14 +106,14 @@ func (ctx *deleteCustomer) Handle(params customer.DeleteCustomerParams) middlewa
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		log.Println("error connecting to neo4j:", err)
-		return customer.NewDeleteCustomerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return customer.NewDeleteCustomerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		log.Printf("An error occurred preparing statement: %s", err)
-		return customer.NewDeleteCustomerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return customer.NewDeleteCustomerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	_, err = stmt.ExecNeo(map[string]interface{}{
@@ -120,7 +121,7 @@ func (ctx *deleteCustomer) Handle(params customer.DeleteCustomerParams) middlewa
 
 	if err != nil {
 		log.Printf("An error occurred querying Neo: %s", err)
-		return customer.NewDeleteCustomerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return customer.NewDeleteCustomerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	return customer.NewDeleteCustomerOK()

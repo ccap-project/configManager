@@ -93,7 +93,7 @@ type AddCellMethodNotAllowed struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddCellMethodNotAllowed creates AddCellMethodNotAllowed with default headers values
@@ -102,13 +102,13 @@ func NewAddCellMethodNotAllowed() *AddCellMethodNotAllowed {
 }
 
 // WithPayload adds the payload to the add cell method not allowed response
-func (o *AddCellMethodNotAllowed) WithPayload(payload models.APIResponse) *AddCellMethodNotAllowed {
+func (o *AddCellMethodNotAllowed) WithPayload(payload *models.APIResponse) *AddCellMethodNotAllowed {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add cell method not allowed response
-func (o *AddCellMethodNotAllowed) SetPayload(payload models.APIResponse) {
+func (o *AddCellMethodNotAllowed) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -116,11 +116,12 @@ func (o *AddCellMethodNotAllowed) SetPayload(payload models.APIResponse) {
 func (o *AddCellMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(405)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddCellConflictCode is the HTTP code returned for type AddCellConflict
@@ -135,7 +136,7 @@ type AddCellConflict struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddCellConflict creates AddCellConflict with default headers values
@@ -144,13 +145,13 @@ func NewAddCellConflict() *AddCellConflict {
 }
 
 // WithPayload adds the payload to the add cell conflict response
-func (o *AddCellConflict) WithPayload(payload models.APIResponse) *AddCellConflict {
+func (o *AddCellConflict) WithPayload(payload *models.APIResponse) *AddCellConflict {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add cell conflict response
-func (o *AddCellConflict) SetPayload(payload models.APIResponse) {
+func (o *AddCellConflict) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -158,11 +159,12 @@ func (o *AddCellConflict) SetPayload(payload models.APIResponse) {
 func (o *AddCellConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(409)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // AddCellInternalServerErrorCode is the HTTP code returned for type AddCellInternalServerError
@@ -177,7 +179,7 @@ type AddCellInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.APIResponse `json:"body,omitempty"`
+	Payload *models.APIResponse `json:"body,omitempty"`
 }
 
 // NewAddCellInternalServerError creates AddCellInternalServerError with default headers values
@@ -186,13 +188,13 @@ func NewAddCellInternalServerError() *AddCellInternalServerError {
 }
 
 // WithPayload adds the payload to the add cell internal server error response
-func (o *AddCellInternalServerError) WithPayload(payload models.APIResponse) *AddCellInternalServerError {
+func (o *AddCellInternalServerError) WithPayload(payload *models.APIResponse) *AddCellInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the add cell internal server error response
-func (o *AddCellInternalServerError) SetPayload(payload models.APIResponse) {
+func (o *AddCellInternalServerError) SetPayload(payload *models.APIResponse) {
 	o.Payload = payload
 }
 
@@ -200,9 +202,10 @@ func (o *AddCellInternalServerError) SetPayload(payload models.APIResponse) {
 func (o *AddCellInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

@@ -64,22 +64,21 @@ func (ctx *addProviderType) Handle(params providertype.AddProviderTypeParams) mi
 
 	if len(GetProviderTypeByName(ctx.rt, params.Body.Name).Name) > 0 {
 		ctxLogger.Error("providertype already exists !")
-		return providertype.NewAddProviderTypeInternalServerError().WithPayload(models.APIResponse{Message: "providertype already exists"})
+		return providertype.NewAddProviderTypeInternalServerError().WithPayload(&models.APIResponse{Message: "providertype already exists"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j:", err)
-		return providertype.NewAddProviderTypeInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return providertype.NewAddProviderTypeInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: %s", err)
-		return providertype.NewAddProviderTypeInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return providertype.NewAddProviderTypeInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
-
 	defer stmt.Close()
 
 	ulid := configManager.GetULID()
@@ -98,13 +97,13 @@ func (ctx *addProviderType) Handle(params providertype.AddProviderTypeParams) mi
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: %s", err)
-		return providertype.NewAddProviderTypeInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return providertype.NewAddProviderTypeInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	_, _, err = rows.NextNeo()
 	if err != nil {
 		log.Printf("An error occurred getting next row: %s", err)
-		return providertype.NewAddProviderTypeInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return providertype.NewAddProviderTypeInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	ctxLogger.Info("OK")
@@ -135,16 +134,15 @@ func (ctx *getProviderTypeByID) Handle(params providertype.GetProviderTypeByIDPa
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j:", err)
-		return providertype.NewGetProviderTypeByIDInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return providertype.NewGetProviderTypeByIDInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: %s", err)
-		return providertype.NewGetProviderTypeByIDInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return providertype.NewGetProviderTypeByIDInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
-
 	defer stmt.Close()
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
@@ -152,7 +150,7 @@ func (ctx *getProviderTypeByID) Handle(params providertype.GetProviderTypeByIDPa
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: %s", err)
-		return providertype.NewGetProviderTypeByIDInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return providertype.NewGetProviderTypeByIDInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	if rows == nil {
@@ -163,7 +161,7 @@ func (ctx *getProviderTypeByID) Handle(params providertype.GetProviderTypeByIDPa
 
 	if err != nil {
 		ctxLogger.Error("An error occurred getting next row: %s", err)
-		return providertype.NewListProviderTypesInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return providertype.NewListProviderTypesInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	provider := &models.ProviderType{
@@ -205,7 +203,6 @@ func GetProviderTypeByName(rt *configManager.Runtime, providertypeName string) m
 		ctxLogger.Error("An error occurred preparing statement: %s", err)
 		return providerType
 	}
-
 	defer stmt.Close()
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
@@ -258,7 +255,7 @@ func (ctx *listProviderTypes) Handle(params providertype.ListProviderTypesParams
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctx.rt.Logger().Error("error connecting to neo4j:", err)
-		return providertype.NewListProviderTypesInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return providertype.NewListProviderTypesInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
@@ -266,7 +263,7 @@ func (ctx *listProviderTypes) Handle(params providertype.ListProviderTypesParams
 
 	if err != nil {
 		ctx.rt.Logger().Error("An error occurred querying Neo: %s", err)
-		return providertype.NewListProviderTypesInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return providertype.NewListProviderTypesInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	res := make([]*models.ProviderType, len(data))
@@ -330,7 +327,6 @@ func _addProviderType(rt *configManager.Runtime, name string, fields []string) e
 	if err != nil {
 		return fmt.Errorf("An error occurred preparing statement: %s", err)
 	}
-
 	defer stmt.Close()
 
 	_, err = stmt.QueryNeo(nil)
