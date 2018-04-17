@@ -69,20 +69,21 @@ func (ctx *addComponentListener) Handle(params listener.AddComponentListenerPara
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return listener.NewAddComponentListenerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return listener.NewAddComponentListenerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	if err != nil {
 		ctxLogger.Error("An error occurred beginning transaction: ", err)
-		return listener.NewAddComponentListenerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return listener.NewAddComponentListenerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return listener.NewAddComponentListenerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return listener.NewAddComponentListenerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
+	defer stmt.Close()
 	ulid := configManager.GetULID()
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
@@ -96,16 +97,14 @@ func (ctx *addComponentListener) Handle(params listener.AddComponentListenerPara
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return listener.NewAddComponentListenerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return listener.NewAddComponentListenerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 	if err != nil {
 		ctxLogger.Error("An error occurred getting next row: ", err)
-		return listener.NewAddComponentListenerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return listener.NewAddComponentListenerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
-
-	stmt.Close()
 
 	return listener.NewAddComponentListenerCreated().WithPayload(models.ULID(output[0].(string)))
 }
@@ -140,16 +139,15 @@ func (ctx *deleteComponentListener) Handle(params listener.DeleteComponentListen
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return listener.NewDeleteComponentListenerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return listener.NewDeleteComponentListenerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return listener.NewDeleteComponentListenerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return listener.NewDeleteComponentListenerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
-
 	defer stmt.Close()
 
 	_, err = stmt.ExecNeo(map[string]interface{}{
@@ -160,7 +158,7 @@ func (ctx *deleteComponentListener) Handle(params listener.DeleteComponentListen
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return listener.NewAddComponentListenerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return listener.NewAddComponentListenerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	//if res.Count.(int) <= 0 {
@@ -198,7 +196,7 @@ type findComponentListeners struct {
 
 func (ctx *findComponentListeners) Handle(params listener.FindComponentListenersParams, principal *models.Customer) middleware.Responder {
 
-	data, err := _FindComponentListeners(ctx.rt, principal.Name, &params.CellID, &params.ComponentID)
+	data, err := _findComponentListeners(ctx.rt, principal.Name, &params.CellID, &params.ComponentID)
 
 	log.Printf("= data(%#v)", data)
 
@@ -209,7 +207,70 @@ func (ctx *findComponentListeners) Handle(params listener.FindComponentListeners
 	return listener.NewFindComponentListenersOK().WithPayload(data)
 }
 
-func _FindComponentListeners(rt *configManager.Runtime, customerName *string, CellID *string, ComponentID *string) ([]*models.Listener, middleware.Responder) {
+func NewUpdateComponentListener(rt *configManager.Runtime) listener.UpdateComponentListenerHandler {
+	return &updateComponentListener{rt: rt}
+}
+
+type updateComponentListener struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *updateComponentListener) Handle(params listener.UpdateComponentListenerParams, principal *models.Customer) middleware.Responder {
+
+	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
+							(cell:Cell {id: {cell_id}})-[:PROVIDES]->
+							(component:Component {id: {component_id}})-[:LISTEN_ON]->
+							(listener:Listener {id: {listener_id}})
+						SET listener.name={listener_name},
+								listener.port={listener_port},
+								listener.protocol={listener_protocol}`
+
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID,
+		"listener_id":   params.ListenerID,
+		"component_id":  params.ComponentID})
+
+	db, err := ctx.rt.DB().OpenPool()
+	if err != nil {
+		ctxLogger.Error("error connecting to neo4j: ", err)
+		return listener.NewAddComponentListenerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+	}
+	defer db.Close()
+
+	stmt, err := db.PrepareNeo(cypher)
+	if err != nil {
+		ctxLogger.Error("An error occurred preparing statement: ", err)
+		return listener.NewAddComponentListenerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+	}
+	defer stmt.Close()
+
+	/*log.Printf("customer_name(%s) cell_id(%s) component_id(%s) listener_id(%s) listener_name(%s) listener_image(%s) listener_flavor(%s)",
+	swag.StringValue(principal.Name),
+	params.CellID,
+	params.ComponentID,
+	params.ListenerID,
+	swag.StringValue(params.Body.Name),
+	swag.StringValue(params.Body.Image),
+	swag.StringValue(params.Body.Flavor))*/
+
+	_, err = stmt.ExecNeo(map[string]interface{}{
+		"customer_name":     swag.StringValue(principal.Name),
+		"cell_id":           params.CellID,
+		"component_id":      params.ComponentID,
+		"listener_id":       params.ListenerID,
+		"listener_port":     swag.Int64Value(params.Body.Port),
+		"listener_protocol": swag.StringValue(params.Body.Protocol)})
+
+	if err != nil {
+		ctxLogger.Error("-> An error occurred querying Neo: ", err)
+		return listener.NewAddComponentListenerInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+	}
+
+	return listener.NewUpdateComponentListenerOK()
+}
+
+func _findComponentListeners(rt *configManager.Runtime, customerName *string, CellID *string, ComponentID *string) ([]*models.Listener, middleware.Responder) {
 
 	var res []*models.Listener
 
@@ -259,70 +320,8 @@ func _FindComponentListeners(rt *configManager.Runtime, customerName *string, Ce
 
 		res = append(res, l)
 	}
+
 	return res, nil
-}
-
-func NewUpdateComponentListener(rt *configManager.Runtime) listener.UpdateComponentListenerHandler {
-	return &updateComponentListener{rt: rt}
-}
-
-type updateComponentListener struct {
-	rt *configManager.Runtime
-}
-
-func (ctx *updateComponentListener) Handle(params listener.UpdateComponentListenerParams, principal *models.Customer) middleware.Responder {
-
-	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell {id: {cell_id}})-[:PROVIDES]->
-							(component:Component {id: {component_id}})-[:LISTEN_ON]->
-							(listener:Listener {id: {listener_id}})
-						SET listener.name={listener_name},
-								listener.port={listener_port},
-								listener.protocol={listener_protocol}`
-
-	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
-		"customer_name": swag.StringValue(principal.Name),
-		"cell_id":       params.CellID,
-		"listener_id":   params.ListenerID,
-		"component_id":  params.ComponentID})
-
-	db, err := ctx.rt.DB().OpenPool()
-	if err != nil {
-		ctxLogger.Error("error connecting to neo4j: ", err)
-		return listener.NewAddComponentListenerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
-	}
-	defer db.Close()
-
-	stmt, err := db.PrepareNeo(cypher)
-	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return listener.NewAddComponentListenerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
-	}
-	defer stmt.Close()
-
-	/*log.Printf("customer_name(%s) cell_id(%s) component_id(%s) listener_id(%s) listener_name(%s) listener_image(%s) listener_flavor(%s)",
-	swag.StringValue(principal.Name),
-	params.CellID,
-	params.ComponentID,
-	params.ListenerID,
-	swag.StringValue(params.Body.Name),
-	swag.StringValue(params.Body.Image),
-	swag.StringValue(params.Body.Flavor))*/
-
-	_, err = stmt.ExecNeo(map[string]interface{}{
-		"customer_name":     swag.StringValue(principal.Name),
-		"cell_id":           params.CellID,
-		"component_id":      params.ComponentID,
-		"listener_id":       params.ListenerID,
-		"listener_port":     swag.Int64Value(params.Body.Port),
-		"listener_protocol": swag.StringValue(params.Body.Protocol)})
-
-	if err != nil {
-		ctxLogger.Error("-> An error occurred querying Neo: ", err)
-		return listener.NewAddComponentListenerInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
-	}
-
-	return listener.NewUpdateComponentListenerOK()
 }
 
 func _getComponentListenerByID(rt *configManager.Runtime, customer *string, cellID *string, listenerID *string) *models.Listener {
@@ -336,8 +335,8 @@ func _getComponentListenerByID(rt *configManager.Runtime, customer *string, cell
 							(listener:Listener {id: {listener_id}})
 						RETURN listener.id as id,
 										listener.name as name,
-										listener.port as image,
-										listener.protocol as flavor`
+										listener.port as port,
+										listener.protocol as protocol`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
 		"customer_name": swag.StringValue(customer),
@@ -384,4 +383,47 @@ func _getComponentListenerByID(rt *configManager.Runtime, customer *string, cell
 		Protocol: &_protocol}
 
 	return listener
+}
+
+func getComponentListenerConnections(rt *configManager.Runtime, customer *string, cellID *string, listenerID *models.ULID) *[]string {
+
+	var res []string
+
+	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
+							(cell:Cell {id: {cell_id}})-[:PROVIDES]->
+							(component:Component)-[:LISTEN_ON]->
+							(listener:Listener {id: {listener_id}})<-[:CONNECT_TO]-
+							(src_conn)
+						RETURN src_conn.name as name`
+
+	ctxLogger := rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(customer),
+		"cell_id":       swag.StringValue(cellID),
+		"listener_id":   string(*listenerID)})
+
+	db, err := rt.DB().OpenPool()
+	if err != nil {
+		ctxLogger.Error("error connecting to neo4j: ", err)
+		return &res
+	}
+	defer db.Close()
+
+	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
+		"customer_name": swag.StringValue(customer),
+		"cell_id":       swag.StringValue(cellID),
+		"listener_id":   string(*listenerID)})
+
+	if err != nil {
+		ctxLogger.Error("An error occurred querying Neo: ", err)
+		return &res
+	}
+
+	for _, row := range data {
+
+		_name := row[0].(string)
+
+		res = append(res, _name)
+	}
+	return &res
+
 }

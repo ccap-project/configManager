@@ -65,22 +65,24 @@ func (ctx *addCellComponent) Handle(params component.AddComponentParams, princip
 
 	if _getComponentByName(ctx.rt, principal.Name, &params.CellID, params.Body.Name) != nil {
 		ctxLogger.Error("component already exists !")
-		return component.NewAddComponentConflict().WithPayload(models.APIResponse{Message: "component already exists"})
+		return component.NewAddComponentConflict().WithPayload(&models.APIResponse{Message: "component already exists"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j:", err)
-		return component.NewAddComponentInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return component.NewAddComponentInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Errorf("An error occurred preparing statement: %s", err)
-		return component.NewAddComponentInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return component.NewAddComponentInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
+
+	defer stmt.Close()
 
 	if params.Body.Order == nil {
 		params.Body.Order = swag.Int64(99)
@@ -101,13 +103,13 @@ func (ctx *addCellComponent) Handle(params component.AddComponentParams, princip
 
 	if err != nil {
 		ctxLogger.Errorf("An error occurred querying Neo: %s", err)
-		return component.NewAddComponentInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return component.NewAddComponentInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 	if err != nil {
 		ctxLogger.Errorf("An error occurred getting next row: %s", err)
-		return component.NewAddComponentInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return component.NewAddComponentInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	ctxLogger.Info("OK")
@@ -152,21 +154,21 @@ func (ctx *addComponentRelationship) Handle(params component.AddComponentRelatio
 			RETURN *`
 	default:
 		ctxLogger.Infof("entityType(%s)", entityType)
-		return component.NewAddComponentRelationshipNotFound().WithPayload(models.APIResponse{Message: "entity not found"})
+		return component.NewAddComponentRelationshipNotFound().WithPayload(&models.APIResponse{Message: "entity not found"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return component.NewAddComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+		return component.NewAddComponentRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "failure creating relationship"})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return component.NewAddComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+		return component.NewAddComponentRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "failure creating relationship"})
 	}
 
 	defer stmt.Close()
@@ -179,13 +181,13 @@ func (ctx *addComponentRelationship) Handle(params component.AddComponentRelatio
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return component.NewAddComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+		return component.NewAddComponentRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "failure creating relationship"})
 	}
 
 	//	_, _, err = rows.NextNeo()
 	//	if err != nil {
 	//ctxLogger.Error("An error occurred getting next row: ", err)
-	//return component.NewAddComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure creating relationship"})
+	//return component.NewAddComponentRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "failure creating relationship"})
 	//	}
 
 	return component.NewAddComponentRelationshipCreated()
@@ -222,7 +224,7 @@ func (ctx *deleteComponentRelationship) Handle(params component.DeleteComponentR
 			delete r`
 
 	default:
-		return component.NewDeleteComponentRelationshipNotFound().WithPayload(models.APIResponse{Message: "entity not found"})
+		return component.NewDeleteComponentRelationshipNotFound().WithPayload(&models.APIResponse{Message: "entity not found"})
 	}
 
 	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
@@ -235,14 +237,14 @@ func (ctx *deleteComponentRelationship) Handle(params component.DeleteComponentR
 
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return component.NewDeleteComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure deleting relationship"})
+		return component.NewDeleteComponentRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "failure deleting relationship"})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return component.NewDeleteComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure deleting relationship"})
+		return component.NewDeleteComponentRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "failure deleting relationship"})
 	}
 
 	defer stmt.Close()
@@ -255,7 +257,7 @@ func (ctx *deleteComponentRelationship) Handle(params component.DeleteComponentR
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return component.NewDeleteComponentRelationshipInternalServerError().WithPayload(models.APIResponse{Message: "failure deleting relationship"})
+		return component.NewDeleteComponentRelationshipInternalServerError().WithPayload(&models.APIResponse{Message: "failure deleting relationship"})
 	}
 
 	return component.NewDeleteComponentRelationshipOK()
@@ -298,7 +300,7 @@ func (ctx *findCellComponents) Handle(params component.FindCellComponentsParams,
 	cellComponents, err := _findCellComponents(ctx.rt, principal.Name, &params.CellID)
 
 	if err != nil {
-		return component.NewFindCellComponentsInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return component.NewFindCellComponentsInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	return component.NewFindCellComponentsOK().WithPayload(cellComponents)
@@ -339,6 +341,42 @@ func _findCellComponents(rt *configManager.Runtime, customerName *string, CellID
 	}
 
 	return res, nil
+}
+
+func _listCellComponents(rt *configManager.Runtime, customerName *string, CellID *string) (*[]string, error) {
+
+	var res []string
+
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->
+							(cell:Cell {id: {cell_id}})-[:PROVIDES]->(component)
+								RETURN component.name as name`
+
+	db, err := rt.DB().OpenPool()
+
+	if err != nil {
+		log.Println("error connecting to neo4j:", err)
+		return nil, err
+	}
+	defer db.Close()
+
+	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
+		"name":    swag.StringValue(customerName),
+		"cell_id": swag.StringValue(CellID)})
+
+	if err != nil {
+		log.Printf("An error occurred querying Neo: %s", err)
+		return nil, err
+
+	} else if len(data) == 0 {
+		return nil, nil
+	}
+
+	for _, row := range data {
+		name := row[0].(string)
+		res = append(res, name)
+	}
+
+	return &res, nil
 }
 
 func _findCellComponentRelationships(rt *configManager.Runtime, customerName *string, CellID *string, ComponentID *string) ([]models.ULID, error) {
@@ -434,7 +472,7 @@ func _getCellComponent(rt *configManager.Runtime, customerName *string, CellID *
 	_name := output[1].(string)
 	_hostgroups, _ := _FindComponentHostgroups(rt, customerName, CellID, ComponentID)
 	_roles, _ := _findComponentRoles(rt, ComponentID)
-	_listeners, _ := _FindComponentListeners(rt, customerName, CellID, ComponentID)
+	_listeners, _ := _findComponentListeners(rt, customerName, CellID, ComponentID)
 	//_relationships, _ := _findCellComponentRelationships(rt, customerName, CellID, ComponentID)
 
 	component = &models.Component{
@@ -478,6 +516,7 @@ func _getComponentByName(rt *configManager.Runtime, customerName *string, CellID
 		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return component
 	}
+	defer stmt.Close()
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"name":           swag.StringValue(customerName),
@@ -498,8 +537,6 @@ func _getComponentByName(rt *configManager.Runtime, customerName *string, CellID
 	component = &models.Component{
 		ID:   models.ULID(output[0].(string)),
 		Name: &_name}
-
-	stmt.Close()
 
 	return component
 }
@@ -526,6 +563,7 @@ func _getEntityType(rt *configManager.Runtime, CellID *string, EntityID *string)
 		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return ""
 	}
+	defer stmt.Close()
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"cell_id":   swag.StringValue(CellID),
@@ -546,7 +584,6 @@ func _getEntityType(rt *configManager.Runtime, CellID *string, EntityID *string)
 	case []interface{}:
 		return (x[0].(string))
 	}
-	stmt.Close()
 
 	return ""
 }
