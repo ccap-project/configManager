@@ -34,6 +34,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"configManager"
@@ -65,21 +66,22 @@ func (ctx *addCell) Handle(params cell.AddCellParams, principal *models.Customer
 
 	if getCellByName(ctx.rt, principal.Name, params.Body.Name) != nil {
 		ctxLogger.Error("cell already exists !")
-		return cell.NewAddCellConflict().WithPayload(models.APIResponse{Message: "cell already exists"})
+		return cell.NewAddCellConflict().WithPayload(&models.APIResponse{Message: "cell already exists"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return cell.NewAddCellInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return cell.NewAddCellInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return cell.NewAddCellInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return cell.NewAddCellInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
+	defer stmt.Close()
 
 	ulid := configManager.GetULID()
 
@@ -93,13 +95,13 @@ func (ctx *addCell) Handle(params cell.AddCellParams, principal *models.Customer
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return cell.NewAddCellInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return cell.NewAddCellInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	output, _, err := rows.NextNeo()
 	if err != nil {
 		ctxLogger.Error("An error occurred getting next row: ", err)
-		return cell.NewAddCellInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return cell.NewAddCellInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	ctxLogger.Info("OK")
@@ -249,7 +251,7 @@ func (ctx *getCellByID) Handle(params cell.GetCellByIDParams, principal *models.
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j:", err)
-		return cell.NewAddCellInternalServerError().WithPayload(models.APIResponse{Message: err.Error()})
+		return cell.NewAddCellInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	stmt, err := db.PrepareNeo(cypher)
@@ -389,6 +391,7 @@ func getCellByName(rt *configManager.Runtime, customerName *string, cellName *st
 		ctxLogger.Errorf("An error occurred preparing statement: ", err)
 		return cell
 	}
+	defer stmt.Close()
 
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"name":      swag.StringValue(customerName),
@@ -407,8 +410,6 @@ func getCellByName(rt *configManager.Runtime, customerName *string, cellName *st
 
 	cell = &models.Cell{ID: models.ULID(output[0].(string)),
 		Name: &_name}
-
-	stmt.Close()
 
 	return cell
 }
@@ -573,7 +574,7 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
 		"customer": swag.StringValue(customerName),
-		"cell_id":  cellID})
+		"cell_id":  swag.StringValue(cellID)})
 
 	db, err := rt.DB().OpenPool()
 
@@ -616,7 +617,7 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 		}
 
 		componentNode := getNodeByLabel(row, "Component")
-		componentID := componentNode["id"].(string)
+		//componentID := componentNode["id"].(string)
 
 		if res.Keypair.Name == nil {
 			keypairNode := getNodeByLabel(row, "Keypair")
@@ -702,9 +703,8 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 				hg.Username = copyString(hostgroupNode["username"])
 				hg.BootstrapCommand = *copyString(hostgroupNode["bootstrap_command"])
 				hg.Component = *copyString(componentNode["name"])
+				hg.Securitygroups = append(hg.Securitygroups, *copyString(componentNode["name"]))
 				hg.Count = new(int64)
-
-				hg.Listeners, _ = _FindComponentListeners(rt, customerName, cellID, &componentID)
 
 				// give ordering precedence to component value
 				if (hostgroupNode["order"] == nil && componentNode["order"] != nil) ||
@@ -720,7 +720,6 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 				*hg.Count = hostgroupNode["count"].(int64)
 
 				res.Hostgroups = append(res.Hostgroups, hg)
-
 			}
 
 			// Roles
@@ -761,6 +760,38 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 		}
 	}
 
+	/*
+	 * SecurityGroups
+	 */
+	components, _ := _listCellComponents(rt, customerName, cellID)
+
+	for _, componentName := range *components {
+
+		component := _getComponentByName(rt, customerName, cellID, &componentName)
+		securityGroup := &models.Securitygroup{
+			Name: componentName}
+		componentID := string(component.ID)
+
+		// build rules
+		listeners, _ := _findComponentListeners(rt, customerName, cellID, &componentID)
+
+		for _, listener := range listeners {
+
+			connections := getComponentListenerConnections(rt, customerName, cellID, &listener.ID)
+
+			for _, conn := range *connections {
+				var securityRule models.Securityrule
+
+				securityRule.SourceSecuritygroup = conn
+				securityRule.DestinationSecuritygroup = securityGroup.Name
+				securityRule.Proto = *listener.Protocol
+				securityRule.DestinationPort = strconv.Itoa(int(*listener.Port))
+
+				securityGroup.Rules = append(securityGroup.Rules, &securityRule)
+			}
+		}
+		res.Securitygroups = append(res.Securitygroups, securityGroup)
+	}
 	return (res)
 }
 
