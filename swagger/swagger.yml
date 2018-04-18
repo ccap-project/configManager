@@ -1912,6 +1912,8 @@ definitions:
         type: "string"
       connection_idle_timeout:
         type: "integer"
+      members:
+        type: "string"
 
   Parameter:
     type: "object"

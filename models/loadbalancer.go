@@ -56,6 +56,9 @@ type Loadbalancer struct {
 	// id
 	ID ULID `json:"id,omitempty"`
 
+	// members
+	Members string `json:"members,omitempty"`
+
 	// name
 	// Required: true
 	Name *string `json:"name"`

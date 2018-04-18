@@ -2850,6 +2850,9 @@ func init() {
         "id": {
           "$ref": "#/definitions/ULID"
         },
+        "members": {
+          "type": "string"
+        },
         "name": {
           "type": "string"
         },

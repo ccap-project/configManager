@@ -681,8 +681,6 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 			}
 
 		}
-		// Loadbalancers
-		res.Loadbalancers, _ = _findCellLoadbalancers(rt, customerName, cellID)
 
 		// Hostgroup
 		hostgroupNode := getNodeByLabel(row, "Hostgroup")
@@ -757,6 +755,24 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 					}
 				}
 			}
+		}
+	}
+
+	/*
+	 * Loadbalancers
+	 */
+	loadbalancers, _ := _findCellLoadbalancers(rt, customerName, cellID)
+	for _, lb := range loadbalancers {
+		ctxLogger.Infoln(*lb)
+		lbID := string(lb.ID)
+
+		// get lb members
+		_, _, _, member := _getLoadbalancerMembers(rt, customerName, cellID, &lbID)
+
+		if member != nil {
+
+			lb.Members = *member
+			res.Loadbalancers = append(res.Loadbalancers, lb)
 		}
 	}
 
