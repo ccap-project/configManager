@@ -54,7 +54,8 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell {id: {cell_id}})-[:PROVIDES]->
 							(component:Component {id: {component_id}})
-						CREATE (component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup {
+						 MATCH (cell)-[:HAS]->(network:Network {name: {hostgroup_network}})
+						MERGE (component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup {
 							id: {hostgroup_id},
 							name: {hostgroup_name},
 							image: {hostgroup_image},
@@ -62,13 +63,18 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 							username: {hostgroup_username},
 							bootstrap_command: {hostgroup_bootstrap_command},
 							count: {hostgroup_count},
-							network: {hostgroup_network},
-							order: {hostgroup_order} } )
+							order: {hostgroup_order} } )-[:CONNECTED_ON]->(network)
 							RETURN hostgroup.id as id`
 
 	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
 		"customer_name": swag.StringValue(principal.Name),
 		"cell_id":       params.CellID})
+
+	cellNetwork := _getNetworkByName(ctx.rt, principal.Name, &params.CellID, params.Body.Network)
+
+	if cellNetwork == nil {
+		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: "network not found"})
+	}
 
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
@@ -77,6 +83,7 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 	}
 	defer db.Close()
 
+	tx, err := db.Begin()
 	if err != nil {
 		ctxLogger.Error("An error occurred beginning transaction: ", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
@@ -109,9 +116,9 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 		"hostgroup_image":             swag.StringValue(params.Body.Image),
 		"hostgroup_flavor":            swag.StringValue(params.Body.Flavor),
 		"hostgroup_username":          swag.StringValue(params.Body.Username),
+		"hostgroup_network":           swag.StringValue(params.Body.Network),
 		"hostgroup_bootstrap_command": swag.StringValue(&params.Body.BootstrapCommand),
 		"hostgroup_count":             swag.Int64Value(params.Body.Count),
-		"hostgroup_network":           swag.StringValue(params.Body.Network),
 		"hostgroup_order":             swag.Int64Value(params.Body.Order)})
 
 	if err != nil {
@@ -125,6 +132,9 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 		ctxLogger.Error("An error occurred getting next row: ", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
+	stmt.Close()
+
+	tx.Commit()
 
 	return hostgroup.NewAddComponentHostgroupCreated().WithPayload(models.ULID(output[0].(string)))
 }

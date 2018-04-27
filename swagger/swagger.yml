@@ -1431,7 +1431,6 @@ paths:
           description: "Internal error"
           schema:
             $ref: "#/definitions/ApiResponse"
-
   /cell/{cell_id}/loadbalancer/{loadbalancer_id}:
     get:
       tags:
@@ -1458,7 +1457,6 @@ paths:
           description: "Internal error"
           schema:
             $ref: "#/definitions/ApiResponse"
-
   /cell/{cell_id}/loadbalancer/{loadbalancer_id}/connect_to/{listener_id}:
     delete:
       tags:
@@ -1504,6 +1502,103 @@ paths:
           description: "loadbalancer or component not found"
           schema:
             $ref: "#/definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+
+
+  /cell/{cell_id}/networks:
+    get:
+      tags:
+        - "network"
+      summary: "Finds Networks by Cell"
+      operationId: "findCellNetworks"
+      produces:
+        - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - $ref: '#/parameters/CellID'
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Network"
+        400:
+          description: "Invalid cell id"
+        404:
+          description: "network not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+  /cell/{cell_id}/network:
+    post:
+      tags:
+        - "network"
+      summary: "Add a new network"
+      description: ""
+      operationId: "addNetwork"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - $ref: '#/parameters/CellID'
+        - in: "body"
+          name: "body"
+          description: "Network object that needs to be added"
+          required: true
+          schema:
+            $ref: "#/definitions/Network"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/ULID"
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        409:
+          description: "Already exists"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+  /cell/{cell_id}/network/{network_id}:
+    get:
+      tags:
+        - "network"
+      summary: "Get Network"
+      operationId: "getCellNetwork"
+      produces:
+        - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - $ref: '#/parameters/CellID'
+        - $ref: '#/parameters/NetworkID'
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Network"
+          example:
+            id: 01C8KJMMYHPKYNXWWZFWQ61D0Z
+            name: test_network
+            cidr: 192.168.100.0/24
+        400:
+          description: "Invalid cell id or network id"
+        404:
+          description: "network not found"
         500:
           description: "Internal error"
           schema:
@@ -1676,6 +1771,16 @@ parameters:
     name: "loadbalancer_id"
     in: "path"
     description: "LoadbalancerID"
+    required: true
+    type: "string"
+    minLength: 26
+    maxLength: 26
+    pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
+
+  NetworkID:
+    name: "network_id"
+    in: "path"
+    description: "NetworkID"
     required: true
     type: "string"
     minLength: 26
@@ -1914,6 +2019,22 @@ definitions:
         type: "integer"
       members:
         type: "string"
+
+  Network:
+    type: "object"
+    required:
+      - name
+      - cidr
+    properties:
+      id:
+        $ref: "#/definitions/ULID"
+        example: 01C8KJMMYHPKYNXWWZFWQ61D0Z
+      name:
+        type: "string"
+        example: test_network
+      cidr:
+        type: "string"
+        example: 192.168.100.0/24
 
   Parameter:
     type: "object"
