@@ -60,6 +60,9 @@ type EntireCell struct {
 	// name
 	Name string `json:"name,omitempty"`
 
+	// networks
+	Networks EntireCellNetworks `json:"networks"`
+
 	// provider
 	Provider *Provider `json:"provider,omitempty"`
 

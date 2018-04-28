@@ -299,9 +299,12 @@ func _getNetworkByName(rt *configManager.Runtime, customerName *string, CellID *
 		return network
 	}
 	_name := output[1].(string)
+	_cidr := output[2].(string)
 
-	network = &models.Network{ID: models.ULID(output[0].(string)),
-		Name: &_name}
+	network = &models.Network{
+		ID:   models.ULID(output[0].(string)),
+		Name: &_name,
+		Cidr: &_cidr}
 
 	return network
 }

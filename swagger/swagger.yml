@@ -1881,6 +1881,10 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/Loadbalancer"
+      networks:
+        type: array
+        items:
+          $ref: "#/definitions/Network"
       securitygroups:
         type: "array"
         items:

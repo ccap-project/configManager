@@ -311,7 +311,7 @@ func _findCellLoadbalancers(rt *configManager.Runtime, customerName *string, Cel
 
 	var res []*models.Loadbalancer
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})-[:HAS]->(loadbalancer)
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})-[:HAS]->(loadbalancer:Loadbalancer)
 								RETURN loadbalancer.id as id,
 												loadbalancer.name as name`
 

@@ -2817,6 +2817,12 @@ func init() {
         "name": {
           "type": "string"
         },
+        "networks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Network"
+          }
+        },
         "provider": {
           "$ref": "#/definitions/Provider"
         },
@@ -3025,19 +3031,17 @@ func init() {
       ],
       "properties": {
         "cidr": {
-          "type": "string"
+          "type": "string",
+          "example": "192.168.100.0/24"
         },
         "id": {
-          "$ref": "#/definitions/ULID"
+          "$ref": "#/definitions/ULID",
+          "example": "01C8KJMMYHPKYNXWWZFWQ61D0Z"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "example": "test_network"
         }
-      },
-      "example": {
-        "cidr": "192.168.100.1",
-        "id": "SDASDASDASDAS",
-        "name": "test_network"
       }
     },
     "Parameter": {

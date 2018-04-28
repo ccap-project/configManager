@@ -763,7 +763,6 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 	 */
 	loadbalancers, _ := _findCellLoadbalancers(rt, customerName, cellID)
 	for _, lb := range loadbalancers {
-		ctxLogger.Infoln(*lb)
 		lbID := string(lb.ID)
 
 		// get lb members
@@ -775,6 +774,11 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 			res.Loadbalancers = append(res.Loadbalancers, lb)
 		}
 	}
+
+	/*
+	 * Networks
+	 */
+	res.Networks, _ = _findCellNetworks(rt, customerName, cellID)
 
 	/*
 	 * SecurityGroups
