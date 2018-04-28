@@ -470,7 +470,7 @@ func _getCellComponent(rt *configManager.Runtime, customerName *string, CellID *
 	}
 
 	_name := output[1].(string)
-	_hostgroups, _ := _FindComponentHostgroups(rt, customerName, CellID, ComponentID)
+	_hostgroups, _ := _findComponentHostgroups(rt, customerName, CellID, ComponentID)
 	_roles, _ := _findComponentRoles(rt, ComponentID)
 	_listeners, _ := _findComponentListeners(rt, customerName, CellID, ComponentID)
 	//_relationships, _ := _findCellComponentRelationships(rt, customerName, CellID, ComponentID)

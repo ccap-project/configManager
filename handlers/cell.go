@@ -616,7 +616,7 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 			}
 		}
 
-		componentNode := getNodeByLabel(row, "Component")
+		//componentNode := getNodeByLabel(row, "Component")
 		//componentID := componentNode["id"].(string)
 
 		if res.Keypair.Name == nil {
@@ -682,80 +682,82 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 
 		}
 
-		// Hostgroup
-		hostgroupNode := getNodeByLabel(row, "Hostgroup")
+		/*
+			// Hostgroup
+			hostgroupNode := getNodeByLabel(row, "Hostgroup")
 
-		if len(hostgroupNode) > 0 {
+			if len(hostgroupNode) > 0 {
 
-			var hg *models.Hostgroup
+				var hg *models.Hostgroup
 
-			hg = getHostgroupByName(res.Hostgroups, hostgroupNode["name"].(string))
+				hg = getHostgroupByName(res.Hostgroups, hostgroupNode["name"].(string))
 
-			if hg == nil {
-				hg = new(models.Hostgroup)
+				if hg == nil {
+					hg = new(models.Hostgroup)
 
-				hg.Flavor = copyString(hostgroupNode["flavor"])
-				hg.Image = copyString(hostgroupNode["image"])
-				hg.Name = copyString(hostgroupNode["name"])
-				hg.Network = copyString(hostgroupNode["network"])
-				hg.Username = copyString(hostgroupNode["username"])
-				hg.BootstrapCommand = *copyString(hostgroupNode["bootstrap_command"])
-				hg.Component = *copyString(componentNode["name"])
-				hg.Securitygroups = append(hg.Securitygroups, *copyString(componentNode["name"]))
-				hg.Count = new(int64)
+					hg.Flavor = copyString(hostgroupNode["flavor"])
+					hg.Image = copyString(hostgroupNode["image"])
+					hg.Name = copyString(hostgroupNode["name"])
+					hg.Network = copyString(hostgroupNode["network"])
+					hg.Username = copyString(hostgroupNode["username"])
+					hg.BootstrapCommand = *copyString(hostgroupNode["bootstrap_command"])
+					hg.Component = *copyString(componentNode["name"])
+					hg.Securitygroups = append(hg.Securitygroups, *copyString(componentNode["name"]))
+					hg.Count = new(int64)
 
-				// give ordering precedence to component value
-				if (hostgroupNode["order"] == nil && componentNode["order"] != nil) ||
-					(componentNode["order"] != nil && componentNode["order"].(int64) <= hostgroupNode["order"].(int64)) {
-					hg.Order = new(int64)
-					*hg.Order = componentNode["order"].(int64)
+					// give ordering precedence to component value
+					if (hostgroupNode["order"] == nil && componentNode["order"] != nil) ||
+						(componentNode["order"] != nil && componentNode["order"].(int64) <= hostgroupNode["order"].(int64)) {
+						hg.Order = new(int64)
+						*hg.Order = componentNode["order"].(int64)
 
-				} else if hostgroupNode["order"] != nil {
-					hg.Order = new(int64)
-					*hg.Order = hostgroupNode["order"].(int64)
+					} else if hostgroupNode["order"] != nil {
+						hg.Order = new(int64)
+						*hg.Order = hostgroupNode["order"].(int64)
+					}
+
+					*hg.Count = hostgroupNode["count"].(int64)
+
+					res.Hostgroups = append(res.Hostgroups, hg)
 				}
 
-				*hg.Count = hostgroupNode["count"].(int64)
+				// Roles
+				roleNode := getNodeByLabel(row, "Role")
 
-				res.Hostgroups = append(res.Hostgroups, hg)
-			}
+				if len(roleNode) > 0 {
 
-			// Roles
-			roleNode := getNodeByLabel(row, "Role")
+					var role *models.Role
 
-			if len(roleNode) > 0 {
+					role = getRoleByName(hg.Roles, roleNode["name"].(string))
 
-				var role *models.Role
+					if role == nil {
+						role = new(models.Role)
 
-				role = getRoleByName(hg.Roles, roleNode["name"].(string))
+						role.Name = copyString(roleNode["name"])
+						role.URL = copyString(roleNode["url"])
+						role.Version = copyString(roleNode["version"])
 
-				if role == nil {
-					role = new(models.Role)
+						hg.Roles = append(hg.Roles, role)
+					}
 
-					role.Name = copyString(roleNode["name"])
-					role.URL = copyString(roleNode["url"])
-					role.Version = copyString(roleNode["version"])
+					parameterNode := getNodeByLabel(row, "Parameter")
 
-					hg.Roles = append(hg.Roles, role)
-				}
+					if parameterNode != nil {
+						var parameter *models.Parameter
+						parameter = getParameterByName(role.Params, parameterNode["name"].(string))
 
-				parameterNode := getNodeByLabel(row, "Parameter")
+						if parameter == nil {
+							parameter = new(models.Parameter)
 
-				if parameterNode != nil {
-					var parameter *models.Parameter
-					parameter = getParameterByName(role.Params, parameterNode["name"].(string))
+							parameter.Name = copyString(parameterNode["name"])
+							parameter.Value = copyString(parameterNode["value"])
 
-					if parameter == nil {
-						parameter = new(models.Parameter)
-
-						parameter.Name = copyString(parameterNode["name"])
-						parameter.Value = copyString(parameterNode["value"])
-
-						role.Params = append(role.Params, parameter)
+							role.Params = append(role.Params, parameter)
+						}
 					}
 				}
 			}
-		}
+		*/
 	}
 
 	/*
@@ -783,19 +785,38 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 	/*
 	 * SecurityGroups
 	 */
-	components, _ := _listCellComponents(rt, customerName, cellID)
+	components, _ := _findCellComponents(rt, customerName, cellID)
 
-	for _, componentName := range *components {
+	for _, component := range components {
 
-		component := _getComponentByName(rt, customerName, cellID, &componentName)
-		securityGroup := &models.Securitygroup{
-			Name: componentName}
-		componentID := string(component.ID)
+		//component := _getComponentByName(rt, customerName, cellID, &componentName)
+		securityGroup := &models.Securitygroup{Name: *component.Name}
+		//componentID := string(component.ID)
 
-		// build rules
-		listeners, _ := _findComponentListeners(rt, customerName, cellID, &componentID)
+		// build Hostgroups
+		//hostGroups, _ := findComponentHostgroups(rt, customerName, cellID, componentID)
 
-		for _, listener := range listeners {
+		for _, hg := range component.Hostgroups {
+
+			hg.Securitygroups = append(hg.Securitygroups, *component.Name)
+
+			// give ordering precedence to component value
+			if (hg.Order == nil && component.Order != nil) ||
+				(component.Order != nil && *component.Order <= *hg.Order) {
+				hg.Order = new(int64)
+				hg.Order = component.Order
+
+			} else if hg.Order != nil {
+				hg.Order = new(int64)
+				hg.Order = hg.Order
+			}
+			hg.Roles = models.HostgroupRoles(component.Roles)
+			res.Hostgroups = append(res.Hostgroups, hg)
+
+		}
+
+		// build SecurityRules
+		for _, listener := range component.Listeners {
 
 			connections := getComponentListenerConnections(rt, customerName, cellID, &listener.ID)
 

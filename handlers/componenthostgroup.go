@@ -222,7 +222,7 @@ type findComponentHostgroups struct {
 
 func (ctx *findComponentHostgroups) Handle(params hostgroup.FindComponentHostgroupsParams, principal *models.Customer) middleware.Responder {
 
-	data, err := _FindComponentHostgroups(ctx.rt, principal.Name, &params.CellID, &params.ComponentID)
+	data, err := _findComponentHostgroups(ctx.rt, principal.Name, &params.CellID, &params.ComponentID)
 
 	if err != nil {
 		return err
@@ -231,11 +231,12 @@ func (ctx *findComponentHostgroups) Handle(params hostgroup.FindComponentHostgro
 	return hostgroup.NewFindComponentHostgroupsOK().WithPayload(data)
 }
 
-func _FindComponentHostgroups(rt *configManager.Runtime, customerName *string, CellID *string, ComponentID *string) ([]*models.Hostgroup, middleware.Responder) {
+func _findComponentHostgroups(rt *configManager.Runtime, customerName *string, CellID *string, ComponentID *string) ([]*models.Hostgroup, middleware.Responder) {
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell{id: {cell_id}})-[:PROVIDES]->
-							(component:Component {id: {component_id}})-[:DEPLOYED_ON]->(hostgroup:Hostgroup)
+							(component:Component {id: {component_id}})-[:DEPLOYED_ON]->
+							(hostgroup:Hostgroup)-[:CONNECTED_ON]->(network:Network)
 						RETURN hostgroup.id as id,
 										hostgroup.name as name,
 										hostgroup.image as image,
@@ -243,7 +244,7 @@ func _FindComponentHostgroups(rt *configManager.Runtime, customerName *string, C
 										hostgroup.username as username,
 										hostgroup.bootstrap_command as bootstrap_command,
 										hostgroup.count as count,
-										hostgroup.network as network,
+										network.name as network,
 										hostgroup.order as order`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
