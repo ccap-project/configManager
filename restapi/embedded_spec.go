@@ -1771,6 +1771,156 @@ func init() {
         }
       }
     },
+    "/cell/{cell_id}/network": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "network"
+        ],
+        "summary": "Add a new network",
+        "operationId": "addNetwork",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/CellID"
+          },
+          {
+            "description": "Network object that needs to be added",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Network"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/ULID"
+            }
+          },
+          "405": {
+            "description": "Invalid input",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          },
+          "409": {
+            "description": "Already exists",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/cell/{cell_id}/network/{network_id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "network"
+        ],
+        "summary": "Get Network",
+        "operationId": "getCellNetwork",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/CellID"
+          },
+          {
+            "$ref": "#/parameters/NetworkID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Network"
+            }
+          },
+          "400": {
+            "description": "Invalid cell id or network id"
+          },
+          "404": {
+            "description": "network not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/cell/{cell_id}/networks": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "network"
+        ],
+        "summary": "Finds Networks by Cell",
+        "operationId": "findCellNetworks",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/CellID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Network"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid cell id"
+          },
+          "404": {
+            "description": "network not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
     "/cell/{cell_id}/provider": {
       "get": {
         "description": "Returns cell's provider",
@@ -2667,6 +2817,12 @@ func init() {
         "name": {
           "type": "string"
         },
+        "networks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Network"
+          }
+        },
         "provider": {
           "$ref": "#/definitions/Provider"
         },
@@ -2856,6 +3012,9 @@ func init() {
         "name": {
           "type": "string"
         },
+        "network": {
+          "type": "string"
+        },
         "port": {
           "type": "integer"
         },
@@ -2864,6 +3023,27 @@ func init() {
         },
         "type": {
           "type": "string"
+        }
+      }
+    },
+    "Network": {
+      "type": "object",
+      "required": [
+        "name",
+        "cidr"
+      ],
+      "properties": {
+        "cidr": {
+          "type": "string",
+          "example": "192.168.100.0/24"
+        },
+        "id": {
+          "$ref": "#/definitions/ULID",
+          "example": "01C8KJMMYHPKYNXWWZFWQ61D0Z"
+        },
+        "name": {
+          "type": "string",
+          "example": "test_network"
         }
       }
     },
@@ -3120,6 +3300,16 @@ func init() {
       "type": "string",
       "description": "LoadbalancerID",
       "name": "loadbalancer_id",
+      "in": "path",
+      "required": true
+    },
+    "NetworkID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "NetworkID",
+      "name": "network_id",
       "in": "path",
       "required": true
     },

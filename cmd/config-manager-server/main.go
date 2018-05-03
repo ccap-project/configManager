@@ -165,6 +165,11 @@ func main() {
 	api.LoadbalancerAddLoadbalancerRelationshipHandler = handlers.NewAddLoadbalancerRelationship(rt)
 	api.LoadbalancerDeleteLoadbalancerRelationshipHandler = handlers.NewDeleteLoadbalancerRelationship(rt)
 
+	// Network
+	api.NetworkAddNetworkHandler = handlers.NewAddCellNetwork(rt)
+	api.NetworkGetCellNetworkHandler = handlers.NewGetCellNetwork(rt)
+	api.NetworkFindCellNetworksHandler = handlers.NewFindCellNetworks(rt)
+
 	// Provider
 	api.ProviderAddProviderHandler = handlers.NewAddProvider(rt)
 	api.ProviderGetProviderHandler = handlers.NewGetProvider(rt)

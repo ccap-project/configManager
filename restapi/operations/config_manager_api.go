@@ -54,6 +54,7 @@ import (
 	"configManager/restapi/operations/keypair"
 	"configManager/restapi/operations/listener"
 	"configManager/restapi/operations/loadbalancer"
+	"configManager/restapi/operations/network"
 	"configManager/restapi/operations/provider"
 	"configManager/restapi/operations/providertype"
 	"configManager/restapi/operations/role"
@@ -126,6 +127,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		LoadbalancerAddLoadbalancerRelationshipHandler: loadbalancer.AddLoadbalancerRelationshipHandlerFunc(func(params loadbalancer.AddLoadbalancerRelationshipParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation LoadbalancerAddLoadbalancerRelationship has not yet been implemented")
 		}),
+		NetworkAddNetworkHandler: network.AddNetworkHandlerFunc(func(params network.AddNetworkParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation NetworkAddNetwork has not yet been implemented")
+		}),
 		ProviderAddProviderHandler: provider.AddProviderHandlerFunc(func(params provider.AddProviderParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation ProviderAddProvider has not yet been implemented")
 		}),
@@ -168,6 +172,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		LoadbalancerFindCellLoadbalancersHandler: loadbalancer.FindCellLoadbalancersHandlerFunc(func(params loadbalancer.FindCellLoadbalancersParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation LoadbalancerFindCellLoadbalancers has not yet been implemented")
 		}),
+		NetworkFindCellNetworksHandler: network.FindCellNetworksHandlerFunc(func(params network.FindCellNetworksParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation NetworkFindCellNetworks has not yet been implemented")
+		}),
 		HostgroupFindComponentHostgroupsHandler: hostgroup.FindComponentHostgroupsHandlerFunc(func(params hostgroup.FindComponentHostgroupsParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupFindComponentHostgroups has not yet been implemented")
 		}),
@@ -194,6 +201,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		}),
 		LoadbalancerGetCellLoadbalancerHandler: loadbalancer.GetCellLoadbalancerHandlerFunc(func(params loadbalancer.GetCellLoadbalancerParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation LoadbalancerGetCellLoadbalancer has not yet been implemented")
+		}),
+		NetworkGetCellNetworkHandler: network.GetCellNetworkHandlerFunc(func(params network.GetCellNetworkParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation NetworkGetCellNetwork has not yet been implemented")
 		}),
 		HostgroupGetComponentHostgroupByIDHandler: hostgroup.GetComponentHostgroupByIDHandlerFunc(func(params hostgroup.GetComponentHostgroupByIDParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupGetComponentHostgroupByID has not yet been implemented")
@@ -317,6 +327,8 @@ type ConfigManagerAPI struct {
 	LoadbalancerAddLoadbalancerHandler loadbalancer.AddLoadbalancerHandler
 	// LoadbalancerAddLoadbalancerRelationshipHandler sets the operation handler for the add loadbalancer relationship operation
 	LoadbalancerAddLoadbalancerRelationshipHandler loadbalancer.AddLoadbalancerRelationshipHandler
+	// NetworkAddNetworkHandler sets the operation handler for the add network operation
+	NetworkAddNetworkHandler network.AddNetworkHandler
 	// ProviderAddProviderHandler sets the operation handler for the add provider operation
 	ProviderAddProviderHandler provider.AddProviderHandler
 	// ProvidertypeAddProviderTypeHandler sets the operation handler for the add provider type operation
@@ -345,6 +357,8 @@ type ConfigManagerAPI struct {
 	HostFindCellHostsHandler host.FindCellHostsHandler
 	// LoadbalancerFindCellLoadbalancersHandler sets the operation handler for the find cell loadbalancers operation
 	LoadbalancerFindCellLoadbalancersHandler loadbalancer.FindCellLoadbalancersHandler
+	// NetworkFindCellNetworksHandler sets the operation handler for the find cell networks operation
+	NetworkFindCellNetworksHandler network.FindCellNetworksHandler
 	// HostgroupFindComponentHostgroupsHandler sets the operation handler for the find component hostgroups operation
 	HostgroupFindComponentHostgroupsHandler hostgroup.FindComponentHostgroupsHandler
 	// ListenerFindComponentListenersHandler sets the operation handler for the find component listeners operation
@@ -363,6 +377,8 @@ type ConfigManagerAPI struct {
 	CellGetCellFullByIDHandler cell.GetCellFullByIDHandler
 	// LoadbalancerGetCellLoadbalancerHandler sets the operation handler for the get cell loadbalancer operation
 	LoadbalancerGetCellLoadbalancerHandler loadbalancer.GetCellLoadbalancerHandler
+	// NetworkGetCellNetworkHandler sets the operation handler for the get cell network operation
+	NetworkGetCellNetworkHandler network.GetCellNetworkHandler
 	// HostgroupGetComponentHostgroupByIDHandler sets the operation handler for the get component hostgroup by ID operation
 	HostgroupGetComponentHostgroupByIDHandler hostgroup.GetComponentHostgroupByIDHandler
 	// ListenerGetComponentListenerByIDHandler sets the operation handler for the get component listener by ID operation
@@ -530,6 +546,10 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "loadbalancer.AddLoadbalancerRelationshipHandler")
 	}
 
+	if o.NetworkAddNetworkHandler == nil {
+		unregistered = append(unregistered, "network.AddNetworkHandler")
+	}
+
 	if o.ProviderAddProviderHandler == nil {
 		unregistered = append(unregistered, "provider.AddProviderHandler")
 	}
@@ -586,6 +606,10 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "loadbalancer.FindCellLoadbalancersHandler")
 	}
 
+	if o.NetworkFindCellNetworksHandler == nil {
+		unregistered = append(unregistered, "network.FindCellNetworksHandler")
+	}
+
 	if o.HostgroupFindComponentHostgroupsHandler == nil {
 		unregistered = append(unregistered, "hostgroup.FindComponentHostgroupsHandler")
 	}
@@ -620,6 +644,10 @@ func (o *ConfigManagerAPI) Validate() error {
 
 	if o.LoadbalancerGetCellLoadbalancerHandler == nil {
 		unregistered = append(unregistered, "loadbalancer.GetCellLoadbalancerHandler")
+	}
+
+	if o.NetworkGetCellNetworkHandler == nil {
+		unregistered = append(unregistered, "network.GetCellNetworkHandler")
 	}
 
 	if o.HostgroupGetComponentHostgroupByIDHandler == nil {
@@ -871,6 +899,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
+	o.handlers["POST"]["/cell/{cell_id}/network"] = network.NewAddNetwork(o.context, o.NetworkAddNetworkHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
 	o.handlers["POST"]["/cell/{cell_id}/provider"] = provider.NewAddProvider(o.context, o.ProviderAddProviderHandler)
 
 	if o.handlers["POST"] == nil {
@@ -941,6 +974,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/cell/{cell_id}/networks"] = network.NewFindCellNetworks(o.context, o.NetworkFindCellNetworksHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/cell/{cell_id}/component/{component_id}/hostgroups"] = hostgroup.NewFindComponentHostgroups(o.context, o.HostgroupFindComponentHostgroupsHandler)
 
 	if o.handlers["GET"] == nil {
@@ -982,6 +1020,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/cell/{cell_id}/loadbalancer/{loadbalancer_id}"] = loadbalancer.NewGetCellLoadbalancer(o.context, o.LoadbalancerGetCellLoadbalancerHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/cell/{cell_id}/network/{network_id}"] = network.NewGetCellNetwork(o.context, o.NetworkGetCellNetworkHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

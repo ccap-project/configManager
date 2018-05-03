@@ -311,7 +311,7 @@ func _findCellLoadbalancers(rt *configManager.Runtime, customerName *string, Cel
 
 	var res []*models.Loadbalancer
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})-[:HAS]->(loadbalancer)
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})-[:HAS]->(loadbalancer:Loadbalancer)
 								RETURN loadbalancer.id as id,
 												loadbalancer.name as name`
 
@@ -517,4 +517,55 @@ func _getLoadbalancerMembers(rt *configManager.Runtime, customerName *string, Ce
 	_member := output[3].(string)
 
 	return &_name, &_port, &_protocol, &_member
+}
+
+func _getLoadbalancerNetwork(rt *configManager.Runtime, customerName *string, CellID *string, LoadbalancerID *string) (network *string) {
+
+	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->
+										(cell:Cell {id: {cell_id}})-[:HAS]->
+										(loadbalancer:Loadbalancer {id: {loadbalancer_id}})-[:CONNECT_TO]->
+										(listener:Listener)<-[:LISTEN_ON]-(Component)-[:DEPLOYED_ON]->
+										(hg:Hostgroup)-[:CONNECTED_ON]->(network:Network)
+								RETURN network.name`
+
+	db, err := rt.DB().OpenPool()
+	ctxLogger := rt.Logger().WithFields(logrus.Fields{
+		"customer_name":   swag.StringValue(customerName),
+		"cell_id":         swag.StringValue(CellID),
+		"loadbalancer_id": swag.StringValue(LoadbalancerID)})
+
+	if err != nil {
+		ctxLogger.Error("error connecting to neo4j: ", err)
+		return nil
+	}
+	defer db.Close()
+
+	stmt, err := db.PrepareNeo(cypher)
+	if err != nil {
+		ctxLogger.Error("An error occurred preparing statement: ", err)
+		return nil
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.QueryNeo(map[string]interface{}{
+		"name":            swag.StringValue(customerName),
+		"cell_id":         swag.StringValue(CellID),
+		"loadbalancer_id": swag.StringValue(LoadbalancerID)})
+
+	if err != nil {
+		ctxLogger.Error("An error occurred querying Neo: ", err)
+		return nil
+	}
+
+	output, _, err := rows.NextNeo()
+	if err != nil {
+		return nil
+	}
+
+	ctxLogger.Infoln(output)
+
+	_network := output[0].(string)
+
+	return &_network
+
 }

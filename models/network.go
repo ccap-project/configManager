@@ -39,50 +39,27 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// Loadbalancer loadbalancer
-// swagger:model Loadbalancer
-type Loadbalancer struct {
+// Network network
+// swagger:model Network
+type Network struct {
 
-	// algorithm
+	// cidr
 	// Required: true
-	Algorithm *string `json:"algorithm"`
-
-	// connection drain
-	ConnectionDrain string `json:"connection_drain,omitempty"`
-
-	// connection idle timeout
-	ConnectionIDLETimeout int64 `json:"connection_idle_timeout,omitempty"`
+	Cidr *string `json:"cidr"`
 
 	// id
 	ID ULID `json:"id,omitempty"`
 
-	// members
-	Members string `json:"members,omitempty"`
-
 	// name
 	// Required: true
 	Name *string `json:"name"`
-
-	// network
-	Network string `json:"network,omitempty"`
-
-	// port
-	// Required: true
-	Port *int64 `json:"port"`
-
-	// protocol
-	// Required: true
-	Protocol *string `json:"protocol"`
-
-	// type
-	Type string `json:"type,omitempty"`
 }
 
-// Validate validates this loadbalancer
-func (m *Loadbalancer) Validate(formats strfmt.Registry) error {
+// Validate validates this network
+func (m *Network) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateAlgorithm(formats); err != nil {
+	if err := m.validateCidr(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -97,32 +74,22 @@ func (m *Loadbalancer) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validatePort(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateProtocol(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
 	return nil
 }
 
-func (m *Loadbalancer) validateAlgorithm(formats strfmt.Registry) error {
+func (m *Network) validateCidr(formats strfmt.Registry) error {
 
-	if err := validate.Required("algorithm", "body", m.Algorithm); err != nil {
+	if err := validate.Required("cidr", "body", m.Cidr); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *Loadbalancer) validateID(formats strfmt.Registry) error {
+func (m *Network) validateID(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.ID) { // not required
 		return nil
@@ -138,7 +105,7 @@ func (m *Loadbalancer) validateID(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Loadbalancer) validateName(formats strfmt.Registry) error {
+func (m *Network) validateName(formats strfmt.Registry) error {
 
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
@@ -147,26 +114,8 @@ func (m *Loadbalancer) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Loadbalancer) validatePort(formats strfmt.Registry) error {
-
-	if err := validate.Required("port", "body", m.Port); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Loadbalancer) validateProtocol(formats strfmt.Registry) error {
-
-	if err := validate.Required("protocol", "body", m.Protocol); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // MarshalBinary interface implementation
-func (m *Loadbalancer) MarshalBinary() ([]byte, error) {
+func (m *Network) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -174,8 +123,8 @@ func (m *Loadbalancer) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Loadbalancer) UnmarshalBinary(b []byte) error {
-	var res Loadbalancer
+func (m *Network) UnmarshalBinary(b []byte) error {
+	var res Network
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
