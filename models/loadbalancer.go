@@ -63,6 +63,9 @@ type Loadbalancer struct {
 	// Required: true
 	Name *string `json:"name"`
 
+	// network
+	Network string `json:"network,omitempty"`
+
 	// port
 	// Required: true
 	Port *int64 `json:"port"`

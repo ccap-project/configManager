@@ -3012,6 +3012,9 @@ func init() {
         "name": {
           "type": "string"
         },
+        "network": {
+          "type": "string"
+        },
         "port": {
           "type": "integer"
         },

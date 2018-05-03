@@ -2023,6 +2023,8 @@ definitions:
         type: "integer"
       members:
         type: "string"
+      network:
+        type: "string"
 
   Network:
     type: "object"

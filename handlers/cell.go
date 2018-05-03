@@ -770,6 +770,8 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 		// get lb members
 		_, _, _, member := _getLoadbalancerMembers(rt, customerName, cellID, &lbID)
 
+		lb.Network = *_getLoadbalancerNetwork(rt, customerName, cellID, &lbID)
+
 		if member != nil {
 
 			lb.Members = *member
