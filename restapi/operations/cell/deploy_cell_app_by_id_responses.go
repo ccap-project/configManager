@@ -171,6 +171,49 @@ func (o *DeployCellAppByIDMethodNotAllowed) WriteResponse(rw http.ResponseWriter
 	}
 }
 
+// DeployCellAppByIDPreconditionRequiredCode is the HTTP code returned for type DeployCellAppByIDPreconditionRequired
+const DeployCellAppByIDPreconditionRequiredCode int = 428
+
+/*DeployCellAppByIDPreconditionRequired Cell incomplete
+
+swagger:response deployCellAppByIdPreconditionRequired
+*/
+type DeployCellAppByIDPreconditionRequired struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.APIResponse `json:"body,omitempty"`
+}
+
+// NewDeployCellAppByIDPreconditionRequired creates DeployCellAppByIDPreconditionRequired with default headers values
+func NewDeployCellAppByIDPreconditionRequired() *DeployCellAppByIDPreconditionRequired {
+	return &DeployCellAppByIDPreconditionRequired{}
+}
+
+// WithPayload adds the payload to the deploy cell app by Id precondition required response
+func (o *DeployCellAppByIDPreconditionRequired) WithPayload(payload *models.APIResponse) *DeployCellAppByIDPreconditionRequired {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the deploy cell app by Id precondition required response
+func (o *DeployCellAppByIDPreconditionRequired) SetPayload(payload *models.APIResponse) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *DeployCellAppByIDPreconditionRequired) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(428)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // DeployCellAppByIDInternalServerErrorCode is the HTTP code returned for type DeployCellAppByIDInternalServerError
 const DeployCellAppByIDInternalServerErrorCode int = 500
 

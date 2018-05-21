@@ -1263,6 +1263,12 @@ func init() {
               "$ref": "#/definitions/ApiResponse"
             }
           },
+          "428": {
+            "description": "Cell incomplete",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          },
           "500": {
             "description": "Internal error",
             "schema": {
@@ -1308,6 +1314,12 @@ func init() {
           },
           "405": {
             "description": "Invalid input",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          },
+          "428": {
+            "description": "Cell incomplete",
             "schema": {
               "$ref": "#/definitions/ApiResponse"
             }
@@ -2048,6 +2060,12 @@ func init() {
             "description": "Created",
             "schema": {
               "$ref": "#/definitions/ULID"
+            }
+          },
+          "400": {
+            "description": "Invalid parameters",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
             }
           },
           "409": {
@@ -3067,16 +3085,10 @@ func init() {
     },
     "Provider": {
       "type": "object",
-      "required": [
-        "name",
-        "domain_name",
-        "auth_url",
-        "tenant_name",
-        "username",
-        "password",
-        "type"
-      ],
       "properties": {
+        "access_key": {
+          "type": "string"
+        },
         "auth_url": {
           "type": "string"
         },
@@ -3090,6 +3102,12 @@ func init() {
           "type": "string"
         },
         "password": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "secret_key": {
           "type": "string"
         },
         "tenant_name": {
@@ -3106,6 +3124,9 @@ func init() {
     "ProviderType": {
       "type": "object",
       "properties": {
+        "access_key": {
+          "type": "string"
+        },
         "auth_url": {
           "type": "string"
         },
@@ -3119,6 +3140,12 @@ func init() {
           "type": "string"
         },
         "password": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "secret_key": {
           "type": "string"
         },
         "username": {

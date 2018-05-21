@@ -611,6 +611,10 @@ paths:
           description: "Invalid input"
           schema:
             $ref: "#/definitions/ApiResponse"
+        428:
+          description: "Cell incomplete"
+          schema:
+            $ref: "#/definitions/ApiResponse"
         500:
           description: "Internal error"
           schema:
@@ -640,6 +644,10 @@ paths:
           description: "Cell not found"
         405:
           description: "Invalid input"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        428:
+          description: "Cell incomplete"
           schema:
             $ref: "#/definitions/ApiResponse"
         500:
@@ -1652,6 +1660,10 @@ paths:
           description: "Created"
           schema:
             $ref: "#/definitions/ULID"
+        400:
+          description: "Invalid parameters"
+          schema:
+            $ref: "#/definitions/ApiResponse"
         409:
           description: "Already exists"
           schema:
@@ -2057,17 +2069,11 @@ definitions:
 
   Provider:
     type: object
-    required:
-      - name
-      - domain_name
-      - auth_url
-      - tenant_name
-      - username
-      - password
-      - type
     properties:
       id:
         $ref: "#/definitions/ULID"
+      access_key:
+        type: string
       auth_url:
         type: string
       domain_name:
@@ -2077,6 +2083,10 @@ definitions:
       tenant_name:
         type: string
       password:
+        type: string
+      region:
+        type: string
+      secret_key:
         type: string
       username:
         type: string
@@ -2088,6 +2098,8 @@ definitions:
     properties:
       id:
         $ref: "#/definitions/ULID"
+      access_key:
+        type: string
       auth_url:
         type: string
       domain_name:
@@ -2095,6 +2107,10 @@ definitions:
       name:
         type: string
       password:
+        type: string
+      region:
+        type: string
+      secret_key:
         type: string
       username:
         type: string

@@ -81,6 +81,49 @@ func (o *AddProviderCreated) WriteResponse(rw http.ResponseWriter, producer runt
 
 }
 
+// AddProviderBadRequestCode is the HTTP code returned for type AddProviderBadRequest
+const AddProviderBadRequestCode int = 400
+
+/*AddProviderBadRequest Invalid parameters
+
+swagger:response addProviderBadRequest
+*/
+type AddProviderBadRequest struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.APIResponse `json:"body,omitempty"`
+}
+
+// NewAddProviderBadRequest creates AddProviderBadRequest with default headers values
+func NewAddProviderBadRequest() *AddProviderBadRequest {
+	return &AddProviderBadRequest{}
+}
+
+// WithPayload adds the payload to the add provider bad request response
+func (o *AddProviderBadRequest) WithPayload(payload *models.APIResponse) *AddProviderBadRequest {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the add provider bad request response
+func (o *AddProviderBadRequest) SetPayload(payload *models.APIResponse) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *AddProviderBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(400)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // AddProviderConflictCode is the HTTP code returned for type AddProviderConflict
 const AddProviderConflictCode int = 409
 
