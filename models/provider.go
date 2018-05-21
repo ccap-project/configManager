@@ -36,85 +36,51 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
-	"github.com/go-openapi/validate"
 )
 
 // Provider provider
 // swagger:model Provider
 type Provider struct {
 
+	// access key
+	AccessKey string `json:"access_key,omitempty"`
+
 	// auth url
-	// Required: true
-	AuthURL *string `json:"auth_url"`
+	AuthURL string `json:"auth_url,omitempty"`
 
 	// domain name
-	// Required: true
-	DomainName *string `json:"domain_name"`
+	DomainName string `json:"domain_name,omitempty"`
 
 	// id
 	ID ULID `json:"id,omitempty"`
 
 	// name
-	// Required: true
-	Name *string `json:"name"`
+	Name string `json:"name,omitempty"`
 
 	// password
-	// Required: true
-	Password *string `json:"password"`
+	Password string `json:"password,omitempty"`
+
+	// region
+	Region string `json:"region,omitempty"`
+
+	// secret key
+	SecretKey string `json:"secret_key,omitempty"`
 
 	// tenant name
-	// Required: true
-	TenantName *string `json:"tenant_name"`
+	TenantName string `json:"tenant_name,omitempty"`
 
 	// type
-	// Required: true
-	Type *string `json:"type"`
+	Type string `json:"type,omitempty"`
 
 	// username
-	// Required: true
-	Username *string `json:"username"`
+	Username string `json:"username,omitempty"`
 }
 
 // Validate validates this provider
 func (m *Provider) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateAuthURL(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateDomainName(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
 	if err := m.validateID(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateName(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validatePassword(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateTenantName(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateType(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateUsername(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -122,24 +88,6 @@ func (m *Provider) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *Provider) validateAuthURL(formats strfmt.Registry) error {
-
-	if err := validate.Required("auth_url", "body", m.AuthURL); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Provider) validateDomainName(formats strfmt.Registry) error {
-
-	if err := validate.Required("domain_name", "body", m.DomainName); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -153,51 +101,6 @@ func (m *Provider) validateID(formats strfmt.Registry) error {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("id")
 		}
-		return err
-	}
-
-	return nil
-}
-
-func (m *Provider) validateName(formats strfmt.Registry) error {
-
-	if err := validate.Required("name", "body", m.Name); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Provider) validatePassword(formats strfmt.Registry) error {
-
-	if err := validate.Required("password", "body", m.Password); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Provider) validateTenantName(formats strfmt.Registry) error {
-
-	if err := validate.Required("tenant_name", "body", m.TenantName); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Provider) validateType(formats strfmt.Registry) error {
-
-	if err := validate.Required("type", "body", m.Type); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Provider) validateUsername(formats strfmt.Registry) error {
-
-	if err := validate.Required("username", "body", m.Username); err != nil {
 		return err
 	}
 

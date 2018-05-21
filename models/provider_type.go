@@ -42,6 +42,9 @@ import (
 // swagger:model ProviderType
 type ProviderType struct {
 
+	// access key
+	AccessKey string `json:"access_key,omitempty"`
+
 	// auth url
 	AuthURL string `json:"auth_url,omitempty"`
 
@@ -56,6 +59,12 @@ type ProviderType struct {
 
 	// password
 	Password string `json:"password,omitempty"`
+
+	// region
+	Region string `json:"region,omitempty"`
+
+	// secret key
+	SecretKey string `json:"secret_key,omitempty"`
 
 	// username
 	Username string `json:"username,omitempty"`
