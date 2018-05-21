@@ -401,7 +401,6 @@ func _getComponentHostgroupByID(rt *configManager.Runtime, customer *string, cel
 											hostgroup.username as username,
 											hostgroup.bootstrap_command as bootstrap_command,
 											hostgroup.count as count,
-											hostgroup.network as network,
 											hostgroup.order as order`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
@@ -446,14 +445,14 @@ func _getComponentHostgroupByID(rt *configManager.Runtime, customer *string, cel
 	_username := output[4].(string)
 	_bootstrap_command := ""
 	_count := output[6].(int64)
-	_network := output[7].(string)
+	//_network := output[7].(string)
 
 	var _order int64
 
-	if output[8].(int64) <= 0 {
+	if output[7].(int64) <= 0 {
 		_order = 99
 	} else {
-		_order = output[8].(int64)
+		_order = output[7].(int64)
 	}
 
 	if output[5] != nil {
@@ -468,8 +467,8 @@ func _getComponentHostgroupByID(rt *configManager.Runtime, customer *string, cel
 		Flavor:           &_flavor,
 		Username:         &_username,
 		BootstrapCommand: _bootstrap_command,
-		Network:          &_network,
-		Order:            &_order}
+		//Network:          &_network,
+		Order: &_order}
 
 	log.Printf("here => (%#v)", hostgroup)
 
