@@ -180,6 +180,16 @@ func main() {
 	api.ProvidertypeGetProviderTypeByIDHandler = handlers.NewGetProviderTypeByID(rt)
 	api.ProvidertypeListProviderTypesHandler = handlers.NewListProviderTypes(rt)
 
+	// Provider Region
+	api.ProviderregionAddProviderRegionHandler = handlers.NewAddProviderRegion(rt)
+	api.ProviderregionGetProviderRegionByIDHandler = handlers.NewGetProviderRegionByID(rt)
+	api.ProviderregionListProviderRegionsHandler = handlers.NewListProviderRegions(rt)
+
+	// Region AZ
+	api.RegionazAddRegionAZHandler = handlers.NewAddRegionAZ(rt)
+	api.RegionazGetRegionAZByIDHandler = handlers.NewGetRegionAZByID(rt)
+	api.RegionazListRegionAZsHandler = handlers.NewListRegionAZs(rt)
+
 	// Roles
 	api.RoleAddComponentRoleHandler = handlers.NewAddComponentRole(rt)
 	api.RoleDeleteComponentRoleHandler = handlers.NewDeleteComponentRole(rt)
