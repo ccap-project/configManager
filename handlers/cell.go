@@ -130,9 +130,13 @@ func (ctx *deployCellByID) Handle(params cell.DeployCellByIDParams, principal *m
 		return cell.NewDeployCellByIDNotFound()
 	}
 
-	EntireCell := getCellRecursive(ctx.rt, principal.Name, &params.CellID)
+	EntireCell, cellErr := getCellRecursive(ctx.rt, principal.Name, Cell)
 
 	log.Printf("DeployCell(%#v)", EntireCell)
+
+	if cellErr != nil {
+		return cell.NewDeployCellAppByIDInternalServerError().WithPayload(&models.APIResponse{Message: *cellErr})
+	}
 
 	if EntireCell == nil {
 		ctxLogger.Warn("cell is empty")
@@ -191,7 +195,13 @@ func (ctx *deployCellAppByID) Handle(params cell.DeployCellAppByIDParams, princi
 		return cell.NewDeployCellAppByIDNotFound()
 	}
 
-	EntireCell := getCellRecursive(ctx.rt, principal.Name, &params.CellID)
+	EntireCell, cellErr := getCellRecursive(ctx.rt, principal.Name, Cell)
+
+	log.Printf("DeployCell(%#v)", EntireCell)
+
+	if cellErr != nil {
+		return cell.NewDeployCellAppByIDInternalServerError().WithPayload(&models.APIResponse{Message: *cellErr})
+	}
 
 	if EntireCell == nil {
 		ctxLogger.Error("cell is empty")
@@ -505,8 +515,8 @@ func getCellFull(rt *configManager.Runtime, customerName *string, cellID *string
 	res := new(models.FullCell)
 
 	res.CustomerName = *customerName
-	//res.Keypair = new(models.Keypair)
-	res.Provider = new(models.Provider)
+	res.Keypair = getCellKeypair(rt, customerName, cellID)
+	res.Provider = getProvider(rt, customerName, cellID)
 
 	for _, row := range data {
 
@@ -515,23 +525,6 @@ func getCellFull(rt *configManager.Runtime, customerName *string, cellID *string
 
 			if len(cellNode) > 0 {
 				res.Name = cellNode["name"].(string)
-			}
-		}
-
-		res.Keypair = getCellKeypair(rt, customerName, cellID)
-
-		if res.Provider.Name == nil {
-			providerNode := getNodeByLabel(row, "Provider")
-			providerTypeNode := getNodeByLabel(row, "ProviderType")
-
-			if len(providerNode) > 0 {
-				res.Provider.AuthURL = copyString(providerNode["auth_url"])
-				res.Provider.DomainName = copyString(providerNode["domain_name"])
-				res.Provider.Name = copyString(providerNode["name"])
-				res.Provider.Password = copyString(providerNode["password"])
-				res.Provider.TenantName = copyString(providerNode["tenantname"])
-				res.Provider.Username = copyString(providerNode["username"])
-				res.Provider.Type = copyString(providerTypeNode["name"])
 			}
 		}
 	}
@@ -546,231 +539,41 @@ func getCellFull(rt *configManager.Runtime, customerName *string, cellID *string
 /*
  * Return cell structure in deploy format
  */
-func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *string) *models.EntireCell {
-	cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell {id: {cell_id}})
-							MATCH (cell)-[:DEPLOY_WITH]->(keypair:Keypair),
-										(cell)-[:USE]->(provider:Provider),
-										(provider)-[:PROVIDER_IS]->(provider_type:ProviderType),
-										(cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role)
-							OPTIONAL MATCH (role)-->(parameter:Parameter)
-							OPTIONAL MATCH (component)-->(hostgroup:Hostgroup)
-							OPTIONAL MATCH (cell)-->(host)-->(option:Option)
-							RETURN *
-							ORDER BY component.order, hostgroup.order, role.order`
-	/*
-		cypher := `MATCH (customer:Customer{ name:{customer_name}})-[:OWN]->(cell:Cell)
-								WHERE id(cell) = {cell_id}
-								MATCH (cell)-[:DEPLOY_WITH]->(keypair:Keypair)
-								MATCH (cell)-[:HAS]->(host:Host)
-								MATCH (cell)-[:USE]->(provider:Provider)
-								MATCH (provider)-[:PROVIDER_IS]->(provider_type:ProviderType)
-								MATCH (cell)-[:PROVIDES]->(component:Component)-[:USE]->(role:Role)
-								OPTIONAL MATCH (role)-->(parameter:Parameter)
-								OPTIONAL MATCH (component)-->(hostgroup:Hostgroup)
-								OPTIONAL MATCH (host)-->(option:Option)
-								RETURN *
-								ORDER BY component.name, role.order`
-	*/
+func getCellRecursive(rt *configManager.Runtime, customerName *string, cell *models.Cell) (*models.EntireCell, *string) {
 
+	cellID := string(cell.ID)
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
 		"customer": swag.StringValue(customerName),
-		"cell_id":  swag.StringValue(cellID)})
-
-	db, err := rt.DB().OpenPool()
-
-	if err != nil {
-		ctxLogger.Error("error connecting to neo4j: ", err)
-		return nil
-	}
-	defer db.Close()
-
-	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
-		"customer_name": swag.StringValue(customerName),
-		"cell_id":       swag.StringValue(cellID)})
-
-	if err != nil {
-		ctxLogger.Errorf("An error occurred querying Neo: ", err)
-		return nil
-	}
+		"cell_id":  cellID})
 
 	res := new(models.EntireCell)
 
 	res.CustomerName = *customerName
-	res.Keypair = new(models.Keypair)
-	res.Provider = new(models.Provider)
+	res.Name = *cell.Name
 
-	for _, row := range data {
-		if len(res.Name) == 0 {
-			cellNode := getNodeByLabel(row, "Cell")
+	if res.Keypair = getCellKeypair(rt, customerName, &cellID); res.Keypair == nil {
+		err_msg := "Cell needs an associated keypair"
+		ctxLogger.Error(err_msg)
+		return nil, &err_msg
+	}
 
-			if len(cellNode) > 0 {
-				res.Name = cellNode["name"].(string)
-			}
-		}
-
-		if len(res.CustomerName) == 0 {
-			customerNode := getNodeByLabel(row, "Customer")
-
-			if len(customerNode) > 0 {
-				res.CustomerName = customerNode["name"].(string)
-			}
-		}
-
-		//componentNode := getNodeByLabel(row, "Component")
-		//componentID := componentNode["id"].(string)
-
-		if res.Keypair.Name == nil {
-			keypairNode := getNodeByLabel(row, "Keypair")
-
-			if len(keypairNode) > 0 {
-				res.Keypair.Name = new(string)
-				res.Keypair.PublicKey = new(string)
-
-				*res.Keypair.Name = keypairNode["name"].(string)
-				*res.Keypair.PublicKey = keypairNode["public_key"].(string)
-			}
-		}
-
-		if res.Provider.Name == nil {
-			providerNode := getNodeByLabel(row, "Provider")
-			providerTypeNode := getNodeByLabel(row, "ProviderType")
-
-			if len(providerNode) > 0 {
-				res.Provider.AuthURL = copyString(providerNode["auth_url"])
-				res.Provider.DomainName = copyString(providerNode["domain_name"])
-				res.Provider.Name = copyString(providerNode["name"])
-				res.Provider.Password = copyString(providerNode["password"])
-				res.Provider.TenantName = copyString(providerNode["tenantname"])
-				res.Provider.Username = copyString(providerNode["username"])
-
-				res.Provider.Type = copyString(providerTypeNode["name"])
-			}
-		}
-
-		// Hosts
-		hostNode := getNodeByLabel(row, "Host")
-
-		if len(hostNode) > 0 {
-
-			var h *models.Host
-
-			h = getHostByName(res.Hosts, hostNode["name"].(string))
-
-			if h == nil {
-				h = new(models.Host)
-
-				h.Name = copyString(hostNode["name"])
-
-				res.Hosts = append(res.Hosts, h)
-			}
-
-			optionNode := getNodeByLabel(row, "Option")
-
-			if optionNode != nil {
-				var option *models.Parameter
-				option = getParameterByName(h.Options, optionNode["name"].(string))
-
-				if option == nil {
-					option = new(models.Parameter)
-
-					option.Name = copyString(optionNode["name"])
-					option.Value = copyString(optionNode["value"])
-
-					h.Options = append(h.Options, option)
-				}
-			}
-
-		}
-
-		/*
-			// Hostgroup
-			hostgroupNode := getNodeByLabel(row, "Hostgroup")
-
-			if len(hostgroupNode) > 0 {
-
-				var hg *models.Hostgroup
-
-				hg = getHostgroupByName(res.Hostgroups, hostgroupNode["name"].(string))
-
-				if hg == nil {
-					hg = new(models.Hostgroup)
-
-					hg.Flavor = copyString(hostgroupNode["flavor"])
-					hg.Image = copyString(hostgroupNode["image"])
-					hg.Name = copyString(hostgroupNode["name"])
-					hg.Network = copyString(hostgroupNode["network"])
-					hg.Username = copyString(hostgroupNode["username"])
-					hg.BootstrapCommand = *copyString(hostgroupNode["bootstrap_command"])
-					hg.Component = *copyString(componentNode["name"])
-					hg.Securitygroups = append(hg.Securitygroups, *copyString(componentNode["name"]))
-					hg.Count = new(int64)
-
-					// give ordering precedence to component value
-					if (hostgroupNode["order"] == nil && componentNode["order"] != nil) ||
-						(componentNode["order"] != nil && componentNode["order"].(int64) <= hostgroupNode["order"].(int64)) {
-						hg.Order = new(int64)
-						*hg.Order = componentNode["order"].(int64)
-
-					} else if hostgroupNode["order"] != nil {
-						hg.Order = new(int64)
-						*hg.Order = hostgroupNode["order"].(int64)
-					}
-
-					*hg.Count = hostgroupNode["count"].(int64)
-
-					res.Hostgroups = append(res.Hostgroups, hg)
-				}
-
-				// Roles
-				roleNode := getNodeByLabel(row, "Role")
-
-				if len(roleNode) > 0 {
-
-					var role *models.Role
-
-					role = getRoleByName(hg.Roles, roleNode["name"].(string))
-
-					if role == nil {
-						role = new(models.Role)
-
-						role.Name = copyString(roleNode["name"])
-						role.URL = copyString(roleNode["url"])
-						role.Version = copyString(roleNode["version"])
-
-						hg.Roles = append(hg.Roles, role)
-					}
-
-					parameterNode := getNodeByLabel(row, "Parameter")
-
-					if parameterNode != nil {
-						var parameter *models.Parameter
-						parameter = getParameterByName(role.Params, parameterNode["name"].(string))
-
-						if parameter == nil {
-							parameter = new(models.Parameter)
-
-							parameter.Name = copyString(parameterNode["name"])
-							parameter.Value = copyString(parameterNode["value"])
-
-							role.Params = append(role.Params, parameter)
-						}
-					}
-				}
-			}
-		*/
+	if res.Provider = getProvider(rt, customerName, &cellID); res.Provider == nil {
+		err_msg := "Cell needs an associated provider"
+		ctxLogger.Error(err_msg)
+		return nil, &err_msg
 	}
 
 	/*
 	 * Loadbalancers
 	 */
-	loadbalancers, _ := _findCellLoadbalancers(rt, customerName, cellID)
+	loadbalancers, _ := _findCellLoadbalancers(rt, customerName, &cellID)
 	for _, lb := range loadbalancers {
 		lbID := string(lb.ID)
 
 		// get lb members
-		_, _, _, member := _getLoadbalancerMembers(rt, customerName, cellID, &lbID)
+		_, _, _, member := _getLoadbalancerMembers(rt, customerName, &cellID, &lbID)
 
-		lb.Network = *_getLoadbalancerNetwork(rt, customerName, cellID, &lbID)
+		lb.Network = *_getLoadbalancerNetwork(rt, customerName, &cellID, &lbID)
 
 		if member != nil {
 
@@ -782,21 +585,16 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 	/*
 	 * Networks
 	 */
-	res.Networks, _ = _findCellNetworks(rt, customerName, cellID)
+	res.Networks, _ = _findCellNetworks(rt, customerName, &cellID)
 
 	/*
 	 * SecurityGroups
 	 */
-	components, _ := _findCellComponents(rt, customerName, cellID)
+	components, _ := _findCellComponents(rt, customerName, &cellID)
 
 	for _, component := range components {
 
-		//component := _getComponentByName(rt, customerName, cellID, &componentName)
 		securityGroup := &models.Securitygroup{Name: *component.Name}
-		//componentID := string(component.ID)
-
-		// build Hostgroups
-		//hostGroups, _ := findComponentHostgroups(rt, customerName, cellID, componentID)
 
 		for _, hg := range component.Hostgroups {
 
@@ -820,7 +618,7 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 		// build SecurityRules
 		for _, listener := range component.Listeners {
 
-			connections := getComponentListenerConnections(rt, customerName, cellID, &listener.ID)
+			connections := getComponentListenerConnections(rt, customerName, &cellID, &listener.ID)
 
 			for _, conn := range *connections {
 				var securityRule models.Securityrule
@@ -835,7 +633,7 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cellID *s
 		}
 		res.Securitygroups = append(res.Securitygroups, securityGroup)
 	}
-	return (res)
+	return res, nil
 }
 
 func getNodeByLabel(row []interface{}, nodeName string) map[string]interface{} {
