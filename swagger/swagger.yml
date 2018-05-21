@@ -394,7 +394,7 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - $ref: '#/parameters/ProvidertypeID'
+        - $ref: '#/parameters/ProviderTypeID'
       responses:
         200:
           description: "successful operation"
@@ -417,13 +417,216 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - $ref: '#/parameters/ProvidertypeID'
+        - $ref: '#/parameters/ProviderTypeID'
       responses:
         400:
           description: "Invalid ID supplied"
         404:
           description: "Provider not found"
 
+  /providertype/{providertype_id}/regions:
+    get:
+      tags:
+        - "providerregion"
+      summary: "List provider regions"
+      description: "Returns a list of provider region"
+      operationId: "listProviderRegions"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/ProviderRegion"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Provider not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+  /providertype/{providertype_id}/region:
+    delete:
+      tags:
+      - "providerregion"
+      summary: "Deletes a provider region"
+      description: ""
+      operationId: "deleteProviderRegion"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: '#/parameters/ProviderRegionID'
+      responses:
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Provider not found"
+    get:
+      tags:
+        - "providerregion"
+      summary: "Find provider region by ID"
+      description: "Returns a single provider region"
+      operationId: "getProviderRegionById"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: '#/parameters/ProviderRegionID'
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/ProviderRegion"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Provider not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+    post:
+      tags:
+      - "providerregion"
+      summary: "Add a new provider Region"
+      description: ""
+      operationId: "addProviderRegion"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - $ref: '#/parameters/ProviderTypeID'
+      - in: "body"
+        name: "body"
+        description: "ProviderRegion object that needs to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/ProviderRegion"
+      responses:
+        200:
+          description: "Already exists"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/ULID"
+        405:
+          description: "Invalid input"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+
+
+  /providertype/{providertype_id}/region/{provider_region_id}/azs:
+    get:
+      tags:
+        - "regionaz"
+      summary: "Find region availability zone by ID"
+      description: "Returns a list of region availability zones"
+      operationId: "listRegionAZs"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: '#/parameters/ProviderTypeID'
+        - $ref: '#/parameters/ProviderRegionID'
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/RegionAZ"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Provider not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+  /providertype/{providertype_id}/region/{provider_region_id}/az:
+    post:
+      tags:
+      - "regionaz"
+      summary: "Add a new Region availability Zone"
+      description: ""
+      operationId: "addRegionAZ"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - $ref: '#/parameters/ProviderTypeID'
+      - $ref: '#/parameters/ProviderRegionID'
+      - in: "body"
+        name: "body"
+        description: "Region AZ object that needs to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/RegionAZ"
+      responses:
+        200:
+          description: "Already exists"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/ULID"
+        405:
+          description: "Invalid input"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+  /providertype/{providertype_id}/region/{provider_region_id}/az/{region_az_id}:
+    delete:
+      tags:
+      - "regionaz"
+      summary: "Deletes a region availability zone"
+      description: ""
+      operationId: "deleteRegionAZ"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: '#/parameters/ProviderTypeID'
+        - $ref: '#/parameters/ProviderRegionID'
+        - $ref: '#/parameters/RegionAZID'
+      responses:
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Provider not found"
+    get:
+      tags:
+        - "regionaz"
+      summary: "Find provider region az by ID"
+      description: "Returns a single provider region az"
+      operationId: "getRegionAZById"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: '#/parameters/ProviderTypeID'
+        - $ref: '#/parameters/ProviderRegionID'
+        - $ref: '#/parameters/RegionAZID'
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/RegionAZ"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Provider not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
 
   /cell:
     post:
@@ -1799,7 +2002,7 @@ parameters:
     maxLength: 26
     pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
 
-  ProvidertypeID:
+  ProviderTypeID:
     name: "providertype_id"
     in: "path"
     description: "ProvidertypeID"
@@ -1808,6 +2011,27 @@ parameters:
     minLength: 26
     maxLength: 26
     pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
+
+  ProviderRegionID:
+    name: "provider_region_id"
+    in: "path"
+    description: "Provider Region ID"
+    required: true
+    type: "string"
+    minLength: 26
+    maxLength: 26
+    pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
+
+  RegionAZID:
+    name: "region_az_id"
+    in: "path"
+    description: "Region AZ ID"
+    required: true
+    type: "string"
+    minLength: 26
+    maxLength: 26
+    pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
+
 
 definitions:
   ApiResponse:
@@ -1820,6 +2044,16 @@ definitions:
         type: "string"
       message:
         type: "string"
+
+  AZ:
+    type: object
+    required:
+      - name
+    properties:
+      id:
+        $ref: "#/definitions/ULID"
+      name:
+        type: string
 
   Cell:
     type: object
@@ -2115,8 +2349,15 @@ definitions:
       username:
         type: string
 
-  ProviderTypeID:
-    type: string
+  ProviderRegion:
+    type: object
+    required:
+      - name
+    properties:
+      id:
+        $ref: "#/definitions/ULID"
+      name:
+        type: string
 
   Relationship:
     type: object
@@ -2125,6 +2366,16 @@ definitions:
         $ref: "#/definitions/ULID"
       listener_id:
         $ref: "#/definitions/ULID"
+
+  RegionAZ:
+    type: object
+    required:
+      - name
+    properties:
+      id:
+        $ref: "#/definitions/ULID"
+      name:
+        type: string
 
   Role:
     type: "object"
