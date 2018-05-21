@@ -175,9 +175,9 @@ func (ctx *getProviderTypeByID) Handle(params providertype.GetProviderTypeByIDPa
 	return providertype.NewGetProviderTypeByIDOK().WithPayload(provider)
 }
 
-func GetProviderTypeByName(rt *configManager.Runtime, providertypeName string) models.ProviderType {
+func GetProviderTypeByName(rt *configManager.Runtime, providertypeName string) *models.ProviderType {
 
-	var providerType models.ProviderType
+	var providerType *models.ProviderType
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
 		"provider_type": providertypeName})
@@ -186,10 +186,13 @@ func GetProviderTypeByName(rt *configManager.Runtime, providertypeName string) m
 							WHERE EXISTS(p.id) AND p.name = {name}
 							RETURN p.id as id,
 											p.name as name,
+											p.access_key as access_key,
 											p.auth_url as auth_url,
 											p.domain_name as domain_name,
 											p.username as username,
-											p.password as password`
+											p.password as password,
+											p.region as region,
+											p.secret_key as secret_key`
 
 	db, err := rt.DB().OpenPool()
 	if err != nil {
@@ -224,12 +227,36 @@ func GetProviderTypeByName(rt *configManager.Runtime, providertypeName string) m
 		return providerType
 	}
 
+	providerType = new(models.ProviderType)
 	providerType.ID = models.ULID(row[0].(string))
 	providerType.Name = row[1].(string)
-	providerType.AuthURL = row[2].(string)
-	providerType.DomainName = row[3].(string)
-	providerType.Username = row[4].(string)
-	providerType.Password = row[5].(string)
+
+	if row[2] != nil {
+		providerType.AccessKey = row[2].(string)
+	}
+
+	if row[3] != nil {
+		providerType.AuthURL = row[3].(string)
+	}
+
+	if row[4] != nil {
+		providerType.DomainName = row[4].(string)
+	}
+
+	if row[5] != nil {
+		providerType.Username = row[5].(string)
+	}
+
+	if row[6] != nil {
+		providerType.Password = row[6].(string)
+	}
+	if row[7] != nil {
+		providerType.Region = row[7].(string)
+	}
+
+	if row[8] != nil {
+		providerType.SecretKey = row[8].(string)
+	}
 
 	return providerType
 }
@@ -288,13 +315,16 @@ func InitProviderType(rt *configManager.Runtime) {
 	if err := _addProviderType(rt, "Openstack", []string{"auth_url", "domain_name", "username", "password"}); err != nil {
 		rt.Logger().Error("Error Initializing provider types, ", err)
 	}
+	if err := _addProviderType(rt, "AWS", []string{"access_key", "secret_key", "region"}); err != nil {
+		rt.Logger().Error("Error Initializing provider types, ", err)
+	}
 }
 
 func _addProviderType(rt *configManager.Runtime, name string, fields []string) error {
 
 	var allFields []string
 
-	if len(GetProviderTypeByName(rt, name).Name) > 0 {
+	if GetProviderTypeByName(rt, name) != nil {
 		rt.Logger().Warnf("Provider %s already exists", name)
 		return nil
 	}
