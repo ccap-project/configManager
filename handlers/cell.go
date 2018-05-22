@@ -654,49 +654,6 @@ func getNodeByLabel(row []interface{}, nodeName string) map[string]interface{} {
 	return res
 }
 
-func getHostByName(hosts []*models.Host, hostName string) *models.Host {
-	for _, host := range hosts {
-		if strings.Compare(hostName, *host.Name) == 0 {
-			return host
-		}
-	}
-
-	return nil
-}
-
-func getHostgroupByName(hostgroups []*models.Hostgroup, hostgroupName string) *models.Hostgroup {
-	for _, hostgroup := range hostgroups {
-		if strings.Compare(hostgroupName, *hostgroup.Name) == 0 {
-			return hostgroup
-		}
-	}
-
-	return nil
-}
-
-func getParameterByName(params []*models.Parameter, paramName string) *models.Parameter {
-	for _, param := range params {
-		if strings.Compare(paramName, *param.Name) == 0 {
-			return param
-		}
-	}
-
-	return nil
-}
-
-func getRoleByName(roles []*models.Role, roleName string) *models.Role {
-
-	if roles != nil {
-		for _, role := range roles {
-			if strings.Compare(roleName, *role.Name) == 0 {
-				return role
-			}
-		}
-	}
-
-	return nil
-}
-
 func copyString(key interface{}) *string {
 
 	res := new(string)
