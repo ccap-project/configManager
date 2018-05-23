@@ -438,8 +438,9 @@ func _getLoadbalancerByName(conn neo4j.ConnPool, customerName *string, CellID *s
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.QueryNeo(map[string]interface{}{"name": swag.StringValue(customerName),
-		"cell_id":           CellID,
+	rows, err := stmt.QueryNeo(map[string]interface{}{
+		"name":              swag.StringValue(customerName),
+		"cell_id":           swag.StringValue(CellID),
 		"loadbalancer_name": swag.StringValue(loadbalancerName)})
 
 	if err != nil {
