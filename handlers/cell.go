@@ -447,7 +447,7 @@ func _getCellByID(rt *configManager.Runtime, customerName *string, cellID *strin
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		ctxLogger.Errorf("An error occurred preparing statement: ", err)
+		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return cell
 	}
 	defer stmt.Close()
@@ -634,6 +634,43 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cell *mod
 		res.Securitygroups = append(res.Securitygroups, securityGroup)
 	}
 	return res, nil
+}
+
+func listCellAZs(rt *configManager.Runtime, cellID *string) ([]*models.RegionAZ, error) {
+
+	var azs []*models.RegionAZ
+
+	cypher := `MATCH (cell:Cell {id: {cell_id}})-[:USE]->
+										(Provider)-[:PROVIDER_IS]->
+										(ProviderType)-[:HAS]->
+										(ProviderRegion)-[:HAS]->(region:RegionAZ)
+						RETURN region.id, region.name`
+
+	db, err := rt.DB().OpenPool()
+
+	if err != nil {
+
+	}
+	defer db.Close()
+
+	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
+		"cell_id": swag.StringValue(cellID)})
+
+	if err != nil {
+		return azs, err
+	}
+
+	for _, row := range data {
+		name := row[1].(string)
+
+		az := &models.RegionAZ{
+			ID:   models.ULID(row[0].(string)),
+			Name: &name}
+
+		azs = append(azs, az)
+	}
+
+	return azs, nil
 }
 
 func getNodeByLabel(row []interface{}, nodeName string) map[string]interface{} {
