@@ -141,6 +141,59 @@ func (ctx *addCellNetwork) Handle(params network.AddNetworkParams, principal *mo
 	return network.NewAddNetworkCreated().WithPayload(models.ULID(output[0].(string)))
 }
 
+func NewDeleteCellNetwork(rt *configManager.Runtime) network.DeleteCellNetworkHandler {
+	return &deleteCellNetwork{rt: rt}
+}
+
+type deleteCellNetwork struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *deleteCellNetwork) Handle(params network.DeleteCellNetworkParams, principal *models.Customer) middleware.Responder {
+
+	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
+							(cell:Cell{id: {cell_id}})-[:HAS]->
+							(network:Network {id: {network_id}})
+						DETACH DELETE network`
+
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID,
+		"network_id":    params.NetworkID})
+
+	cell, _ := _getCellNetwork(ctx.rt, principal.Name, &params.CellID, &params.NetworkID)
+	if cell == nil {
+		ctxLogger.Error("network does not exists !")
+		return network.NewDeleteCellNetworkNotFound()
+	}
+
+	db, err := ctx.rt.DB().OpenPool()
+	if err != nil {
+		ctxLogger.Error("error connecting to neo4j: ", err)
+		return network.NewDeleteCellNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+	}
+	defer db.Close()
+
+	stmt, err := db.PrepareNeo(cypher)
+	if err != nil {
+		ctxLogger.Error("An error occurred preparing statement: ", err)
+		return network.NewDeleteCellNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecNeo(map[string]interface{}{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID,
+		"network_id":    params.NetworkID})
+
+	if err != nil {
+		ctxLogger.Error("An error occurred querying Neo: ", err)
+		return network.NewDeleteCellNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+	}
+
+	return network.NewDeleteCellNetworkOK()
+}
+
 func NewGetCellNetwork(rt *configManager.Runtime) network.GetCellNetworkHandler {
 	return &getCellNetwork{rt: rt}
 }

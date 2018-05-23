@@ -147,6 +147,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		CellDeleteCellHandler: cell.DeleteCellHandlerFunc(func(params cell.DeleteCellParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation CellDeleteCell has not yet been implemented")
 		}),
+		NetworkDeleteCellNetworkHandler: network.DeleteCellNetworkHandlerFunc(func(params network.DeleteCellNetworkParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation NetworkDeleteCellNetwork has not yet been implemented")
+		}),
 		RoleDeleteComponentRoleHandler: role.DeleteComponentRoleHandlerFunc(func(params role.DeleteComponentRoleParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation RoleDeleteComponentRole has not yet been implemented")
 		}),
@@ -365,6 +368,8 @@ type ConfigManagerAPI struct {
 	RegionazAddRegionAZHandler regionaz.AddRegionAZHandler
 	// CellDeleteCellHandler sets the operation handler for the delete cell operation
 	CellDeleteCellHandler cell.DeleteCellHandler
+	// NetworkDeleteCellNetworkHandler sets the operation handler for the delete cell network operation
+	NetworkDeleteCellNetworkHandler network.DeleteCellNetworkHandler
 	// RoleDeleteComponentRoleHandler sets the operation handler for the delete component role operation
 	RoleDeleteComponentRoleHandler role.DeleteComponentRoleHandler
 	// CustomerDeleteCustomerHandler sets the operation handler for the delete customer operation
@@ -610,6 +615,10 @@ func (o *ConfigManagerAPI) Validate() error {
 
 	if o.CellDeleteCellHandler == nil {
 		unregistered = append(unregistered, "cell.DeleteCellHandler")
+	}
+
+	if o.NetworkDeleteCellNetworkHandler == nil {
+		unregistered = append(unregistered, "network.DeleteCellNetworkHandler")
 	}
 
 	if o.RoleDeleteComponentRoleHandler == nil {
@@ -999,6 +1008,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/cell/{cell_id}"] = cell.NewDeleteCell(o.context, o.CellDeleteCellHandler)
+
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/cell/{cell_id}/network/{network_id}"] = network.NewDeleteCellNetwork(o.context, o.NetworkDeleteCellNetworkHandler)
 
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)

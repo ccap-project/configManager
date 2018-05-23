@@ -1886,6 +1886,49 @@ func init() {
             }
           }
         }
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "network"
+        ],
+        "summary": "Delete Network",
+        "operationId": "deleteCellNetwork",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/CellID"
+          },
+          {
+            "$ref": "#/parameters/NetworkID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Network"
+            }
+          },
+          "400": {
+            "description": "Invalid cell id or network id"
+          },
+          "404": {
+            "description": "network not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
       }
     },
     "/cell/{cell_id}/networks": {

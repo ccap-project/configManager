@@ -167,6 +167,7 @@ func main() {
 
 	// Network
 	api.NetworkAddNetworkHandler = handlers.NewAddCellNetwork(rt)
+	api.NetworkDeleteCellNetworkHandler = handlers.NewDeleteCellNetwork(rt)
 	api.NetworkGetCellNetworkHandler = handlers.NewGetCellNetwork(rt)
 	api.NetworkFindCellNetworksHandler = handlers.NewFindCellNetworks(rt)
 
