@@ -244,37 +244,53 @@ type listRegionAZs struct {
 
 func (ctx *listRegionAZs) Handle(params regionaz.ListRegionAZsParams) middleware.Responder {
 
+	azs, err := _listRegionAZs(ctx.rt, &params.ProvidertypeID, &params.ProviderRegionID)
+
+	if err != nil {
+		return regionaz.NewListRegionAZsInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+	}
+
+	return regionaz.NewListRegionAZsOK().WithPayload(azs)
+}
+
+func _listRegionAZs(rt *configManager.Runtime, provider_id *string, region_id *string) ([]*models.RegionAZ, error) {
+
+	var azs []*models.RegionAZ
+
 	cypher := `MATCH (provider:ProviderType {id: {provider_id}})
 							-[:HAS]->(region:ProviderRegion{id: {region_id}})
 							-[:HAS]->(az:RegionAZ)
 							RETURN az.id as id,
 											az.name as name`
 
-	db, err := ctx.rt.DB().OpenPool()
+	ctxLogger := rt.Logger().WithFields(logrus.Fields{
+		"provider_type_id": provider_id,
+		"region_id":        region_id})
+
+	db, err := rt.DB().OpenPool()
 	if err != nil {
-		ctx.rt.Logger().Error("error connecting to neo4j:", err)
-		return regionaz.NewListRegionAZsInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+		ctxLogger.Error("error connecting to neo4j: ", err)
+		return azs, err
 	}
 	defer db.Close()
 
 	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
-		"provider_id": params.ProvidertypeID,
-		"region_id":   params.ProviderRegionID})
+		"provider_id": *provider_id,
+		"region_id":   *region_id})
 
 	if err != nil {
-		ctx.rt.Logger().Error("An error occurred querying Neo: %s", err)
-		return regionaz.NewListRegionAZsInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+		ctxLogger.Error("An error occurred querying Neo: ", err)
+		return azs, err
 	}
 
-	res := make([]*models.RegionAZ, len(data))
-
-	for idx, row := range data {
+	for _, row := range data {
 		_name := row[1].(string)
 
-		res[idx] = &models.RegionAZ{
+		az := &models.RegionAZ{
 			ID:   models.ULID(row[0].(string)),
 			Name: &_name}
+		azs = append(azs, az)
 	}
 
-	return regionaz.NewListRegionAZsOK().WithPayload(res)
+	return azs, nil
 }
