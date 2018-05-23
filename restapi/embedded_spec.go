@@ -3381,7 +3381,8 @@ func init() {
       "type": "object",
       "required": [
         "name",
-        "cidr"
+        "cidr",
+        "region_az"
       ],
       "properties": {
         "cidr": {
@@ -3395,6 +3396,12 @@ func init() {
         "name": {
           "type": "string",
           "example": "test_network"
+        },
+        "region_az": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },

@@ -2277,6 +2277,7 @@ definitions:
     required:
       - name
       - cidr
+      - region_az
     properties:
       id:
         $ref: "#/definitions/ULID"
@@ -2287,6 +2288,10 @@ definitions:
       cidr:
         type: "string"
         example: 192.168.100.0/24
+      region_az:
+        type: array
+        items:
+          type: "string"
 
   Parameter:
     type: "object"

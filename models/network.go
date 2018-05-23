@@ -53,6 +53,10 @@ type Network struct {
 	// name
 	// Required: true
 	Name *string `json:"name"`
+
+	// region az
+	// Required: true
+	RegionAz []string `json:"region_az"`
 }
 
 // Validate validates this network
@@ -70,6 +74,11 @@ func (m *Network) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateName(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateRegionAz(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -108,6 +117,15 @@ func (m *Network) validateID(formats strfmt.Registry) error {
 func (m *Network) validateName(formats strfmt.Registry) error {
 
 	if err := validate.Required("name", "body", m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Network) validateRegionAz(formats strfmt.Registry) error {
+
+	if err := validate.Required("region_az", "body", m.RegionAz); err != nil {
 		return err
 	}
 

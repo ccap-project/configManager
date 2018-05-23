@@ -69,6 +69,32 @@ func (ctx *addCellNetwork) Handle(params network.AddNetworkParams, principal *mo
 		return network.NewAddNetworkConflict().WithPayload(&models.APIResponse{Message: "network already exists"})
 	}
 
+	// Check if required az exists
+	var networkAZs []*models.RegionAZ
+
+	cellAZs, err := listCellAZs(ctx.rt, &params.CellID)
+
+	if err != nil {
+		ctxLogger.Error("error listing cell azs ", err)
+		return network.NewAddNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+	}
+
+	for _, r_az := range params.Body.RegionAz {
+		exists := 0
+		for _, az := range cellAZs {
+			if r_az == *az.Name {
+				exists++
+				networkAZs = append(networkAZs, az)
+				break
+			}
+		}
+
+		if exists == 0 {
+			ctxLogger.Warnf("region az (%s) does not exists !", r_az)
+			return network.NewAddNetworkConflict().WithPayload(&models.APIResponse{Message: "region az does not exists"})
+		}
+	}
+
 	db, err := ctx.rt.DB().OpenPool()
 
 	if err != nil {
@@ -104,6 +130,10 @@ func (ctx *addCellNetwork) Handle(params network.AddNetworkParams, principal *mo
 	if err != nil {
 		ctxLogger.Error("An error occurred getting next row: ", err)
 		return network.NewAddNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+	}
+
+	for _, az := range networkAZs {
+		_connectToAZ(ctx.rt, ulid, string(az.ID))
 	}
 
 	ctxLogger.Info("OK")
@@ -282,8 +312,6 @@ func _getNetworkByName(rt *configManager.Runtime, customerName *string, CellID *
 	}
 	defer stmt.Close()
 
-	ctxLogger.Infof("name(%s) cell_id(%s) network_name(%s)", swag.StringValue(customerName), swag.StringValue(CellID), swag.StringValue(networkName))
-
 	rows, err := stmt.QueryNeo(map[string]interface{}{
 		"name":         swag.StringValue(customerName),
 		"cell_id":      swag.StringValue(CellID),
@@ -307,4 +335,39 @@ func _getNetworkByName(rt *configManager.Runtime, customerName *string, CellID *
 		Cidr: &_cidr}
 
 	return network
+}
+
+func _connectToAZ(rt *configManager.Runtime, networkID string, regionAZID string) error {
+
+	cypher := `MATCH (network:Network {id: {network_id} })
+							MATCH (az:RegionAZ {id: {region_az_id}})
+							MERGE (network)-[:DEPLOYED_ON]->(az)`
+
+	db, err := rt.DB().OpenPool()
+
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	stmt, err := db.PrepareNeo(cypher)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.QueryNeo(map[string]interface{}{
+		"network_id":   networkID,
+		"region_az_id": regionAZID})
+
+	if err != nil {
+		return err
+	}
+
+	_, _, err = rows.NextNeo()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
