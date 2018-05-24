@@ -73,7 +73,7 @@ type Hostgroup struct {
 
 	// network
 	// Required: true
-	Network *string `json:"network"`
+	Network []string `json:"network"`
 
 	// order
 	Order *int64 `json:"order,omitempty"`

@@ -2224,7 +2224,9 @@ definitions:
       count:
         type: "integer"
       network:
-        type: "string"
+        type: "array"
+        items:
+          type: "string"
       component:
         type: "string"
       order:

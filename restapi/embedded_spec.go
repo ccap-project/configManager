@@ -3316,7 +3316,10 @@ func init() {
           "type": "string"
         },
         "network": {
-          "type": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "order": {
           "type": "integer",
