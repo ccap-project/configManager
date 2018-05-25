@@ -84,6 +84,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		ListenerAddComponentListenerHandler: listener.AddComponentListenerHandlerFunc(func(params listener.AddComponentListenerParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation ListenerAddComponentListener has not yet been implemented")
 		}),
+		HostgroupConnectHostgroupToNetworkHandler: hostgroup.ConnectHostgroupToNetworkHandlerFunc(func(params hostgroup.ConnectHostgroupToNetworkParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation HostgroupConnectHostgroupToNetwork has not yet been implemented")
+		}),
 		HostgroupDeleteComponentHostgroupHandler: hostgroup.DeleteComponentHostgroupHandlerFunc(func(params hostgroup.DeleteComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupDeleteComponentHostgroup has not yet been implemented")
 		}),
@@ -92,6 +95,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		}),
 		ComponentDeleteComponentRelationshipHandler: component.DeleteComponentRelationshipHandlerFunc(func(params component.DeleteComponentRelationshipParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation ComponentDeleteComponentRelationship has not yet been implemented")
+		}),
+		HostgroupDisconnectHostgroupFromNetworkHandler: hostgroup.DisconnectHostgroupFromNetworkHandlerFunc(func(params hostgroup.DisconnectHostgroupFromNetworkParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation HostgroupDisconnectHostgroupFromNetwork has not yet been implemented")
 		}),
 		HostgroupUpdateComponentHostgroupHandler: hostgroup.UpdateComponentHostgroupHandlerFunc(func(params hostgroup.UpdateComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupUpdateComponentHostgroup has not yet been implemented")
@@ -326,12 +332,16 @@ type ConfigManagerAPI struct {
 	HostgroupAddComponentHostgroupHandler hostgroup.AddComponentHostgroupHandler
 	// ListenerAddComponentListenerHandler sets the operation handler for the add component listener operation
 	ListenerAddComponentListenerHandler listener.AddComponentListenerHandler
+	// HostgroupConnectHostgroupToNetworkHandler sets the operation handler for the connect hostgroup to network operation
+	HostgroupConnectHostgroupToNetworkHandler hostgroup.ConnectHostgroupToNetworkHandler
 	// HostgroupDeleteComponentHostgroupHandler sets the operation handler for the delete component hostgroup operation
 	HostgroupDeleteComponentHostgroupHandler hostgroup.DeleteComponentHostgroupHandler
 	// ListenerDeleteComponentListenerHandler sets the operation handler for the delete component listener operation
 	ListenerDeleteComponentListenerHandler listener.DeleteComponentListenerHandler
 	// ComponentDeleteComponentRelationshipHandler sets the operation handler for the delete component relationship operation
 	ComponentDeleteComponentRelationshipHandler component.DeleteComponentRelationshipHandler
+	// HostgroupDisconnectHostgroupFromNetworkHandler sets the operation handler for the disconnect hostgroup from network operation
+	HostgroupDisconnectHostgroupFromNetworkHandler hostgroup.DisconnectHostgroupFromNetworkHandler
 	// HostgroupUpdateComponentHostgroupHandler sets the operation handler for the update component hostgroup operation
 	HostgroupUpdateComponentHostgroupHandler hostgroup.UpdateComponentHostgroupHandler
 	// ListenerUpdateComponentListenerHandler sets the operation handler for the update component listener operation
@@ -533,6 +543,10 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "listener.AddComponentListenerHandler")
 	}
 
+	if o.HostgroupConnectHostgroupToNetworkHandler == nil {
+		unregistered = append(unregistered, "hostgroup.ConnectHostgroupToNetworkHandler")
+	}
+
 	if o.HostgroupDeleteComponentHostgroupHandler == nil {
 		unregistered = append(unregistered, "hostgroup.DeleteComponentHostgroupHandler")
 	}
@@ -543,6 +557,10 @@ func (o *ConfigManagerAPI) Validate() error {
 
 	if o.ComponentDeleteComponentRelationshipHandler == nil {
 		unregistered = append(unregistered, "component.DeleteComponentRelationshipHandler")
+	}
+
+	if o.HostgroupDisconnectHostgroupFromNetworkHandler == nil {
+		unregistered = append(unregistered, "hostgroup.DisconnectHostgroupFromNetworkHandler")
 	}
 
 	if o.HostgroupUpdateComponentHostgroupHandler == nil {
@@ -904,6 +922,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	}
 	o.handlers["POST"]["/cell/{cell_id}/component/{component_id}/listener"] = listener.NewAddComponentListener(o.context, o.ListenerAddComponentListenerHandler)
 
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/cell/{cell_id}/component/{component_id}/hostgroup/{hostgroup_id}/connect/{network_id}"] = hostgroup.NewConnectHostgroupToNetwork(o.context, o.HostgroupConnectHostgroupToNetworkHandler)
+
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
@@ -918,6 +941,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/cell/{cell_id}/component/{component_id}/connect_to/{entity_id}"] = component.NewDeleteComponentRelationship(o.context, o.ComponentDeleteComponentRelationshipHandler)
+
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/cell/{cell_id}/component/{component_id}/hostgroup/{hostgroup_id}/connect/{network_id}"] = hostgroup.NewDisconnectHostgroupFromNetwork(o.context, o.HostgroupDisconnectHostgroupFromNetworkHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)

@@ -142,6 +142,8 @@ func main() {
 	api.HostgroupFindComponentHostgroupsHandler = handlers.NewFindComponentHostgroups(rt)
 	api.HostgroupGetComponentHostgroupByIDHandler = handlers.NewGetComponentHostgroupByID(rt)
 	api.HostgroupUpdateComponentHostgroupHandler = handlers.NewUpdateComponentHostgroup(rt)
+	api.HostgroupConnectHostgroupToNetworkHandler = handlers.NewConnectHostgroupToNetwork(rt)
+	api.HostgroupDisconnectHostgroupFromNetworkHandler = handlers.NewDisconnectHostgroupFromNetwork(rt)
 
 	// Key Pair
 	api.KeypairAddKeypairHandler = handlers.NewAddKeypair(rt)
