@@ -203,6 +203,63 @@ func (ctx *deleteComponentHostgroup) Handle(params hostgroup.DeleteComponentHost
 	return hostgroup.NewDeleteComponentHostgroupOK()
 }
 
+func NewDisconnectHostgroupFromNetwork(rt *configManager.Runtime) hostgroup.DisconnectHostgroupFromNetworkHandler {
+	return &disconnectHostgroupFromNetwork{rt: rt}
+}
+
+type disconnectHostgroupFromNetwork struct {
+	rt *configManager.Runtime
+}
+
+func (ctx *disconnectHostgroupFromNetwork) Handle(params hostgroup.DisconnectHostgroupFromNetworkParams, principal *models.Customer) middleware.Responder {
+
+	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
+							(cell:Cell {id: {cell_id}})-[:PROVIDES]->
+							(component:Component {id: {component_id}})-[:DEPLOYED_ON]->
+							(hostgroup:Hostgroup {id: {hostgroup_id}})-[n_c:CONNECTED_ON]->
+							(network:Network {id: {network_id}})
+						DELETE n_c`
+
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID,
+		"hostgroup_id":  params.HostgroupID})
+
+	if _getComponentHostgroupByID(ctx.rt, principal.Name, &params.CellID, &params.ComponentID, &params.HostgroupID) == nil {
+		ctxLogger.Error("hostgroup does not exists !")
+		return hostgroup.NewDisconnectHostgroupFromNetworkNotFound()
+	}
+
+	db, err := ctx.rt.DB().OpenPool()
+	if err != nil {
+		ctxLogger.Error("error connecting to neo4j: ", err)
+		return hostgroup.NewDisconnectHostgroupFromNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+	}
+	defer db.Close()
+
+	stmt, err := db.PrepareNeo(cypher)
+	if err != nil {
+		ctxLogger.Error("An error occurred preparing statement: ", err)
+		return hostgroup.NewDisconnectHostgroupFromNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.ExecNeo(map[string]interface{}{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID,
+		"component_id":  params.ComponentID,
+		"hostgroup_id":  params.HostgroupID,
+		"network_id":    params.NetworkID})
+
+	if err != nil {
+		ctxLogger.Error("An error occurred querying Neo: ", err)
+		return hostgroup.NewDisconnectHostgroupFromNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+	}
+
+	return hostgroup.NewDisconnectHostgroupFromNetworkOK()
+}
+
 func NewGetComponentHostgroupByID(rt *configManager.Runtime) hostgroup.GetComponentHostgroupByIDHandler {
 	return &getComponentHostgroupByID{rt: rt}
 }

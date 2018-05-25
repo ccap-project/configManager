@@ -639,6 +639,54 @@ func init() {
         }
       }
     },
+    "/cell/{cell_id}/component/{component_id}/hostgroup/{hostgroup_id}/connect/{network_id}": {
+      "delete": {
+        "tags": [
+          "hostgroup"
+        ],
+        "summary": "Disconnect a hostgroup from network",
+        "operationId": "DisconnectHostgroupFromNetwork",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/CellID"
+          },
+          {
+            "$ref": "#/parameters/ComponentID"
+          },
+          {
+            "$ref": "#/parameters/HostgroupID"
+          },
+          {
+            "$ref": "#/parameters/NetworkID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid cell id, component id or hostgroup id",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          },
+          "404": {
+            "description": "Hostgroup does not exists"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
     "/cell/{cell_id}/component/{component_id}/hostgroups": {
       "get": {
         "produces": [
