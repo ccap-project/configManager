@@ -39,6 +39,7 @@ import (
 
 type ConnPool driver.DriverPool
 type Conn driver.Conn
+type Tx driver.Tx
 
 func GetConnectionString() string {
 

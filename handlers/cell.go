@@ -447,7 +447,7 @@ func _getCellByID(rt *configManager.Runtime, customerName *string, cellID *strin
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
-		ctxLogger.Errorf("An error occurred preparing statement: ", err)
+		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return cell
 	}
 	defer stmt.Close()
@@ -569,17 +569,20 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cell *mod
 	loadbalancers, _ := _findCellLoadbalancers(rt, customerName, &cellID)
 	for _, lb := range loadbalancers {
 		lbID := string(lb.ID)
+		securityGroup := &models.Securitygroup{Name: *lb.Name}
 
 		// get lb members
 		_, _, _, member := _getLoadbalancerMembers(rt, customerName, &cellID, &lbID)
 
-		lb.Network = *_getLoadbalancerNetwork(rt, customerName, &cellID, &lbID)
+		lb.Network = *_listLoadbalancerNetworks(rt, customerName, &cellID, &lbID)
+		lb.Securitygroups = append(lb.Securitygroups, *lb.Name)
 
 		if member != nil {
-
 			lb.Members = *member
 			res.Loadbalancers = append(res.Loadbalancers, lb)
 		}
+
+		res.Securitygroups = append(res.Securitygroups, securityGroup)
 	}
 
 	/*
@@ -612,7 +615,6 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cell *mod
 			}
 			hg.Roles = models.HostgroupRoles(component.Roles)
 			res.Hostgroups = append(res.Hostgroups, hg)
-
 		}
 
 		// build SecurityRules
@@ -625,7 +627,16 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cell *mod
 
 				securityRule.SourceSecuritygroup = conn
 				securityRule.DestinationSecuritygroup = securityGroup.Name
-				securityRule.Proto = *listener.Protocol
+
+				switch *listener.Protocol {
+				case "HTTP":
+					securityRule.Proto = "TCP"
+				case "HTTPS":
+					securityRule.Proto = "TCP"
+				default:
+					securityRule.Proto = *listener.Protocol
+				}
+
 				securityRule.DestinationPort = strconv.Itoa(int(*listener.Port))
 
 				securityGroup.Rules = append(securityGroup.Rules, &securityRule)
@@ -634,6 +645,43 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cell *mod
 		res.Securitygroups = append(res.Securitygroups, securityGroup)
 	}
 	return res, nil
+}
+
+func listCellAZs(rt *configManager.Runtime, cellID *string) ([]*models.RegionAZ, error) {
+
+	var azs []*models.RegionAZ
+
+	cypher := `MATCH (cell:Cell {id: {cell_id}})-[:USE]->
+										(Provider)-[:PROVIDER_IS]->
+										(ProviderType)-[:HAS]->
+										(ProviderRegion)-[:HAS]->(region:RegionAZ)
+						RETURN region.id, region.name`
+
+	db, err := rt.DB().OpenPool()
+
+	if err != nil {
+
+	}
+	defer db.Close()
+
+	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
+		"cell_id": swag.StringValue(cellID)})
+
+	if err != nil {
+		return azs, err
+	}
+
+	for _, row := range data {
+		name := row[1].(string)
+
+		az := &models.RegionAZ{
+			ID:   models.ULID(row[0].(string)),
+			Name: &name}
+
+		azs = append(azs, az)
+	}
+
+	return azs, nil
 }
 
 func getNodeByLabel(row []interface{}, nodeName string) map[string]interface{} {
@@ -652,49 +700,6 @@ func getNodeByLabel(row []interface{}, nodeName string) map[string]interface{} {
 	var res map[string]interface{}
 
 	return res
-}
-
-func getHostByName(hosts []*models.Host, hostName string) *models.Host {
-	for _, host := range hosts {
-		if strings.Compare(hostName, *host.Name) == 0 {
-			return host
-		}
-	}
-
-	return nil
-}
-
-func getHostgroupByName(hostgroups []*models.Hostgroup, hostgroupName string) *models.Hostgroup {
-	for _, hostgroup := range hostgroups {
-		if strings.Compare(hostgroupName, *hostgroup.Name) == 0 {
-			return hostgroup
-		}
-	}
-
-	return nil
-}
-
-func getParameterByName(params []*models.Parameter, paramName string) *models.Parameter {
-	for _, param := range params {
-		if strings.Compare(paramName, *param.Name) == 0 {
-			return param
-		}
-	}
-
-	return nil
-}
-
-func getRoleByName(roles []*models.Role, roleName string) *models.Role {
-
-	if roles != nil {
-		for _, role := range roles {
-			if strings.Compare(roleName, *role.Name) == 0 {
-				return role
-			}
-		}
-	}
-
-	return nil
 }
 
 func copyString(key interface{}) *string {

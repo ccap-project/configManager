@@ -639,6 +639,106 @@ func init() {
         }
       }
     },
+    "/cell/{cell_id}/component/{component_id}/hostgroup/{hostgroup_id}/connect/{network_id}": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "hostgroup"
+        ],
+        "summary": "Connect hostgroup to network",
+        "operationId": "ConnectHostgroupToNetwork",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/CellID"
+          },
+          {
+            "$ref": "#/parameters/ComponentID"
+          },
+          {
+            "$ref": "#/parameters/HostgroupID"
+          },
+          {
+            "$ref": "#/parameters/NetworkID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid cell id or role id",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          },
+          "404": {
+            "description": "Hostgroup does not exists"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "hostgroup"
+        ],
+        "summary": "Disconnect a hostgroup from network",
+        "operationId": "DisconnectHostgroupFromNetwork",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/CellID"
+          },
+          {
+            "$ref": "#/parameters/ComponentID"
+          },
+          {
+            "$ref": "#/parameters/HostgroupID"
+          },
+          {
+            "$ref": "#/parameters/NetworkID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid cell id, component id or hostgroup id",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          },
+          "404": {
+            "description": "Hostgroup does not exists"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
     "/cell/{cell_id}/component/{component_id}/hostgroups": {
       "get": {
         "produces": [
@@ -1886,6 +1986,49 @@ func init() {
             }
           }
         }
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "network"
+        ],
+        "summary": "Delete Network",
+        "operationId": "deleteCellNetwork",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/CellID"
+          },
+          {
+            "$ref": "#/parameters/NetworkID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Network"
+            }
+          },
+          "400": {
+            "description": "Invalid cell id or network id"
+          },
+          "404": {
+            "description": "network not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
       }
     },
     "/cell/{cell_id}/networks": {
@@ -2640,7 +2783,7 @@ func init() {
         "operationId": "getProviderTypeById",
         "parameters": [
           {
-            "$ref": "#/parameters/ProvidertypeID"
+            "$ref": "#/parameters/ProviderTypeID"
           }
         ],
         "responses": {
@@ -2675,7 +2818,7 @@ func init() {
         "operationId": "deleteProviderType",
         "parameters": [
           {
-            "$ref": "#/parameters/ProvidertypeID"
+            "$ref": "#/parameters/ProviderTypeID"
           }
         ],
         "responses": {
@@ -2684,6 +2827,325 @@ func init() {
           },
           "404": {
             "description": "Provider not found"
+          }
+        }
+      }
+    },
+    "/providertype/{providertype_id}/region": {
+      "get": {
+        "description": "Returns a single provider region",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "providerregion"
+        ],
+        "summary": "Find provider region by ID",
+        "operationId": "getProviderRegionById",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProviderRegionID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/ProviderRegion"
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Provider not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "providerregion"
+        ],
+        "summary": "Add a new provider Region",
+        "operationId": "addProviderRegion",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProviderTypeID"
+          },
+          {
+            "description": "ProviderRegion object that needs to be added",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ProviderRegion"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Already exists",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          },
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/ULID"
+            }
+          },
+          "405": {
+            "description": "Invalid input"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "providerregion"
+        ],
+        "summary": "Deletes a provider region",
+        "operationId": "deleteProviderRegion",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProviderRegionID"
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Provider not found"
+          }
+        }
+      }
+    },
+    "/providertype/{providertype_id}/region/{provider_region_id}/az": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "regionaz"
+        ],
+        "summary": "Add a new Region availability Zone",
+        "operationId": "addRegionAZ",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProviderTypeID"
+          },
+          {
+            "$ref": "#/parameters/ProviderRegionID"
+          },
+          {
+            "description": "Region AZ object that needs to be added",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RegionAZ"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Already exists",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          },
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/ULID"
+            }
+          },
+          "405": {
+            "description": "Invalid input"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/providertype/{providertype_id}/region/{provider_region_id}/az/{region_az_id}": {
+      "get": {
+        "description": "Returns a single provider region az",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "regionaz"
+        ],
+        "summary": "Find provider region az by ID",
+        "operationId": "getRegionAZById",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProviderTypeID"
+          },
+          {
+            "$ref": "#/parameters/ProviderRegionID"
+          },
+          {
+            "$ref": "#/parameters/RegionAZID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/RegionAZ"
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Provider not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "regionaz"
+        ],
+        "summary": "Deletes a region availability zone",
+        "operationId": "deleteRegionAZ",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProviderTypeID"
+          },
+          {
+            "$ref": "#/parameters/ProviderRegionID"
+          },
+          {
+            "$ref": "#/parameters/RegionAZID"
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Provider not found"
+          }
+        }
+      }
+    },
+    "/providertype/{providertype_id}/region/{provider_region_id}/azs": {
+      "get": {
+        "description": "Returns a list of region availability zones",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "regionaz"
+        ],
+        "summary": "Find region availability zone by ID",
+        "operationId": "listRegionAZs",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ProviderTypeID"
+          },
+          {
+            "$ref": "#/parameters/ProviderRegionID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/RegionAZ"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Provider not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/providertype/{providertype_id}/regions": {
+      "get": {
+        "description": "Returns a list of provider region",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "providerregion"
+        ],
+        "summary": "List provider regions",
+        "operationId": "listProviderRegions",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ProviderRegion"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Provider not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
           }
         }
       }
@@ -2720,6 +3182,20 @@ func init() {
     }
   },
   "definitions": {
+    "AZ": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/ULID"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
     "ApiResponse": {
       "type": "object",
       "properties": {
@@ -2940,7 +3416,10 @@ func init() {
           "type": "string"
         },
         "network": {
-          "type": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "order": {
           "type": "integer",
@@ -2999,7 +3478,11 @@ func init() {
           "type": "integer"
         },
         "protocol": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "tcp",
+            "udp"
+          ]
         }
       }
     },
@@ -3031,13 +3514,28 @@ func init() {
           "type": "string"
         },
         "network": {
-          "type": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "port": {
           "type": "integer"
         },
         "protocol": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "tcp",
+            "http",
+            "https",
+            "tls"
+          ]
+        },
+        "securitygroups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "type": {
           "type": "string"
@@ -3048,7 +3546,8 @@ func init() {
       "type": "object",
       "required": [
         "name",
-        "cidr"
+        "cidr",
+        "region_az"
       ],
       "properties": {
         "cidr": {
@@ -3062,6 +3561,9 @@ func init() {
         "name": {
           "type": "string",
           "example": "test_network"
+        },
+        "region_az": {
+          "type": "string"
         }
       }
     },
@@ -3121,6 +3623,20 @@ func init() {
         }
       }
     },
+    "ProviderRegion": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/ULID"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
     "ProviderType": {
       "type": "object",
       "properties": {
@@ -3153,8 +3669,19 @@ func init() {
         }
       }
     },
-    "ProviderTypeID": {
-      "type": "string"
+    "RegionAZ": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/ULID"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
     },
     "Relationship": {
       "type": "object",
@@ -3340,13 +3867,33 @@ func init() {
       "in": "path",
       "required": true
     },
-    "ProvidertypeID": {
+    "ProviderRegionID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "Provider Region ID",
+      "name": "provider_region_id",
+      "in": "path",
+      "required": true
+    },
+    "ProviderTypeID": {
       "maxLength": 26,
       "minLength": 26,
       "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
       "type": "string",
       "description": "ProvidertypeID",
       "name": "providertype_id",
+      "in": "path",
+      "required": true
+    },
+    "RegionAZID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "Region AZ ID",
+      "name": "region_az_id",
       "in": "path",
       "required": true
     }

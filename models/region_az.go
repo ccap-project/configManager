@@ -39,96 +39,28 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// Hostgroup hostgroup
-// swagger:model Hostgroup
-type Hostgroup struct {
-
-	// bootstrap command
-	BootstrapCommand string `json:"bootstrap_command,omitempty"`
-
-	// component
-	Component string `json:"component,omitempty"`
-
-	// count
-	// Required: true
-	Count *int64 `json:"count"`
-
-	// flavor
-	// Required: true
-	Flavor *string `json:"flavor"`
+// RegionAZ region a z
+// swagger:model RegionAZ
+type RegionAZ struct {
 
 	// id
 	ID ULID `json:"id,omitempty"`
 
-	// image
-	// Required: true
-	Image *string `json:"image"`
-
-	// listeners
-	Listeners HostgroupListeners `json:"listeners"`
-
 	// name
 	// Required: true
 	Name *string `json:"name"`
-
-	// network
-	// Required: true
-	Network []string `json:"network"`
-
-	// order
-	Order *int64 `json:"order,omitempty"`
-
-	// roles
-	Roles HostgroupRoles `json:"roles"`
-
-	// securitygroups
-	Securitygroups []string `json:"securitygroups"`
-
-	// username
-	// Required: true
-	Username *string `json:"username"`
 }
 
-// Validate validates this hostgroup
-func (m *Hostgroup) Validate(formats strfmt.Registry) error {
+// Validate validates this region a z
+func (m *RegionAZ) Validate(formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.validateCount(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateFlavor(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
 
 	if err := m.validateID(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
 
-	if err := m.validateImage(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
 	if err := m.validateName(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateNetwork(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateSecuritygroups(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateUsername(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -139,25 +71,7 @@ func (m *Hostgroup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Hostgroup) validateCount(formats strfmt.Registry) error {
-
-	if err := validate.Required("count", "body", m.Count); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Hostgroup) validateFlavor(formats strfmt.Registry) error {
-
-	if err := validate.Required("flavor", "body", m.Flavor); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Hostgroup) validateID(formats strfmt.Registry) error {
+func (m *RegionAZ) validateID(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.ID) { // not required
 		return nil
@@ -173,16 +87,7 @@ func (m *Hostgroup) validateID(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Hostgroup) validateImage(formats strfmt.Registry) error {
-
-	if err := validate.Required("image", "body", m.Image); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Hostgroup) validateName(formats strfmt.Registry) error {
+func (m *RegionAZ) validateName(formats strfmt.Registry) error {
 
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
@@ -191,35 +96,8 @@ func (m *Hostgroup) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Hostgroup) validateNetwork(formats strfmt.Registry) error {
-
-	if err := validate.Required("network", "body", m.Network); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Hostgroup) validateSecuritygroups(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Securitygroups) { // not required
-		return nil
-	}
-
-	return nil
-}
-
-func (m *Hostgroup) validateUsername(formats strfmt.Registry) error {
-
-	if err := validate.Required("username", "body", m.Username); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // MarshalBinary interface implementation
-func (m *Hostgroup) MarshalBinary() ([]byte, error) {
+func (m *RegionAZ) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -227,8 +105,8 @@ func (m *Hostgroup) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Hostgroup) UnmarshalBinary(b []byte) error {
-	var res Hostgroup
+func (m *RegionAZ) UnmarshalBinary(b []byte) error {
+	var res RegionAZ
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

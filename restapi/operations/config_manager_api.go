@@ -56,7 +56,9 @@ import (
 	"configManager/restapi/operations/loadbalancer"
 	"configManager/restapi/operations/network"
 	"configManager/restapi/operations/provider"
+	"configManager/restapi/operations/providerregion"
 	"configManager/restapi/operations/providertype"
+	"configManager/restapi/operations/regionaz"
 	"configManager/restapi/operations/role"
 )
 
@@ -82,6 +84,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		ListenerAddComponentListenerHandler: listener.AddComponentListenerHandlerFunc(func(params listener.AddComponentListenerParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation ListenerAddComponentListener has not yet been implemented")
 		}),
+		HostgroupConnectHostgroupToNetworkHandler: hostgroup.ConnectHostgroupToNetworkHandlerFunc(func(params hostgroup.ConnectHostgroupToNetworkParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation HostgroupConnectHostgroupToNetwork has not yet been implemented")
+		}),
 		HostgroupDeleteComponentHostgroupHandler: hostgroup.DeleteComponentHostgroupHandlerFunc(func(params hostgroup.DeleteComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupDeleteComponentHostgroup has not yet been implemented")
 		}),
@@ -90,6 +95,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		}),
 		ComponentDeleteComponentRelationshipHandler: component.DeleteComponentRelationshipHandlerFunc(func(params component.DeleteComponentRelationshipParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation ComponentDeleteComponentRelationship has not yet been implemented")
+		}),
+		HostgroupDisconnectHostgroupFromNetworkHandler: hostgroup.DisconnectHostgroupFromNetworkHandlerFunc(func(params hostgroup.DisconnectHostgroupFromNetworkParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation HostgroupDisconnectHostgroupFromNetwork has not yet been implemented")
 		}),
 		HostgroupUpdateComponentHostgroupHandler: hostgroup.UpdateComponentHostgroupHandlerFunc(func(params hostgroup.UpdateComponentHostgroupParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupUpdateComponentHostgroup has not yet been implemented")
@@ -133,11 +141,20 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		ProviderAddProviderHandler: provider.AddProviderHandlerFunc(func(params provider.AddProviderParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation ProviderAddProvider has not yet been implemented")
 		}),
+		ProviderregionAddProviderRegionHandler: providerregion.AddProviderRegionHandlerFunc(func(params providerregion.AddProviderRegionParams) middleware.Responder {
+			return middleware.NotImplemented("operation ProviderregionAddProviderRegion has not yet been implemented")
+		}),
 		ProvidertypeAddProviderTypeHandler: providertype.AddProviderTypeHandlerFunc(func(params providertype.AddProviderTypeParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProvidertypeAddProviderType has not yet been implemented")
 		}),
+		RegionazAddRegionAZHandler: regionaz.AddRegionAZHandlerFunc(func(params regionaz.AddRegionAZParams) middleware.Responder {
+			return middleware.NotImplemented("operation RegionazAddRegionAZ has not yet been implemented")
+		}),
 		CellDeleteCellHandler: cell.DeleteCellHandlerFunc(func(params cell.DeleteCellParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation CellDeleteCell has not yet been implemented")
+		}),
+		NetworkDeleteCellNetworkHandler: network.DeleteCellNetworkHandlerFunc(func(params network.DeleteCellNetworkParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation NetworkDeleteCellNetwork has not yet been implemented")
 		}),
 		RoleDeleteComponentRoleHandler: role.DeleteComponentRoleHandlerFunc(func(params role.DeleteComponentRoleParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation RoleDeleteComponentRole has not yet been implemented")
@@ -151,8 +168,14 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		LoadbalancerDeleteLoadbalancerRelationshipHandler: loadbalancer.DeleteLoadbalancerRelationshipHandlerFunc(func(params loadbalancer.DeleteLoadbalancerRelationshipParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation LoadbalancerDeleteLoadbalancerRelationship has not yet been implemented")
 		}),
+		ProviderregionDeleteProviderRegionHandler: providerregion.DeleteProviderRegionHandlerFunc(func(params providerregion.DeleteProviderRegionParams) middleware.Responder {
+			return middleware.NotImplemented("operation ProviderregionDeleteProviderRegion has not yet been implemented")
+		}),
 		ProvidertypeDeleteProviderTypeHandler: providertype.DeleteProviderTypeHandlerFunc(func(params providertype.DeleteProviderTypeParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProvidertypeDeleteProviderType has not yet been implemented")
+		}),
+		RegionazDeleteRegionAZHandler: regionaz.DeleteRegionAZHandlerFunc(func(params regionaz.DeleteRegionAZParams) middleware.Responder {
+			return middleware.NotImplemented("operation RegionazDeleteRegionAZ has not yet been implemented")
 		}),
 		CellDeployCellAppByIDHandler: cell.DeployCellAppByIDHandlerFunc(func(params cell.DeployCellAppByIDParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation CellDeployCellAppByID has not yet been implemented")
@@ -220,11 +243,23 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		ProviderGetProviderHandler: provider.GetProviderHandlerFunc(func(params provider.GetProviderParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation ProviderGetProvider has not yet been implemented")
 		}),
+		ProviderregionGetProviderRegionByIDHandler: providerregion.GetProviderRegionByIDHandlerFunc(func(params providerregion.GetProviderRegionByIDParams) middleware.Responder {
+			return middleware.NotImplemented("operation ProviderregionGetProviderRegionByID has not yet been implemented")
+		}),
 		ProvidertypeGetProviderTypeByIDHandler: providertype.GetProviderTypeByIDHandlerFunc(func(params providertype.GetProviderTypeByIDParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProvidertypeGetProviderTypeByID has not yet been implemented")
 		}),
+		RegionazGetRegionAZByIDHandler: regionaz.GetRegionAZByIDHandlerFunc(func(params regionaz.GetRegionAZByIDParams) middleware.Responder {
+			return middleware.NotImplemented("operation RegionazGetRegionAZByID has not yet been implemented")
+		}),
+		ProviderregionListProviderRegionsHandler: providerregion.ListProviderRegionsHandlerFunc(func(params providerregion.ListProviderRegionsParams) middleware.Responder {
+			return middleware.NotImplemented("operation ProviderregionListProviderRegions has not yet been implemented")
+		}),
 		ProvidertypeListProviderTypesHandler: providertype.ListProviderTypesHandlerFunc(func(params providertype.ListProviderTypesParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProvidertypeListProviderTypes has not yet been implemented")
+		}),
+		RegionazListRegionAZsHandler: regionaz.ListRegionAZsHandlerFunc(func(params regionaz.ListRegionAZsParams) middleware.Responder {
+			return middleware.NotImplemented("operation RegionazListRegionAZs has not yet been implemented")
 		}),
 		CellUpdateCellWithFormHandler: cell.UpdateCellWithFormHandlerFunc(func(params cell.UpdateCellWithFormParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation CellUpdateCellWithForm has not yet been implemented")
@@ -297,12 +332,16 @@ type ConfigManagerAPI struct {
 	HostgroupAddComponentHostgroupHandler hostgroup.AddComponentHostgroupHandler
 	// ListenerAddComponentListenerHandler sets the operation handler for the add component listener operation
 	ListenerAddComponentListenerHandler listener.AddComponentListenerHandler
+	// HostgroupConnectHostgroupToNetworkHandler sets the operation handler for the connect hostgroup to network operation
+	HostgroupConnectHostgroupToNetworkHandler hostgroup.ConnectHostgroupToNetworkHandler
 	// HostgroupDeleteComponentHostgroupHandler sets the operation handler for the delete component hostgroup operation
 	HostgroupDeleteComponentHostgroupHandler hostgroup.DeleteComponentHostgroupHandler
 	// ListenerDeleteComponentListenerHandler sets the operation handler for the delete component listener operation
 	ListenerDeleteComponentListenerHandler listener.DeleteComponentListenerHandler
 	// ComponentDeleteComponentRelationshipHandler sets the operation handler for the delete component relationship operation
 	ComponentDeleteComponentRelationshipHandler component.DeleteComponentRelationshipHandler
+	// HostgroupDisconnectHostgroupFromNetworkHandler sets the operation handler for the disconnect hostgroup from network operation
+	HostgroupDisconnectHostgroupFromNetworkHandler hostgroup.DisconnectHostgroupFromNetworkHandler
 	// HostgroupUpdateComponentHostgroupHandler sets the operation handler for the update component hostgroup operation
 	HostgroupUpdateComponentHostgroupHandler hostgroup.UpdateComponentHostgroupHandler
 	// ListenerUpdateComponentListenerHandler sets the operation handler for the update component listener operation
@@ -331,10 +370,16 @@ type ConfigManagerAPI struct {
 	NetworkAddNetworkHandler network.AddNetworkHandler
 	// ProviderAddProviderHandler sets the operation handler for the add provider operation
 	ProviderAddProviderHandler provider.AddProviderHandler
+	// ProviderregionAddProviderRegionHandler sets the operation handler for the add provider region operation
+	ProviderregionAddProviderRegionHandler providerregion.AddProviderRegionHandler
 	// ProvidertypeAddProviderTypeHandler sets the operation handler for the add provider type operation
 	ProvidertypeAddProviderTypeHandler providertype.AddProviderTypeHandler
+	// RegionazAddRegionAZHandler sets the operation handler for the add region a z operation
+	RegionazAddRegionAZHandler regionaz.AddRegionAZHandler
 	// CellDeleteCellHandler sets the operation handler for the delete cell operation
 	CellDeleteCellHandler cell.DeleteCellHandler
+	// NetworkDeleteCellNetworkHandler sets the operation handler for the delete cell network operation
+	NetworkDeleteCellNetworkHandler network.DeleteCellNetworkHandler
 	// RoleDeleteComponentRoleHandler sets the operation handler for the delete component role operation
 	RoleDeleteComponentRoleHandler role.DeleteComponentRoleHandler
 	// CustomerDeleteCustomerHandler sets the operation handler for the delete customer operation
@@ -343,8 +388,12 @@ type ConfigManagerAPI struct {
 	KeypairDeleteKeypairHandler keypair.DeleteKeypairHandler
 	// LoadbalancerDeleteLoadbalancerRelationshipHandler sets the operation handler for the delete loadbalancer relationship operation
 	LoadbalancerDeleteLoadbalancerRelationshipHandler loadbalancer.DeleteLoadbalancerRelationshipHandler
+	// ProviderregionDeleteProviderRegionHandler sets the operation handler for the delete provider region operation
+	ProviderregionDeleteProviderRegionHandler providerregion.DeleteProviderRegionHandler
 	// ProvidertypeDeleteProviderTypeHandler sets the operation handler for the delete provider type operation
 	ProvidertypeDeleteProviderTypeHandler providertype.DeleteProviderTypeHandler
+	// RegionazDeleteRegionAZHandler sets the operation handler for the delete region a z operation
+	RegionazDeleteRegionAZHandler regionaz.DeleteRegionAZHandler
 	// CellDeployCellAppByIDHandler sets the operation handler for the deploy cell app by Id operation
 	CellDeployCellAppByIDHandler cell.DeployCellAppByIDHandler
 	// CellDeployCellByIDHandler sets the operation handler for the deploy cell by Id operation
@@ -389,10 +438,18 @@ type ConfigManagerAPI struct {
 	KeypairGetKeypairByIDHandler keypair.GetKeypairByIDHandler
 	// ProviderGetProviderHandler sets the operation handler for the get provider operation
 	ProviderGetProviderHandler provider.GetProviderHandler
+	// ProviderregionGetProviderRegionByIDHandler sets the operation handler for the get provider region by Id operation
+	ProviderregionGetProviderRegionByIDHandler providerregion.GetProviderRegionByIDHandler
 	// ProvidertypeGetProviderTypeByIDHandler sets the operation handler for the get provider type by Id operation
 	ProvidertypeGetProviderTypeByIDHandler providertype.GetProviderTypeByIDHandler
+	// RegionazGetRegionAZByIDHandler sets the operation handler for the get region a z by Id operation
+	RegionazGetRegionAZByIDHandler regionaz.GetRegionAZByIDHandler
+	// ProviderregionListProviderRegionsHandler sets the operation handler for the list provider regions operation
+	ProviderregionListProviderRegionsHandler providerregion.ListProviderRegionsHandler
 	// ProvidertypeListProviderTypesHandler sets the operation handler for the list provider types operation
 	ProvidertypeListProviderTypesHandler providertype.ListProviderTypesHandler
+	// RegionazListRegionAZsHandler sets the operation handler for the list region a zs operation
+	RegionazListRegionAZsHandler regionaz.ListRegionAZsHandler
 	// CellUpdateCellWithFormHandler sets the operation handler for the update cell with form operation
 	CellUpdateCellWithFormHandler cell.UpdateCellWithFormHandler
 	// RoleUpdateComponentRoleHandler sets the operation handler for the update component role operation
@@ -486,6 +543,10 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "listener.AddComponentListenerHandler")
 	}
 
+	if o.HostgroupConnectHostgroupToNetworkHandler == nil {
+		unregistered = append(unregistered, "hostgroup.ConnectHostgroupToNetworkHandler")
+	}
+
 	if o.HostgroupDeleteComponentHostgroupHandler == nil {
 		unregistered = append(unregistered, "hostgroup.DeleteComponentHostgroupHandler")
 	}
@@ -496,6 +557,10 @@ func (o *ConfigManagerAPI) Validate() error {
 
 	if o.ComponentDeleteComponentRelationshipHandler == nil {
 		unregistered = append(unregistered, "component.DeleteComponentRelationshipHandler")
+	}
+
+	if o.HostgroupDisconnectHostgroupFromNetworkHandler == nil {
+		unregistered = append(unregistered, "hostgroup.DisconnectHostgroupFromNetworkHandler")
 	}
 
 	if o.HostgroupUpdateComponentHostgroupHandler == nil {
@@ -554,12 +619,24 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "provider.AddProviderHandler")
 	}
 
+	if o.ProviderregionAddProviderRegionHandler == nil {
+		unregistered = append(unregistered, "providerregion.AddProviderRegionHandler")
+	}
+
 	if o.ProvidertypeAddProviderTypeHandler == nil {
 		unregistered = append(unregistered, "providertype.AddProviderTypeHandler")
 	}
 
+	if o.RegionazAddRegionAZHandler == nil {
+		unregistered = append(unregistered, "regionaz.AddRegionAZHandler")
+	}
+
 	if o.CellDeleteCellHandler == nil {
 		unregistered = append(unregistered, "cell.DeleteCellHandler")
+	}
+
+	if o.NetworkDeleteCellNetworkHandler == nil {
+		unregistered = append(unregistered, "network.DeleteCellNetworkHandler")
 	}
 
 	if o.RoleDeleteComponentRoleHandler == nil {
@@ -578,8 +655,16 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "loadbalancer.DeleteLoadbalancerRelationshipHandler")
 	}
 
+	if o.ProviderregionDeleteProviderRegionHandler == nil {
+		unregistered = append(unregistered, "providerregion.DeleteProviderRegionHandler")
+	}
+
 	if o.ProvidertypeDeleteProviderTypeHandler == nil {
 		unregistered = append(unregistered, "providertype.DeleteProviderTypeHandler")
+	}
+
+	if o.RegionazDeleteRegionAZHandler == nil {
+		unregistered = append(unregistered, "regionaz.DeleteRegionAZHandler")
 	}
 
 	if o.CellDeployCellAppByIDHandler == nil {
@@ -670,12 +755,28 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "provider.GetProviderHandler")
 	}
 
+	if o.ProviderregionGetProviderRegionByIDHandler == nil {
+		unregistered = append(unregistered, "providerregion.GetProviderRegionByIDHandler")
+	}
+
 	if o.ProvidertypeGetProviderTypeByIDHandler == nil {
 		unregistered = append(unregistered, "providertype.GetProviderTypeByIDHandler")
 	}
 
+	if o.RegionazGetRegionAZByIDHandler == nil {
+		unregistered = append(unregistered, "regionaz.GetRegionAZByIDHandler")
+	}
+
+	if o.ProviderregionListProviderRegionsHandler == nil {
+		unregistered = append(unregistered, "providerregion.ListProviderRegionsHandler")
+	}
+
 	if o.ProvidertypeListProviderTypesHandler == nil {
 		unregistered = append(unregistered, "providertype.ListProviderTypesHandler")
+	}
+
+	if o.RegionazListRegionAZsHandler == nil {
+		unregistered = append(unregistered, "regionaz.ListRegionAZsHandler")
 	}
 
 	if o.CellUpdateCellWithFormHandler == nil {
@@ -821,6 +922,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	}
 	o.handlers["POST"]["/cell/{cell_id}/component/{component_id}/listener"] = listener.NewAddComponentListener(o.context, o.ListenerAddComponentListenerHandler)
 
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/cell/{cell_id}/component/{component_id}/hostgroup/{hostgroup_id}/connect/{network_id}"] = hostgroup.NewConnectHostgroupToNetwork(o.context, o.HostgroupConnectHostgroupToNetworkHandler)
+
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
@@ -835,6 +941,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/cell/{cell_id}/component/{component_id}/connect_to/{entity_id}"] = component.NewDeleteComponentRelationship(o.context, o.ComponentDeleteComponentRelationshipHandler)
+
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/cell/{cell_id}/component/{component_id}/hostgroup/{hostgroup_id}/connect/{network_id}"] = hostgroup.NewDisconnectHostgroupFromNetwork(o.context, o.HostgroupDisconnectHostgroupFromNetworkHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
@@ -909,12 +1020,27 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
+	o.handlers["POST"]["/providertype/{providertype_id}/region"] = providerregion.NewAddProviderRegion(o.context, o.ProviderregionAddProviderRegionHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
 	o.handlers["POST"]["/providertype"] = providertype.NewAddProviderType(o.context, o.ProvidertypeAddProviderTypeHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/providertype/{providertype_id}/region/{provider_region_id}/az"] = regionaz.NewAddRegionAZ(o.context, o.RegionazAddRegionAZHandler)
 
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/cell/{cell_id}"] = cell.NewDeleteCell(o.context, o.CellDeleteCellHandler)
+
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/cell/{cell_id}/network/{network_id}"] = network.NewDeleteCellNetwork(o.context, o.NetworkDeleteCellNetworkHandler)
 
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
@@ -939,7 +1065,17 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
+	o.handlers["DELETE"]["/providertype/{providertype_id}/region"] = providerregion.NewDeleteProviderRegion(o.context, o.ProviderregionDeleteProviderRegionHandler)
+
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
 	o.handlers["DELETE"]["/providertype/{providertype_id}"] = providertype.NewDeleteProviderType(o.context, o.ProvidertypeDeleteProviderTypeHandler)
+
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/providertype/{providertype_id}/region/{provider_region_id}/az/{region_az_id}"] = regionaz.NewDeleteRegionAZ(o.context, o.RegionazDeleteRegionAZHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
@@ -1054,12 +1190,32 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/providertype/{providertype_id}/region"] = providerregion.NewGetProviderRegionByID(o.context, o.ProviderregionGetProviderRegionByIDHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/providertype/{providertype_id}"] = providertype.NewGetProviderTypeByID(o.context, o.ProvidertypeGetProviderTypeByIDHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/providertype/{providertype_id}/region/{provider_region_id}/az/{region_az_id}"] = regionaz.NewGetRegionAZByID(o.context, o.RegionazGetRegionAZByIDHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/providertype/{providertype_id}/regions"] = providerregion.NewListProviderRegions(o.context, o.ProviderregionListProviderRegionsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/providertypes"] = providertype.NewListProviderTypes(o.context, o.ProvidertypeListProviderTypesHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/providertype/{providertype_id}/region/{provider_region_id}/azs"] = regionaz.NewListRegionAZs(o.context, o.RegionazListRegionAZsHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)

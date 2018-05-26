@@ -142,6 +142,8 @@ func main() {
 	api.HostgroupFindComponentHostgroupsHandler = handlers.NewFindComponentHostgroups(rt)
 	api.HostgroupGetComponentHostgroupByIDHandler = handlers.NewGetComponentHostgroupByID(rt)
 	api.HostgroupUpdateComponentHostgroupHandler = handlers.NewUpdateComponentHostgroup(rt)
+	api.HostgroupConnectHostgroupToNetworkHandler = handlers.NewConnectHostgroupToNetwork(rt)
+	api.HostgroupDisconnectHostgroupFromNetworkHandler = handlers.NewDisconnectHostgroupFromNetwork(rt)
 
 	// Key Pair
 	api.KeypairAddKeypairHandler = handlers.NewAddKeypair(rt)
@@ -167,6 +169,7 @@ func main() {
 
 	// Network
 	api.NetworkAddNetworkHandler = handlers.NewAddCellNetwork(rt)
+	api.NetworkDeleteCellNetworkHandler = handlers.NewDeleteCellNetwork(rt)
 	api.NetworkGetCellNetworkHandler = handlers.NewGetCellNetwork(rt)
 	api.NetworkFindCellNetworksHandler = handlers.NewFindCellNetworks(rt)
 
@@ -179,6 +182,16 @@ func main() {
 	api.ProvidertypeAddProviderTypeHandler = handlers.NewAddProviderType(rt)
 	api.ProvidertypeGetProviderTypeByIDHandler = handlers.NewGetProviderTypeByID(rt)
 	api.ProvidertypeListProviderTypesHandler = handlers.NewListProviderTypes(rt)
+
+	// Provider Region
+	api.ProviderregionAddProviderRegionHandler = handlers.NewAddProviderRegion(rt)
+	api.ProviderregionGetProviderRegionByIDHandler = handlers.NewGetProviderRegionByID(rt)
+	api.ProviderregionListProviderRegionsHandler = handlers.NewListProviderRegions(rt)
+
+	// Region AZ
+	api.RegionazAddRegionAZHandler = handlers.NewAddRegionAZ(rt)
+	api.RegionazGetRegionAZByIDHandler = handlers.NewGetRegionAZByID(rt)
+	api.RegionazListRegionAZsHandler = handlers.NewListRegionAZs(rt)
 
 	// Roles
 	api.RoleAddComponentRoleHandler = handlers.NewAddComponentRole(rt)
