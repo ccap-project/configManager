@@ -32,6 +32,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -64,7 +66,7 @@ type Loadbalancer struct {
 	Name *string `json:"name"`
 
 	// network
-	Network string `json:"network,omitempty"`
+	Network []string `json:"network"`
 
 	// port
 	// Required: true
@@ -73,6 +75,9 @@ type Loadbalancer struct {
 	// protocol
 	// Required: true
 	Protocol *string `json:"protocol"`
+
+	// securitygroups
+	Securitygroups []string `json:"securitygroups"`
 
 	// type
 	Type string `json:"type,omitempty"`
@@ -97,12 +102,22 @@ func (m *Loadbalancer) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateNetwork(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if err := m.validatePort(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateProtocol(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateSecuritygroups(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -147,6 +162,15 @@ func (m *Loadbalancer) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Loadbalancer) validateNetwork(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Network) { // not required
+		return nil
+	}
+
+	return nil
+}
+
 func (m *Loadbalancer) validatePort(formats strfmt.Registry) error {
 
 	if err := validate.Required("port", "body", m.Port); err != nil {
@@ -156,10 +180,55 @@ func (m *Loadbalancer) validatePort(formats strfmt.Registry) error {
 	return nil
 }
 
+var loadbalancerTypeProtocolPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["tcp","http","https","tls"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		loadbalancerTypeProtocolPropEnum = append(loadbalancerTypeProtocolPropEnum, v)
+	}
+}
+
+const (
+	// LoadbalancerProtocolTCP captures enum value "tcp"
+	LoadbalancerProtocolTCP string = "tcp"
+	// LoadbalancerProtocolHTTP captures enum value "http"
+	LoadbalancerProtocolHTTP string = "http"
+	// LoadbalancerProtocolHTTPS captures enum value "https"
+	LoadbalancerProtocolHTTPS string = "https"
+	// LoadbalancerProtocolTLS captures enum value "tls"
+	LoadbalancerProtocolTLS string = "tls"
+)
+
+// prop value enum
+func (m *Loadbalancer) validateProtocolEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, loadbalancerTypeProtocolPropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m *Loadbalancer) validateProtocol(formats strfmt.Registry) error {
 
 	if err := validate.Required("protocol", "body", m.Protocol); err != nil {
 		return err
+	}
+
+	// value enum
+	if err := m.validateProtocolEnum("protocol", "body", *m.Protocol); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Loadbalancer) validateSecuritygroups(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Securitygroups) { // not required
+		return nil
 	}
 
 	return nil

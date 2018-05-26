@@ -56,7 +56,7 @@ type Network struct {
 
 	// region az
 	// Required: true
-	RegionAz []string `json:"region_az"`
+	RegionAz *string `json:"region_az"`
 }
 
 // Validate validates this network

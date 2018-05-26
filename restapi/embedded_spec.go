@@ -3478,7 +3478,11 @@ func init() {
           "type": "integer"
         },
         "protocol": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "tcp",
+            "udp"
+          ]
         }
       }
     },
@@ -3510,13 +3514,28 @@ func init() {
           "type": "string"
         },
         "network": {
-          "type": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "port": {
           "type": "integer"
         },
         "protocol": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "tcp",
+            "http",
+            "https",
+            "tls"
+          ]
+        },
+        "securitygroups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "type": {
           "type": "string"
@@ -3544,10 +3563,7 @@ func init() {
           "example": "test_network"
         },
         "region_az": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "type": "string"
         }
       }
     },

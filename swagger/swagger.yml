@@ -2331,6 +2331,7 @@ definitions:
         type: "integer"
       protocol:
         type: "string"
+        enum: [tcp,udp]
 
   Loadbalancer:
     type: "object"
@@ -2348,6 +2349,7 @@ definitions:
         type: "integer"
       protocol:
         type: "string"
+        enum: [tcp, http, https, tls]
       algorithm:
         type: "string"
       type:
@@ -2359,7 +2361,13 @@ definitions:
       members:
         type: "string"
       network:
-        type: "string"
+        type: array
+        items:
+          type: "string"
+      securitygroups:
+        type: "array"
+        items:
+          type: "string"
 
   Network:
     type: "object"
@@ -2378,9 +2386,7 @@ definitions:
         type: "string"
         example: 192.168.100.0/24
       region_az:
-        type: array
-        items:
-          type: "string"
+        type: "string"
 
   Parameter:
     type: "object"

@@ -32,6 +32,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -123,9 +125,41 @@ func (m *Listener) validatePort(formats strfmt.Registry) error {
 	return nil
 }
 
+var listenerTypeProtocolPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["tcp","udp"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		listenerTypeProtocolPropEnum = append(listenerTypeProtocolPropEnum, v)
+	}
+}
+
+const (
+	// ListenerProtocolTCP captures enum value "tcp"
+	ListenerProtocolTCP string = "tcp"
+	// ListenerProtocolUDP captures enum value "udp"
+	ListenerProtocolUDP string = "udp"
+)
+
+// prop value enum
+func (m *Listener) validateProtocolEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, listenerTypeProtocolPropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m *Listener) validateProtocol(formats strfmt.Registry) error {
 
 	if err := validate.Required("protocol", "body", m.Protocol); err != nil {
+		return err
+	}
+
+	// value enum
+	if err := m.validateProtocolEnum("protocol", "body", *m.Protocol); err != nil {
 		return err
 	}
 
