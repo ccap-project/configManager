@@ -32,6 +32,7 @@ package handlers
 import (
 	"log"
 	"strconv"
+	"strings"
 
 	"configManager"
 	"configManager/models"
@@ -98,7 +99,7 @@ func (ctx *addCellLoadbalancer) Handle(params loadbalancer.AddLoadbalancerParams
 		"loadbalancer_id":        ulid,
 		"loadbalancer_name":      swag.StringValue(params.Body.Name),
 		"loadbalancer_port":      swag.Int64Value(params.Body.Port),
-		"loadbalancer_protocol":  swag.StringValue(params.Body.Protocol),
+		"loadbalancer_protocol":  strings.ToUpper(swag.StringValue(params.Body.Protocol)),
 		"loadbalancer_algorithm": swag.StringValue(params.Body.Algorithm)})
 
 	if err != nil {
@@ -520,7 +521,9 @@ func _getLoadbalancerMembers(rt *configManager.Runtime, customerName *string, Ce
 	return &_name, &_port, &_protocol, &_member
 }
 
-func _getLoadbalancerNetwork(rt *configManager.Runtime, customerName *string, CellID *string, LoadbalancerID *string) (network *string) {
+func _listLoadbalancerNetworks(rt *configManager.Runtime, customerName *string, CellID *string, LoadbalancerID *string) *[]string {
+
+	var networks []string
 
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->
 										(cell:Cell {id: {cell_id}})-[:HAS]->
@@ -541,14 +544,7 @@ func _getLoadbalancerNetwork(rt *configManager.Runtime, customerName *string, Ce
 	}
 	defer db.Close()
 
-	stmt, err := db.PrepareNeo(cypher)
-	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return nil
-	}
-	defer stmt.Close()
-
-	rows, err := stmt.QueryNeo(map[string]interface{}{
+	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
 		"name":            swag.StringValue(customerName),
 		"cell_id":         swag.StringValue(CellID),
 		"loadbalancer_id": swag.StringValue(LoadbalancerID)})
@@ -558,15 +554,11 @@ func _getLoadbalancerNetwork(rt *configManager.Runtime, customerName *string, Ce
 		return nil
 	}
 
-	output, _, err := rows.NextNeo()
-	if err != nil {
-		return nil
+	for _, row := range data {
+		_network := row[0].(string)
+		networks = append(networks, _network)
 	}
 
-	ctxLogger.Infoln(output)
-
-	_network := output[0].(string)
-
-	return &_network
+	return &networks
 
 }

@@ -569,17 +569,20 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cell *mod
 	loadbalancers, _ := _findCellLoadbalancers(rt, customerName, &cellID)
 	for _, lb := range loadbalancers {
 		lbID := string(lb.ID)
+		securityGroup := &models.Securitygroup{Name: *lb.Name}
 
 		// get lb members
 		_, _, _, member := _getLoadbalancerMembers(rt, customerName, &cellID, &lbID)
 
-		lb.Network = *_getLoadbalancerNetwork(rt, customerName, &cellID, &lbID)
+		lb.Network = *_listLoadbalancerNetworks(rt, customerName, &cellID, &lbID)
+		lb.Securitygroups = append(lb.Securitygroups, *lb.Name)
 
 		if member != nil {
-
 			lb.Members = *member
 			res.Loadbalancers = append(res.Loadbalancers, lb)
 		}
+
+		res.Securitygroups = append(res.Securitygroups, securityGroup)
 	}
 
 	/*
@@ -612,7 +615,6 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cell *mod
 			}
 			hg.Roles = models.HostgroupRoles(component.Roles)
 			res.Hostgroups = append(res.Hostgroups, hg)
-
 		}
 
 		// build SecurityRules
@@ -625,7 +627,16 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cell *mod
 
 				securityRule.SourceSecuritygroup = conn
 				securityRule.DestinationSecuritygroup = securityGroup.Name
-				securityRule.Proto = *listener.Protocol
+
+				switch *listener.Protocol {
+				case "HTTP":
+					securityRule.Proto = "TCP"
+				case "HTTPS":
+					securityRule.Proto = "TCP"
+				default:
+					securityRule.Proto = *listener.Protocol
+				}
+
 				securityRule.DestinationPort = strconv.Itoa(int(*listener.Port))
 
 				securityGroup.Rules = append(securityGroup.Rules, &securityRule)

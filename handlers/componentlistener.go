@@ -31,6 +31,7 @@ package handlers
 
 import (
 	"log"
+	"strings"
 
 	"configManager"
 	"configManager/models"
@@ -93,7 +94,7 @@ func (ctx *addComponentListener) Handle(params listener.AddComponentListenerPara
 		"listener_id":       ulid,
 		"listener_name":     swag.StringValue(params.Body.Name),
 		"listener_port":     swag.Int64Value(params.Body.Port),
-		"listener_protocol": swag.StringValue(params.Body.Protocol)})
+		"listener_protocol": strings.ToUpper(swag.StringValue(params.Body.Protocol))})
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
@@ -260,7 +261,7 @@ func (ctx *updateComponentListener) Handle(params listener.UpdateComponentListen
 		"component_id":      params.ComponentID,
 		"listener_id":       params.ListenerID,
 		"listener_port":     swag.Int64Value(params.Body.Port),
-		"listener_protocol": swag.StringValue(params.Body.Protocol)})
+		"listener_protocol": strings.ToUpper(swag.StringValue(params.Body.Protocol))})
 
 	if err != nil {
 		ctxLogger.Error("-> An error occurred querying Neo: ", err)

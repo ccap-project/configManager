@@ -70,7 +70,7 @@ func (ctx *addCellNetwork) Handle(params network.AddNetworkParams, principal *mo
 	}
 
 	// Check if required az exists
-	var networkAZs []*models.RegionAZ
+	var networkAZ *models.RegionAZ
 
 	cellAZs, err := listCellAZs(ctx.rt, &params.CellID)
 
@@ -79,20 +79,18 @@ func (ctx *addCellNetwork) Handle(params network.AddNetworkParams, principal *mo
 		return network.NewAddNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
-	for _, r_az := range params.Body.RegionAz {
-		exists := 0
-		for _, az := range cellAZs {
-			if r_az == *az.Name {
-				exists++
-				networkAZs = append(networkAZs, az)
-				break
-			}
+	exists := 0
+	for _, az := range cellAZs {
+		if *params.Body.RegionAz == *az.Name {
+			exists++
+			networkAZ = az
+			break
 		}
+	}
 
-		if exists == 0 {
-			ctxLogger.Warnf("region az (%s) does not exists !", r_az)
-			return network.NewAddNetworkConflict().WithPayload(&models.APIResponse{Message: "region az does not exists"})
-		}
+	if exists == 0 {
+		ctxLogger.Warnf("region az (%s) does not exists !", params.Body.RegionAz)
+		return network.NewAddNetworkConflict().WithPayload(&models.APIResponse{Message: "region az does not exists"})
 	}
 
 	db, err := ctx.rt.DB().OpenPool()
@@ -132,9 +130,7 @@ func (ctx *addCellNetwork) Handle(params network.AddNetworkParams, principal *mo
 		return network.NewAddNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
-	for _, az := range networkAZs {
-		_connectToAZ(ctx.rt, ulid, string(az.ID))
-	}
+	_connectToAZ(ctx.rt, ulid, string(networkAZ.ID))
 
 	ctxLogger.Info("OK")
 
@@ -330,10 +326,11 @@ func _getCellNetwork(rt *configManager.Runtime, customerName *string, CellID *st
 
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->
 										(cell:Cell {id: {cell_id}})-[:HAS]->
-										(network:Network {id: {network_id}})
+										(network:Network {id: {network_id}})-[:DEPLOYED_ON]->(az:RegionAZ)
 								RETURN network.id as id,
 												network.name as name,
-												network.cidr as cidr`
+												network.cidr as cidr,
+												az.name as az`
 
 	db, err := rt.DB().OpenPool()
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
@@ -371,11 +368,13 @@ func _getCellNetwork(rt *configManager.Runtime, customerName *string, CellID *st
 
 	_name := output[1].(string)
 	_cidr := output[2].(string)
+	_az := output[3].(string)
 
 	network = &models.Network{
-		ID:   models.ULID(output[0].(string)),
-		Name: &_name,
-		Cidr: &_cidr}
+		ID:       models.ULID(output[0].(string)),
+		Name:     &_name,
+		Cidr:     &_cidr,
+		RegionAz: &_az}
 
 	return network, nil
 }
