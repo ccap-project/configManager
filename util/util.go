@@ -30,13 +30,16 @@
 package util
 
 import (
+	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/fatih/structs"
+	"github.com/stoewer/go-strcase"
 )
 
-func BuildQuery(Struct interface{}, prefix string, skip string) string {
+func BuildQuery(Struct interface{}, prefix string, queryType string, skip []string) string {
 
 	var res []string
 
@@ -44,34 +47,108 @@ func BuildQuery(Struct interface{}, prefix string, skip string) string {
 
 	for _, fi := range f {
 		if fi.IsZero() == false {
-			if fi.Name() == skip {
+			if grep(fi.Name(), skip) {
 				continue
 			}
+			name := strcase.SnakeCase(fi.Name())
 
-			if len(prefix) == 0 {
-				res = append(res, fmt.Sprintf("%s={%s} ", strings.ToLower(fi.Name()), fi.Name()))
-			} else {
-				res = append(res, fmt.Sprintf("%s.%s={%s} ", prefix, fi.Name(), strings.ToLower(fi.Name())))
+			switch queryType {
+			case "update":
+				if len(prefix) == 0 {
+					res = append(res, fmt.Sprintf("%s={%s} ", strings.ToLower(fi.Name()), fi.Name()))
+				} else {
+					res = append(res, fmt.Sprintf("%s.%s={%s} ", prefix, fi.Name(), strings.ToLower(fi.Name())))
+				}
+			default:
+				if len(prefix) == 0 {
+					res = append(res, fmt.Sprintf("%s:{%s}", strings.ToLower(fi.Name()), strings.ToLower(fi.Name())))
+				} else {
+					res = append(res, fmt.Sprintf("%s:{%s_%s}", name, prefix, name))
+				}
 			}
 		}
 	}
 
-	return strings.Join(res, ",")
+	return strings.Join(res, ", ")
 }
 
-func BuildParams(Struct interface{}, Vals map[string]interface{}, skip string) map[string]interface{} {
+func BuildParams(Struct interface{}, Vals map[string]interface{}, skip []string) map[string]interface{} {
 
 	f := structs.Fields(Struct)
 
 	for _, fi := range f {
 		if fi.IsZero() == false {
-			if fi.Name() == skip {
+			
+			if grep(fi.Name(), skip) {
 				continue
 			}
 
 			k := strings.ToLower(fi.Name())
-			Vals[k] = fi.Value()
+			v := fi.Value()
+
+			switch reflect.TypeOf(fi.Value()).String() {
+			case "*string":
+				Vals[k] = *(fi.Value().(*string))
+			case "*int64":
+				val := v.(*int64)
+				Vals[k] = int64(*val)
+			default:
+				Vals[k] = fi.Value()
+			}
+
+			/*
+				if fi.Kind() == "ptr" {
+					reflect.TypeOf(
+					Vals[k] = *fi.Value()
+				} else {
+					Vals[k] = fi.Value()
+				}
+			*/
 		}
 	}
 	return Vals
+}
+
+func grep(s string, list []string) bool {
+
+	for _, k := range list {
+		if s == k {
+			return true
+		}
+	}
+	return false
+	
+}
+
+func SetField(obj interface{}, name string, value interface{}) error {
+	structValue := reflect.ValueOf(obj).Elem()
+	structFieldValue := structValue.FieldByName(name)
+
+	if !structFieldValue.IsValid() {
+		return fmt.Errorf("No such field: %s in obj", name)
+	}
+
+	if !structFieldValue.CanSet() {
+		return fmt.Errorf("Cannot set %s field value", name)
+	}
+
+	structFieldType := structFieldValue.Type()
+	val := reflect.ValueOf(value)
+	if structFieldType != val.Type() {
+		invalidTypeError := errors.New("Provided value type didn't match obj field type")
+		return invalidTypeError
+	}
+
+	structFieldValue.Set(val)
+	return nil
+}
+
+func FillStruct(s interface{}, m map[string]interface{}) error {
+	for k, v := range m {
+		err := SetField(s, k, v)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

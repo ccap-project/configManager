@@ -30,6 +30,7 @@
 package handlers
 
 import (
+	"fmt"
 	"io"
 	"log"
 
@@ -37,6 +38,7 @@ import (
 	"configManager/models"
 	"configManager/neo4j"
 	"configManager/restapi/operations/hostgroup"
+	"configManager/util"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/go-openapi/runtime/middleware"
@@ -58,18 +60,16 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 							(component:Component {id: {component_id}})
 						MERGE (component)-[:DEPLOYED_ON]->(hostgroup:Hostgroup {
 							id: {hostgroup_id},
-							name: {hostgroup_name},
-							image: {hostgroup_image},
-							flavor: {hostgroup_flavor},
-							username: {hostgroup_username},
-							bootstrap_command: {hostgroup_bootstrap_command},
-							count: {hostgroup_count},
-							order: {hostgroup_order} } )
+							%s } )
 							RETURN hostgroup.id as id`
+
+	_params := util.BuildQuery(&params.Body, "", "merge", []string{"ID", "Network"})
 
 	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
 		"customer_name": swag.StringValue(principal.Name),
 		"cell_id":       params.CellID})
+
+	ctxLogger.Infoln(_params)
 
 	// Check if required networks exists
 	var cellNetworks []*models.Network
@@ -96,7 +96,7 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 	}
 	defer tx.Rollback()
 
-	stmt, err := db.PrepareNeo(cypher)
+	stmt, err := db.PrepareNeo(fmt.Sprintf(cypher, _params))
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
 		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
@@ -114,18 +114,12 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 		"hostgroup_id":   ulid,
 		"hostgroup_name": swag.StringValue(params.Body.Name)})
 
-	rows, err := stmt.QueryNeo(map[string]interface{}{
-		"customer_name":               swag.StringValue(principal.Name),
-		"cell_id":                     params.CellID,
-		"component_id":                params.ComponentID,
-		"hostgroup_id":                ulid,
-		"hostgroup_name":              swag.StringValue(params.Body.Name),
-		"hostgroup_image":             swag.StringValue(params.Body.Image),
-		"hostgroup_flavor":            swag.StringValue(params.Body.Flavor),
-		"hostgroup_username":          swag.StringValue(params.Body.Username),
-		"hostgroup_bootstrap_command": swag.StringValue(&params.Body.BootstrapCommand),
-		"hostgroup_count":             swag.Int64Value(params.Body.Count),
-		"hostgroup_order":             swag.Int64Value(params.Body.Order)})
+	rows, err := stmt.QueryNeo(util.BuildParams(params.Body,
+		map[string]interface{}{
+			"customer_name": swag.StringValue(principal.Name),
+			"cell_id":       params.CellID,
+			"component_id":  params.ComponentID,
+			"hostgroup_id":  ulid}, []string{"ID", "Network"}))
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
@@ -393,7 +387,7 @@ func _findComponentHostgroups(rt *configManager.Runtime, customerName *string, C
 		_flavor := row[3].(string)
 		_username := row[4].(string)
 		_bootstrap_command := ""
-		_count := row[6].(int64)
+		_desired_size := row[6].(int64)
 
 		if row[7] == nil {
 			_order = 99
@@ -413,7 +407,7 @@ func _findComponentHostgroups(rt *configManager.Runtime, customerName *string, C
 
 		res[idx] = &models.Hostgroup{
 			ID:               models.ULID(_id),
-			Count:            &_count,
+			DesiredSize:      &_desired_size,
 			Name:             &_name,
 			Image:            &_image,
 			Flavor:           &_flavor,
@@ -499,7 +493,7 @@ func (ctx *updateComponentHostgroup) Handle(params hostgroup.UpdateComponentHost
 		"hostgroup_flavor":            swag.StringValue(params.Body.Flavor),
 		"hostgroup_username":          swag.StringValue(params.Body.Username),
 		"hostgroup_bootstrap_command": swag.StringValue(&params.Body.BootstrapCommand),
-		"hostgroup_count":             swag.Int64Value(params.Body.Count),
+		"hostgroup_desired_size":      swag.Int64Value(params.Body.DesiredSize),
 		"hostgroup_order":             swag.Int64Value(params.Body.Order)})
 
 	if err != nil {
@@ -560,14 +554,7 @@ func _getComponentHostgroupByID(rt *configManager.Runtime, customer *string, cel
 							(cell:Cell{id: {cell_id}})-[:PROVIDES]->
 							(component:Component {id: {component_id}})-[:DEPLOYED_ON]->
 							(hostgroup:Hostgroup {id: {hostgroup_id}})
-							RETURN hostgroup.id as id,
-											hostgroup.name as name,
-											hostgroup.image as image,
-											hostgroup.flavor as flavor,
-											hostgroup.username as username,
-											hostgroup.bootstrap_command as bootstrap_command,
-											hostgroup.count as count,
-											hostgroup.order as order`
+							RETURN hostgroup`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
 		"customer_name": swag.StringValue(customer),
@@ -610,7 +597,7 @@ func _getComponentHostgroupByID(rt *configManager.Runtime, customer *string, cel
 	_flavor := output[3].(string)
 	_username := output[4].(string)
 	_bootstrap_command := ""
-	_count := output[6].(int64)
+	_desired_size := output[6].(int64)
 	//_network := output[7].(string)
 
 	var _order int64
@@ -627,7 +614,7 @@ func _getComponentHostgroupByID(rt *configManager.Runtime, customer *string, cel
 
 	hostgroup = &models.Hostgroup{
 		ID:               models.ULID(output[0].(string)),
-		Count:            &_count,
+		DesiredSize:      &_desired_size,
 		Name:             &_name,
 		Image:            &_image,
 		Flavor:           &_flavor,
