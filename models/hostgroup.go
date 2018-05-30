@@ -49,9 +49,12 @@ type Hostgroup struct {
 	// component
 	Component string `json:"component,omitempty"`
 
-	// count
+	// cooldown interval
+	CooldownInterval int64 `json:"cooldown_interval,omitempty"`
+
+	// desired size
 	// Required: true
-	Count *int64 `json:"count"`
+	DesiredSize *int64 `json:"desired_size"`
 
 	// flavor
 	// Required: true
@@ -66,6 +69,12 @@ type Hostgroup struct {
 
 	// listeners
 	Listeners HostgroupListeners `json:"listeners"`
+
+	// max size
+	MaxSize int64 `json:"max_size,omitempty"`
+
+	// min size
+	MinSize int64 `json:"min_size,omitempty"`
 
 	// name
 	// Required: true
@@ -87,13 +96,16 @@ type Hostgroup struct {
 	// username
 	// Required: true
 	Username *string `json:"username"`
+
+	// wait for instances
+	WaitForInstances bool `json:"wait_for_instances,omitempty"`
 }
 
 // Validate validates this hostgroup
 func (m *Hostgroup) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateCount(formats); err != nil {
+	if err := m.validateDesiredSize(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -139,9 +151,9 @@ func (m *Hostgroup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Hostgroup) validateCount(formats strfmt.Registry) error {
+func (m *Hostgroup) validateDesiredSize(formats strfmt.Registry) error {
 
-	if err := validate.Required("count", "body", m.Count); err != nil {
+	if err := validate.Required("desired_size", "body", m.DesiredSize); err != nil {
 		return err
 	}
 

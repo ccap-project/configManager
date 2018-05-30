@@ -2264,7 +2264,7 @@ definitions:
       - image
       - flavor
       - username
-      - count
+      - desired_size
       - network
     properties:
       id:
@@ -2279,7 +2279,15 @@ definitions:
         type: "string"
       bootstrap_command:
         type: "string"
-      count:
+      desired_size:
+        type: "integer"
+      min_size:
+        type: "integer"
+      max_size:
+        type: "integer"
+      wait_for_instances:
+        type: "boolean"
+      cooldown_interval:
         type: "integer"
       network:
         type: "array"
