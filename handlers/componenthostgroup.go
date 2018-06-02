@@ -63,13 +63,14 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 							%s } )
 							RETURN hostgroup.id as id`
 
-	_params := util.BuildQuery(&params.Body, "", "merge", []string{"ID", "Network"})
-
 	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
 		"customer_name": swag.StringValue(principal.Name),
 		"cell_id":       params.CellID})
 
-	ctxLogger.Infoln(_params)
+	if _getComponentHostgroupByName(ctx.rt, principal.Name, &params.CellID, &params.ComponentID, params.Body.Name) != nil {
+		ctxLogger.Error("hostgroup already exists !")
+		return hostgroup.NewAddComponentHostgroupConflict().WithPayload(&models.APIResponse{Message: "hostgroup already exists"})
+	}
 
 	// Check if required networks exists
 	var cellNetworks []*models.Network
@@ -96,6 +97,8 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 	}
 	defer tx.Rollback()
 
+	_params := util.BuildQuery(&params.Body, "", "merge", []string{"ID", "Network"})
+
 	stmt, err := db.PrepareNeo(fmt.Sprintf(cypher, _params))
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
@@ -114,7 +117,7 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 		"hostgroup_id":   ulid,
 		"hostgroup_name": swag.StringValue(params.Body.Name)})
 
-	rows, err := stmt.QueryNeo(util.BuildParams(params.Body,
+	rows, err := stmt.QueryNeo(util.BuildParams(params.Body, "",
 		map[string]interface{}{
 			"customer_name": swag.StringValue(principal.Name),
 			"cell_id":       params.CellID,
@@ -554,7 +557,7 @@ func _getComponentHostgroupByID(rt *configManager.Runtime, customer *string, cel
 							(cell:Cell{id: {cell_id}})-[:PROVIDES]->
 							(component:Component {id: {component_id}})-[:DEPLOYED_ON]->
 							(hostgroup:Hostgroup {id: {hostgroup_id}})
-							RETURN hostgroup`
+							RETURN hostgroup {.*}`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
 		"customer_name": swag.StringValue(customer),
@@ -592,38 +595,68 @@ func _getComponentHostgroupByID(rt *configManager.Runtime, customer *string, cel
 		return hostgroup
 	}
 
-	_name := output[1].(string)
-	_image := output[2].(string)
-	_flavor := output[3].(string)
-	_username := output[4].(string)
-	_bootstrap_command := ""
-	_desired_size := output[6].(int64)
-	//_network := output[7].(string)
+	ctxLogger.Infof("Columns(%#v)", rows.Columns())
+	ctxLogger.Infof("Output(%#v)", output)
 
-	var _order int64
+	hostgroup = &models.Hostgroup{}
 
-	if output[7].(int64) <= 0 {
-		_order = 99
-	} else {
-		_order = output[7].(int64)
-	}
-
-	if output[5] != nil {
-		_bootstrap_command = output[5].(string)
-	}
-
-	hostgroup = &models.Hostgroup{
-		ID:               models.ULID(output[0].(string)),
-		DesiredSize:      &_desired_size,
-		Name:             &_name,
-		Image:            &_image,
-		Flavor:           &_flavor,
-		Username:         &_username,
-		BootstrapCommand: _bootstrap_command,
-		//Network:          &_network,
-		Order: &_order}
+	util.FillStruct(hostgroup, output[0].(map[string]interface{}))
 
 	log.Printf("here => (%#v)", hostgroup)
+
+	return hostgroup
+}
+
+func _getComponentHostgroupByName(rt *configManager.Runtime, customer *string, cellID *string, componentID *string, hostgroupName *string) *models.Hostgroup {
+
+	var hostgroup *models.Hostgroup
+	hostgroup = nil
+
+	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
+							(cell:Cell{id: {cell_id}})-[:PROVIDES]->
+							(component:Component {id: {component_id}})-[:DEPLOYED_ON]->
+							(hostgroup:Hostgroup {name: {hostgroup_name}})
+							RETURN hostgroup {.*}`
+
+	ctxLogger := rt.Logger().WithFields(logrus.Fields{
+		"customer_name":  swag.StringValue(customer),
+		"cell_id":        swag.StringValue(cellID),
+		"component_id":   swag.StringValue(componentID),
+		"hostgroup_name": swag.StringValue(hostgroupName)})
+
+	db, err := rt.DB().OpenPool()
+	if err != nil {
+		ctxLogger.Error("error connecting to neo4j: ", err)
+		return hostgroup
+	}
+	defer db.Close()
+
+	stmt, err := db.PrepareNeo(cypher)
+	if err != nil {
+		ctxLogger.Error("An error occurred preparing statement: ", err)
+		return hostgroup
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.QueryNeo(map[string]interface{}{
+		"customer_name":  swag.StringValue(customer),
+		"cell_id":        swag.StringValue(cellID),
+		"component_id":   swag.StringValue(componentID),
+		"hostgroup_name": swag.StringValue(hostgroupName)})
+
+	if err != nil {
+		ctxLogger.Error("An error occurred querying Neo: ", err)
+		return hostgroup
+	}
+
+	output, _, err := rows.NextNeo()
+	if err != nil {
+		return hostgroup
+	}
+
+	hostgroup = &models.Hostgroup{}
+
+	util.FillStruct(hostgroup, output[0].(map[string]interface{}))
 
 	return hostgroup
 }
