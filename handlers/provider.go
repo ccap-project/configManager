@@ -276,12 +276,12 @@ func (ctx *updateCellProvider) Handle(params provider.UpdateProviderParams, prin
 		return provider.NewUpdateProviderInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer stmt.Close()
-	ctxLogger.Infoln(util.BuildParams(params.Body,
+	ctxLogger.Infoln(util.BuildParams(params.Body, "provider",
 		map[string]interface{}{
 			"customer_name": swag.StringValue(principal.Name),
 			"cell_id":       params.CellID}, []string{"ID"}))
 
-	rows, err := stmt.QueryNeo(util.BuildParams(params.Body,
+	rows, err := stmt.QueryNeo(util.BuildParams(params.Body, "provider",
 		map[string]interface{}{
 			"customer_name": swag.StringValue(principal.Name),
 			"cell_id":       params.CellID}, []string{"ID"}))
