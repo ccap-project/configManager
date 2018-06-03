@@ -32,7 +32,6 @@ package handlers
 import (
 	"fmt"
 	"io"
-	"log"
 
 	"configManager"
 	"configManager/models"
@@ -340,25 +339,19 @@ func (ctx *findComponentHostgroups) Handle(params hostgroup.FindComponentHostgro
 	return hostgroup.NewFindComponentHostgroupsOK().WithPayload(data)
 }
 
-func _findComponentHostgroups(rt *configManager.Runtime, customerName *string, CellID *string, ComponentID *string) ([]*models.Hostgroup, middleware.Responder) {
+func _findComponentHostgroups(rt *configManager.Runtime, customerName *string, cellID *string, componentID *string) ([]*models.Hostgroup, middleware.Responder) {
 
+	var res []*models.Hostgroup
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell{id: {cell_id}})-[:PROVIDES]->
 							(component:Component {id: {component_id}})-[:DEPLOYED_ON]->
 							(hostgroup:Hostgroup)
-						RETURN hostgroup.id as id,
-										hostgroup.name as name,
-										hostgroup.image as image,
-										hostgroup.flavor as flavor,
-										hostgroup.username as username,
-										hostgroup.bootstrap_command as bootstrap_command,
-										hostgroup.count as count,
-										hostgroup.order as order`
+						RETURN hostgroup.id`
 
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
 		"customer_name": swag.StringValue(customerName),
-		"cell_id":       swag.StringValue(CellID),
-		"component_id":  swag.StringValue(ComponentID)})
+		"cell_id":       swag.StringValue(cellID),
+		"component_id":  swag.StringValue(componentID)})
 
 	db, err := rt.DB().OpenPool()
 	if err != nil {
@@ -369,55 +362,21 @@ func _findComponentHostgroups(rt *configManager.Runtime, customerName *string, C
 
 	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
 		"customer_name": swag.StringValue(customerName),
-		"cell_id":       swag.StringValue(CellID),
-		"component_id":  swag.StringValue(ComponentID)})
+		"cell_id":       swag.StringValue(cellID),
+		"component_id":  swag.StringValue(componentID)})
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
 		return nil, hostgroup.NewFindComponentHostgroupsInternalServerError()
 	}
 
-	res := make([]*models.Hostgroup, len(data))
+	for _, row := range data {
 
-	for idx, row := range data {
+		hostgroupID := row[0].(string)
 
-		var _order int64
-		var _nets []string
+		h := _getComponentHostgroupByID(rt, customerName, cellID, componentID, &hostgroupID)
 
-		_id := row[0].(string)
-		_name := row[1].(string)
-		_image := row[2].(string)
-		_flavor := row[3].(string)
-		_username := row[4].(string)
-		_bootstrap_command := ""
-		_desired_size := row[6].(int64)
-
-		if row[7] == nil {
-			_order = 99
-		} else {
-			_order = row[7].(int64)
-		}
-
-		if row[5] != nil {
-			_bootstrap_command = row[5].(string)
-		}
-
-		_networks, _ := _findHostgroupNetworks(rt, customerName, &_id)
-
-		for _, n := range _networks {
-			_nets = append(_nets, *n.Name)
-		}
-
-		res[idx] = &models.Hostgroup{
-			ID:               models.ULID(_id),
-			DesiredSize:      &_desired_size,
-			Name:             &_name,
-			Image:            &_image,
-			Flavor:           &_flavor,
-			Username:         &_username,
-			BootstrapCommand: _bootstrap_command,
-			Network:          _nets,
-			Order:            &_order}
+		res = append(res, h)
 	}
 	return res, nil
 }
@@ -551,7 +510,7 @@ func _connectToNetwork(conn neo4j.Conn, hostgroupID string, networkID string) er
 func _getComponentHostgroupByID(rt *configManager.Runtime, customer *string, cellID *string, componentID *string, hostgroupID *string) *models.Hostgroup {
 
 	var hostgroup *models.Hostgroup
-	hostgroup = nil
+	var _nets []string
 
 	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
 							(cell:Cell{id: {cell_id}})-[:PROVIDES]->
@@ -595,14 +554,16 @@ func _getComponentHostgroupByID(rt *configManager.Runtime, customer *string, cel
 		return hostgroup
 	}
 
-	ctxLogger.Infof("Columns(%#v)", rows.Columns())
-	ctxLogger.Infof("Output(%#v)", output)
-
 	hostgroup = &models.Hostgroup{}
 
 	util.FillStruct(hostgroup, output[0].(map[string]interface{}))
 
-	log.Printf("here => (%#v)", hostgroup)
+	_networks, _ := _findHostgroupNetworks(rt, customer, hostgroupID)
+
+	for _, n := range _networks {
+		_nets = append(_nets, *n.Name)
+	}
+	hostgroup.Network = _nets
 
 	return hostgroup
 }
