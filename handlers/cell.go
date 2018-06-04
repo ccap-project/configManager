@@ -572,13 +572,13 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cell *mod
 		securityGroup := &models.Securitygroup{Name: *lb.Name}
 
 		// get lb members
-		_, _, _, member := _getLoadbalancerMembers(rt, customerName, &cellID, &lbID)
+		members := _getLoadbalancerMembers(rt, customerName, &cellID, &lbID)
 
 		lb.Network = *_listLoadbalancerNetworks(rt, customerName, &cellID, &lbID)
 		lb.Securitygroups = append(lb.Securitygroups, *lb.Name)
 
-		if member != nil {
-			lb.Members = *member
+		if members != nil {
+			lb.Members = *members
 			res.Loadbalancers = append(res.Loadbalancers, lb)
 		}
 

@@ -59,7 +59,7 @@ type Loadbalancer struct {
 	ID ULID `json:"id,omitempty"`
 
 	// members
-	Members string `json:"members,omitempty"`
+	Members []string `json:"members"`
 
 	// name
 	// Required: true
@@ -93,6 +93,11 @@ func (m *Loadbalancer) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateID(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateMembers(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -148,6 +153,15 @@ func (m *Loadbalancer) validateID(formats strfmt.Registry) error {
 			return ve.ValidateName("id")
 		}
 		return err
+	}
+
+	return nil
+}
+
+func (m *Loadbalancer) validateMembers(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Members) { // not required
+		return nil
 	}
 
 	return nil

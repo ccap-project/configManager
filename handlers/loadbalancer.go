@@ -31,7 +31,6 @@ package handlers
 
 import (
 	"log"
-	"strconv"
 	"strings"
 
 	"configManager"
@@ -463,17 +462,16 @@ func _getLoadbalancerByName(conn neo4j.ConnPool, customerName *string, CellID *s
 	return loadbalancer
 }
 
-func _getLoadbalancerMembers(rt *configManager.Runtime, customerName *string, CellID *string, LoadbalancerID *string) (name *string, port *string, protocol *string, member *string) {
+func _getLoadbalancerMembers(rt *configManager.Runtime, customerName *string, CellID *string, LoadbalancerID *string) *[]string {
+
+	var members []string
 
 	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->
 										(cell:Cell {id: {cell_id}})-[:HAS]->
 										(loadbalancer:Loadbalancer {id: {loadbalancer_id}})-[:CONNECT_TO]->
 										(listener:Listener)<-[:LISTEN_ON]-(Component)-[:DEPLOYED_ON]->
 										(hg:Hostgroup)
-								RETURN listener.name,
-												listener.port,
-												listener.protocol,
-												hg.name`
+								RETURN hg.name`
 
 	db, err := rt.DB().OpenPool()
 	ctxLogger := rt.Logger().WithFields(logrus.Fields{
@@ -483,42 +481,26 @@ func _getLoadbalancerMembers(rt *configManager.Runtime, customerName *string, Ce
 
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return nil, nil, nil, nil
+		return &members
 	}
 	defer db.Close()
 
-	ctxLogger.Info("here !")
-
-	stmt, err := db.PrepareNeo(cypher)
-	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return nil, nil, nil, nil
-	}
-	defer stmt.Close()
-
-	rows, err := stmt.QueryNeo(map[string]interface{}{
+	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
 		"name":            swag.StringValue(customerName),
 		"cell_id":         swag.StringValue(CellID),
 		"loadbalancer_id": swag.StringValue(LoadbalancerID)})
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return nil, nil, nil, nil
+		return &members
 	}
 
-	output, _, err := rows.NextNeo()
-	if err != nil {
-		return nil, nil, nil, nil
+	for _, row := range data {
+		_member := row[0].(string)
+		members = append(members, _member)
 	}
 
-	ctxLogger.Infoln(output)
-
-	_name := output[0].(string)
-	_port := strconv.Itoa(int(output[1].(int64)))
-	_protocol := output[2].(string)
-	_member := output[3].(string)
-
-	return &_name, &_port, &_protocol, &_member
+	return &members
 }
 
 func _listLoadbalancerNetworks(rt *configManager.Runtime, customerName *string, CellID *string, LoadbalancerID *string) *[]string {

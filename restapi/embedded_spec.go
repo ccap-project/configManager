@@ -3520,7 +3520,10 @@ func init() {
           "$ref": "#/definitions/ULID"
         },
         "members": {
-          "type": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "name": {
           "type": "string"

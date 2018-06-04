@@ -2367,7 +2367,9 @@ definitions:
       connection_idle_timeout:
         type: "integer"
       members:
-        type: "string"
+        type: "array"
+        items:
+          type: "string"
       network:
         type: array
         items:
