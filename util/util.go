@@ -31,12 +31,17 @@ package util
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
+
+	"configManager/models"
+
+	"github.com/go-openapi/swag"
 
 	"github.com/fatih/structs"
 )
 
-func BuildQuery(Struct interface{}, prefix string, skip string) string {
+func BuildQuery(Struct interface{}, prefix string, queryType string, skip []string) string {
 
 	var res []string
 
@@ -44,34 +49,113 @@ func BuildQuery(Struct interface{}, prefix string, skip string) string {
 
 	for _, fi := range f {
 		if fi.IsZero() == false {
-			if fi.Name() == skip {
+			if grep(fi.Name(), skip) {
 				continue
 			}
+			name := swag.ToFileName(fi.Name())
 
-			if len(prefix) == 0 {
-				res = append(res, fmt.Sprintf("%s={%s} ", strings.ToLower(fi.Name()), fi.Name()))
-			} else {
-				res = append(res, fmt.Sprintf("%s.%s={%s} ", prefix, fi.Name(), strings.ToLower(fi.Name())))
+			switch queryType {
+			case "update":
+				if len(prefix) == 0 {
+					res = append(res, fmt.Sprintf("%s={%s} ", name, name))
+				} else {
+					res = append(res, fmt.Sprintf("%s.%s={%s} ", prefix, name, name))
+				}
+			default:
+				if len(prefix) == 0 {
+					res = append(res, fmt.Sprintf("%s:{%s}", name, name))
+				} else {
+					res = append(res, fmt.Sprintf("%s:{%s_%s}", name, prefix, name))
+				}
 			}
 		}
 	}
 
-	return strings.Join(res, ",")
+	return strings.Join(res, ", ")
 }
 
-func BuildParams(Struct interface{}, Vals map[string]interface{}, skip string) map[string]interface{} {
+func BuildParams(Struct interface{}, prefix string, Vals map[string]interface{}, skip []string) map[string]interface{} {
 
 	f := structs.Fields(Struct)
 
 	for _, fi := range f {
 		if fi.IsZero() == false {
-			if fi.Name() == skip {
+
+			if grep(fi.Name(), skip) {
 				continue
 			}
+			var k string
 
-			k := strings.ToLower(fi.Name())
-			Vals[k] = fi.Value()
+			// Add prefix string if needed, convert field name to snake case
+			if len(prefix) == 0 {
+				k = swag.ToFileName(fi.Name())
+			} else {
+				k = fmt.Sprintf("%s_%s", prefix, swag.ToFileName(fi.Name()))
+			}
+
+			v := fi.Value()
+
+			if strings.HasPrefix(reflect.TypeOf(v).String(), "*") {
+				val := reflect.ValueOf(v)
+				Vals[k] = val.Elem().Interface()
+			} else {
+				Vals[k] = v
+			}
 		}
 	}
 	return Vals
+}
+
+func grep(s string, list []string) bool {
+
+	for _, k := range list {
+		if s == k {
+			return true
+		}
+	}
+	return false
+
+}
+
+func SetField(obj interface{}, name string, value interface{}) error {
+
+	structValue := reflect.ValueOf(obj).Elem()
+	structFieldValue := structValue.FieldByName(name)
+
+	if !structFieldValue.IsValid() {
+		return fmt.Errorf("No such field: %s in obj", name)
+	}
+
+	if !structFieldValue.CanSet() {
+		return fmt.Errorf("Cannot set %s field value", name)
+	}
+
+	structFieldType := structFieldValue.Type()
+
+	var val reflect.Value
+
+	if strings.HasPrefix(structFieldType.String(), "*") {
+		val = reflect.New(reflect.TypeOf(value))
+		val.Elem().Set(reflect.ValueOf(value))
+
+	} else if structFieldType.String() == "models.ULID" {
+		val = reflect.ValueOf(models.ULID(value.(string)))
+
+	} else {
+		val = reflect.ValueOf(value)
+	}
+
+	structFieldValue.Set(val)
+	return nil
+}
+
+func FillStruct(s interface{}, m map[string]interface{}) error {
+	for k, v := range m {
+		err := SetField(s, swag.ToGoName(k), v)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+	}
+	return nil
 }

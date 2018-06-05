@@ -3384,7 +3384,7 @@ func init() {
         "image",
         "flavor",
         "username",
-        "count",
+        "desired_size",
         "network"
       ],
       "properties": {
@@ -3394,7 +3394,10 @@ func init() {
         "component": {
           "type": "string"
         },
-        "count": {
+        "cooldown_interval": {
+          "type": "integer"
+        },
+        "desired_size": {
           "type": "integer"
         },
         "flavor": {
@@ -3411,6 +3414,12 @@ func init() {
           "items": {
             "$ref": "#/definitions/Listener"
           }
+        },
+        "max_size": {
+          "type": "integer"
+        },
+        "min_size": {
+          "type": "integer"
         },
         "name": {
           "type": "string"
@@ -3439,6 +3448,9 @@ func init() {
         },
         "username": {
           "type": "string"
+        },
+        "wait_for_instances": {
+          "type": "boolean"
         }
       }
     },
@@ -3508,7 +3520,10 @@ func init() {
           "$ref": "#/definitions/ULID"
         },
         "members": {
-          "type": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "name": {
           "type": "string"

@@ -417,6 +417,12 @@
 			"revisionTime": "2017-11-29T09:51:06Z"
 		},
 		{
+			"checksumSHA1": "t/Hcc8jNXkH58QfnotLNtpLh+qc=",
+			"path": "github.com/stoewer/go-strcase",
+			"revision": "c8136b55823dc6af966d084a06056c5575f6400f",
+			"revisionTime": "2017-04-24T18:08:47Z"
+		},
+		{
 			"checksumSHA1": "5q4Lyr1RgyO9j66pTmz1M63rQvs=",
 			"path": "github.com/tylerb/graceful",
 			"revision": "d72b0151351a13d0421b763b88f791469c4f5dc7",
