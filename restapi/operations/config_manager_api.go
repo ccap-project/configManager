@@ -60,6 +60,7 @@ import (
 	"configManager/restapi/operations/providertype"
 	"configManager/restapi/operations/regionaz"
 	"configManager/restapi/operations/role"
+	"configManager/restapi/operations/router"
 )
 
 // NewConfigManagerAPI creates a new ConfigManager instance
@@ -150,11 +151,17 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		RegionazAddRegionAZHandler: regionaz.AddRegionAZHandlerFunc(func(params regionaz.AddRegionAZParams) middleware.Responder {
 			return middleware.NotImplemented("operation RegionazAddRegionAZ has not yet been implemented")
 		}),
+		RouterAddRouterHandler: router.AddRouterHandlerFunc(func(params router.AddRouterParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation RouterAddRouter has not yet been implemented")
+		}),
 		CellDeleteCellHandler: cell.DeleteCellHandlerFunc(func(params cell.DeleteCellParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation CellDeleteCell has not yet been implemented")
 		}),
 		NetworkDeleteCellNetworkHandler: network.DeleteCellNetworkHandlerFunc(func(params network.DeleteCellNetworkParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation NetworkDeleteCellNetwork has not yet been implemented")
+		}),
+		RouterDeleteCellRouterHandler: router.DeleteCellRouterHandlerFunc(func(params router.DeleteCellRouterParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation RouterDeleteCellRouter has not yet been implemented")
 		}),
 		RoleDeleteComponentRoleHandler: role.DeleteComponentRoleHandlerFunc(func(params role.DeleteComponentRoleParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation RoleDeleteComponentRole has not yet been implemented")
@@ -198,6 +205,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		NetworkFindCellNetworksHandler: network.FindCellNetworksHandlerFunc(func(params network.FindCellNetworksParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation NetworkFindCellNetworks has not yet been implemented")
 		}),
+		RouterFindCellRoutersHandler: router.FindCellRoutersHandlerFunc(func(params router.FindCellRoutersParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation RouterFindCellRouters has not yet been implemented")
+		}),
 		HostgroupFindComponentHostgroupsHandler: hostgroup.FindComponentHostgroupsHandlerFunc(func(params hostgroup.FindComponentHostgroupsParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupFindComponentHostgroups has not yet been implemented")
 		}),
@@ -227,6 +237,9 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		}),
 		NetworkGetCellNetworkHandler: network.GetCellNetworkHandlerFunc(func(params network.GetCellNetworkParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation NetworkGetCellNetwork has not yet been implemented")
+		}),
+		RouterGetCellRouterHandler: router.GetCellRouterHandlerFunc(func(params router.GetCellRouterParams, principal *models.Customer) middleware.Responder {
+			return middleware.NotImplemented("operation RouterGetCellRouter has not yet been implemented")
 		}),
 		HostgroupGetComponentHostgroupByIDHandler: hostgroup.GetComponentHostgroupByIDHandlerFunc(func(params hostgroup.GetComponentHostgroupByIDParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation HostgroupGetComponentHostgroupByID has not yet been implemented")
@@ -376,10 +389,14 @@ type ConfigManagerAPI struct {
 	ProvidertypeAddProviderTypeHandler providertype.AddProviderTypeHandler
 	// RegionazAddRegionAZHandler sets the operation handler for the add region a z operation
 	RegionazAddRegionAZHandler regionaz.AddRegionAZHandler
+	// RouterAddRouterHandler sets the operation handler for the add router operation
+	RouterAddRouterHandler router.AddRouterHandler
 	// CellDeleteCellHandler sets the operation handler for the delete cell operation
 	CellDeleteCellHandler cell.DeleteCellHandler
 	// NetworkDeleteCellNetworkHandler sets the operation handler for the delete cell network operation
 	NetworkDeleteCellNetworkHandler network.DeleteCellNetworkHandler
+	// RouterDeleteCellRouterHandler sets the operation handler for the delete cell router operation
+	RouterDeleteCellRouterHandler router.DeleteCellRouterHandler
 	// RoleDeleteComponentRoleHandler sets the operation handler for the delete component role operation
 	RoleDeleteComponentRoleHandler role.DeleteComponentRoleHandler
 	// CustomerDeleteCustomerHandler sets the operation handler for the delete customer operation
@@ -408,6 +425,8 @@ type ConfigManagerAPI struct {
 	LoadbalancerFindCellLoadbalancersHandler loadbalancer.FindCellLoadbalancersHandler
 	// NetworkFindCellNetworksHandler sets the operation handler for the find cell networks operation
 	NetworkFindCellNetworksHandler network.FindCellNetworksHandler
+	// RouterFindCellRoutersHandler sets the operation handler for the find cell routers operation
+	RouterFindCellRoutersHandler router.FindCellRoutersHandler
 	// HostgroupFindComponentHostgroupsHandler sets the operation handler for the find component hostgroups operation
 	HostgroupFindComponentHostgroupsHandler hostgroup.FindComponentHostgroupsHandler
 	// ListenerFindComponentListenersHandler sets the operation handler for the find component listeners operation
@@ -428,6 +447,8 @@ type ConfigManagerAPI struct {
 	LoadbalancerGetCellLoadbalancerHandler loadbalancer.GetCellLoadbalancerHandler
 	// NetworkGetCellNetworkHandler sets the operation handler for the get cell network operation
 	NetworkGetCellNetworkHandler network.GetCellNetworkHandler
+	// RouterGetCellRouterHandler sets the operation handler for the get cell router operation
+	RouterGetCellRouterHandler router.GetCellRouterHandler
 	// HostgroupGetComponentHostgroupByIDHandler sets the operation handler for the get component hostgroup by ID operation
 	HostgroupGetComponentHostgroupByIDHandler hostgroup.GetComponentHostgroupByIDHandler
 	// ListenerGetComponentListenerByIDHandler sets the operation handler for the get component listener by ID operation
@@ -631,12 +652,20 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "regionaz.AddRegionAZHandler")
 	}
 
+	if o.RouterAddRouterHandler == nil {
+		unregistered = append(unregistered, "router.AddRouterHandler")
+	}
+
 	if o.CellDeleteCellHandler == nil {
 		unregistered = append(unregistered, "cell.DeleteCellHandler")
 	}
 
 	if o.NetworkDeleteCellNetworkHandler == nil {
 		unregistered = append(unregistered, "network.DeleteCellNetworkHandler")
+	}
+
+	if o.RouterDeleteCellRouterHandler == nil {
+		unregistered = append(unregistered, "router.DeleteCellRouterHandler")
 	}
 
 	if o.RoleDeleteComponentRoleHandler == nil {
@@ -695,6 +724,10 @@ func (o *ConfigManagerAPI) Validate() error {
 		unregistered = append(unregistered, "network.FindCellNetworksHandler")
 	}
 
+	if o.RouterFindCellRoutersHandler == nil {
+		unregistered = append(unregistered, "router.FindCellRoutersHandler")
+	}
+
 	if o.HostgroupFindComponentHostgroupsHandler == nil {
 		unregistered = append(unregistered, "hostgroup.FindComponentHostgroupsHandler")
 	}
@@ -733,6 +766,10 @@ func (o *ConfigManagerAPI) Validate() error {
 
 	if o.NetworkGetCellNetworkHandler == nil {
 		unregistered = append(unregistered, "network.GetCellNetworkHandler")
+	}
+
+	if o.RouterGetCellRouterHandler == nil {
+		unregistered = append(unregistered, "router.GetCellRouterHandler")
 	}
 
 	if o.HostgroupGetComponentHostgroupByIDHandler == nil {
@@ -1032,6 +1069,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	}
 	o.handlers["POST"]["/providertype/{providertype_id}/region/{provider_region_id}/az"] = regionaz.NewAddRegionAZ(o.context, o.RegionazAddRegionAZHandler)
 
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/cell/{cell_id}/router"] = router.NewAddRouter(o.context, o.RouterAddRouterHandler)
+
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
@@ -1041,6 +1083,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/cell/{cell_id}/network/{network_id}"] = network.NewDeleteCellNetwork(o.context, o.NetworkDeleteCellNetworkHandler)
+
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/cell/{cell_id}/router/{router_id}"] = router.NewDeleteCellRouter(o.context, o.RouterDeleteCellRouterHandler)
 
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
@@ -1115,6 +1162,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/cell/{cell_id}/routers"] = router.NewFindCellRouters(o.context, o.RouterFindCellRoutersHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/cell/{cell_id}/component/{component_id}/hostgroups"] = hostgroup.NewFindComponentHostgroups(o.context, o.HostgroupFindComponentHostgroupsHandler)
 
 	if o.handlers["GET"] == nil {
@@ -1161,6 +1213,11 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/cell/{cell_id}/network/{network_id}"] = network.NewGetCellNetwork(o.context, o.NetworkGetCellNetworkHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/cell/{cell_id}/router/{router_id}"] = router.NewGetCellRouter(o.context, o.RouterGetCellRouterHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

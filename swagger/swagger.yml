@@ -1776,6 +1776,131 @@ paths:
           schema:
             $ref: "#/definitions/ApiResponse"
 
+  /cell/{cell_id}/routers:
+    get:
+      tags:
+        - "router"
+      summary: "Finds Routers by Cell"
+      operationId: "findCellRouters"
+      produces:
+        - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - $ref: '#/parameters/CellID'
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Router"
+        400:
+          description: "Invalid cell id"
+        404:
+          description: "router not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+  /cell/{cell_id}/router:
+    post:
+      tags:
+        - "router"
+      summary: "Add a new router"
+      description: ""
+      operationId: "addRouter"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - $ref: '#/parameters/CellID'
+        - in: "body"
+          name: "body"
+          description: "Router object that needs to be added"
+          required: true
+          schema:
+            $ref: "#/definitions/Router"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/ULID"
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        409:
+          description: "Already exists"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+  /cell/{cell_id}/router/{router_id}:
+    delete:
+      tags:
+        - "router"
+      summary: "Delete Router"
+      operationId: "deleteCellRouter"
+      produces:
+        - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - $ref: '#/parameters/CellID'
+        - $ref: '#/parameters/RouterID'
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Router"
+          example:
+            id: 01C8KJMMYHPKYNXWWZFWQ61D0Z
+            name: test_router
+            cidr: 192.168.100.0/24
+        400:
+          description: "Invalid cell id or router id"
+        404:
+          description: "router not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+    get:
+      tags:
+        - "router"
+      summary: "Get Router"
+      operationId: "getCellRouter"
+      produces:
+        - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - $ref: '#/parameters/CellID'
+        - $ref: '#/parameters/RouterID'
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Router"
+          example:
+            id: 01C8KJMMYHPKYNXWWZFWQ61D0Z
+            name: test_router
+            cidr: 192.168.100.0/24
+        400:
+          description: "Invalid cell id or router id"
+        404:
+          description: "router not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+
 
   /cell/{cell_id}/networks:
     get:
@@ -2118,6 +2243,17 @@ parameters:
     minLength: 26
     maxLength: 26
     pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
+
+  RouterID:
+    name: "router_id"
+    in: "path"
+    description: "RouterID"
+    required: true
+    type: "string"
+    minLength: 26
+    maxLength: 26
+    pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
+
 
 
 definitions:
@@ -2509,6 +2645,24 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/Parameter"
+
+  Router:
+    type: "object"
+    required:
+      - name
+      - cidr
+    properties:
+      id:
+        $ref: "#/definitions/ULID"
+      name:
+        type: "string"
+        example: test_router
+      cidr:
+        type: "string"
+      enable_dns:
+        type: "boolean"
+      enable_dns_hostname:
+        type: "boolean"
 
   Securityrule:
     type: "object"

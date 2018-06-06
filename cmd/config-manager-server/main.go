@@ -199,6 +199,12 @@ func main() {
 	api.RoleFindComponentRolesHandler = handlers.NewFindComponentRoles(rt)
 	api.RoleUpdateComponentRoleHandler = handlers.NewUpdateComponentRole(rt)
 
+	// Router
+	api.RouterAddRouterHandler = handlers.NewAddCellRouter(rt)
+	api.RouterDeleteCellRouterHandler = handlers.NewDeleteCellRouter(rt)
+	api.RouterGetCellRouterHandler = handlers.NewGetCellRouter(rt)
+	api.RouterFindCellRoutersHandler = handlers.NewFindCellRouters(rt)
+
 	// Other Handlers
 	api.JSONConsumer = runtime.JSONConsumer()
 
