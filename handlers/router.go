@@ -64,7 +64,7 @@ func (ctx *addCellRouter) Handle(params router.AddRouterParams, principal *model
 		return router.NewAddRouterConflict().WithPayload(&models.APIResponse{Message: "router already exists"})
 
 	} else if err != nil {
-		ctxLogger.Error(">Failure getting router: ", err)
+		ctxLogger.Error("Failure getting router: ", err)
 		return router.NewAddRouterInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
@@ -119,11 +119,11 @@ func (ctx *deleteCellRouter) Handle(params router.DeleteCellRouterParams, princi
 
 	_router, err := _getCellRouter(ctx.rt, principal.Name, &params.CellID, &params.RouterID)
 	if err != nil {
-		ctxLogger.Error("Failure getting router: ", err)
+		ctxLogger.Error("Failure getting router, ", err)
 		return router.NewDeleteCellRouterInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 
 	} else if _router == nil {
-		ctxLogger.Error("router does not exists !")
+		ctxLogger.Error("router does not exists")
 		return router.NewDeleteCellRouterNotFound()
 	}
 
@@ -254,8 +254,10 @@ func _getCellRouter(rt *configManager.Runtime, customerName *string, CellID *str
 		return router, err
 	}
 
-	router = new(models.Router)
-	util.FillStruct(router, output[0].(map[string]interface{}))
+	if len(output) > 0 {
+		router = new(models.Router)
+		util.FillStruct(router, output[0].(map[string]interface{}))
+	}
 
 	return router, nil
 }
