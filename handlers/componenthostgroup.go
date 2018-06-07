@@ -74,7 +74,12 @@ func (ctx *addComponentHostgroup) Handle(params hostgroup.AddComponentHostgroupP
 	// Check if required networks exists
 	var cellNetworks []*models.Network
 	for _, n := range params.Body.Network {
-		_net := _getNetworkByName(ctx.rt, principal.Name, &params.CellID, &n)
+		_net, err := _getNetworkByName(ctx.rt, principal.Name, &params.CellID, &n)
+		if err != nil {
+			ctxLogger.Error("getting network, ", err)
+			return hostgroup.NewAddComponentHostgroupInternalServerError()
+		}
+
 		if _net == nil {
 			ctxLogger.Errorf("network not found (%s)", n)
 			return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: "network not found"})
@@ -412,10 +417,16 @@ func (ctx *updateComponentHostgroup) Handle(params hostgroup.UpdateComponentHost
 	// Check if required networks exists
 	var cellNetworks []*models.Network
 	for _, n := range params.Body.Network {
-		_net := _getNetworkByName(ctx.rt, principal.Name, &params.CellID, &n)
+		_net, err := _getNetworkByName(ctx.rt, principal.Name, &params.CellID, &n)
+
+		if err != nil {
+			ctxLogger.Error("getting network, ", err)
+			return hostgroup.NewUpdateComponentHostgroupInternalServerError()
+		}
+
 		if _net == nil {
 			ctxLogger.Errorf("network not found (%s)", n)
-			return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: "network not found"})
+			return hostgroup.NewUpdateComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: "network not found"})
 		}
 		cellNetworks = append(cellNetworks, _net)
 	}
@@ -423,21 +434,21 @@ func (ctx *updateComponentHostgroup) Handle(params hostgroup.UpdateComponentHost
 	db, err := ctx.rt.DB().OpenPool()
 	if err != nil {
 		ctxLogger.Error("error connecting to neo4j: ", err)
-		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+		return hostgroup.NewUpdateComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer db.Close()
 
 	tx, err := db.Begin()
 	if err != nil {
 		ctxLogger.Error("An error occurred beginning transaction: ", err)
-		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+		return hostgroup.NewUpdateComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer tx.Rollback()
 
 	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+		return hostgroup.NewUpdateComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 	defer stmt.Close()
 
@@ -460,7 +471,7 @@ func (ctx *updateComponentHostgroup) Handle(params hostgroup.UpdateComponentHost
 
 	if err != nil {
 		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+		return hostgroup.NewUpdateComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	stmt.Close()
@@ -469,7 +480,7 @@ func (ctx *updateComponentHostgroup) Handle(params hostgroup.UpdateComponentHost
 		ctxLogger.Infof("Connecting (%s) to (%s)", params.HostgroupID, string(net.ID))
 		if err := _connectToNetwork(db, params.HostgroupID, string(net.ID)); err != nil {
 			tx.Rollback()
-			return hostgroup.NewAddComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+			return hostgroup.NewUpdateComponentHostgroupInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 		}
 	}
 
