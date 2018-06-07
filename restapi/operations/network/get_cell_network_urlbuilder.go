@@ -42,6 +42,7 @@ import (
 type GetCellNetworkURL struct {
 	CellID    string
 	NetworkID string
+	RouterID  string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -67,7 +68,7 @@ func (o *GetCellNetworkURL) SetBasePath(bp string) {
 func (o *GetCellNetworkURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var _path = "/cell/{cell_id}/network/{network_id}"
+	var _path = "/cell/{cell_id}/router/{router_id}/network/{network_id}"
 
 	cellID := o.CellID
 	if cellID != "" {
@@ -80,6 +81,12 @@ func (o *GetCellNetworkURL) Build() (*url.URL, error) {
 		_path = strings.Replace(_path, "{network_id}", networkID, -1)
 	} else {
 		return nil, errors.New("NetworkID is required on GetCellNetworkURL")
+	}
+	routerID := o.RouterID
+	if routerID != "" {
+		_path = strings.Replace(_path, "{router_id}", routerID, -1)
+	} else {
+		return nil, errors.New("RouterID is required on GetCellNetworkURL")
 	}
 	_basePath := o._basePath
 	if _basePath == "" {

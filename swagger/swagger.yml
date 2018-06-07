@@ -1902,7 +1902,7 @@ paths:
             $ref: "#/definitions/ApiResponse"
 
 
-  /cell/{cell_id}/networks:
+  /cell/{cell_id}/router/{router_id}/networks:
     get:
       tags:
         - "network"
@@ -1914,6 +1914,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
+        - $ref: '#/parameters/RouterID'
       responses:
         200:
           description: "successful operation"
@@ -1929,7 +1930,7 @@ paths:
           description: "Internal error"
           schema:
             $ref: "#/definitions/ApiResponse"
-  /cell/{cell_id}/network:
+  /cell/{cell_id}/router/{router_id}/network:
     post:
       tags:
         - "network"
@@ -1944,6 +1945,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
+        - $ref: '#/parameters/RouterID'
         - in: "body"
           name: "body"
           description: "Network object that needs to be added"
@@ -1955,6 +1957,10 @@ paths:
           description: "Created"
           schema:
             $ref: "#/definitions/ULID"
+        404:
+          description: "not found"
+          schema:
+            $ref: "#/definitions/ApiResponse"
         405:
           description: "Invalid input"
           schema:
@@ -1967,7 +1973,7 @@ paths:
           description: "Internal error"
           schema:
             $ref: "#/definitions/ApiResponse"
-  /cell/{cell_id}/network/{network_id}:
+  /cell/{cell_id}/router/{router_id}/network/{network_id}:
     delete:
       tags:
         - "network"
@@ -1979,6 +1985,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
+        - $ref: '#/parameters/RouterID'
         - $ref: '#/parameters/NetworkID'
       responses:
         200:
@@ -2008,6 +2015,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
+        - $ref: '#/parameters/RouterID'
         - $ref: '#/parameters/NetworkID'
       responses:
         200:

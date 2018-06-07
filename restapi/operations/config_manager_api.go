@@ -1047,7 +1047,7 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/cell/{cell_id}/network"] = network.NewAddNetwork(o.context, o.NetworkAddNetworkHandler)
+	o.handlers["POST"]["/cell/{cell_id}/router/{router_id}/network"] = network.NewAddNetwork(o.context, o.NetworkAddNetworkHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
@@ -1082,7 +1082,7 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
-	o.handlers["DELETE"]["/cell/{cell_id}/network/{network_id}"] = network.NewDeleteCellNetwork(o.context, o.NetworkDeleteCellNetworkHandler)
+	o.handlers["DELETE"]["/cell/{cell_id}/router/{router_id}/network/{network_id}"] = network.NewDeleteCellNetwork(o.context, o.NetworkDeleteCellNetworkHandler)
 
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
@@ -1157,7 +1157,7 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/cell/{cell_id}/networks"] = network.NewFindCellNetworks(o.context, o.NetworkFindCellNetworksHandler)
+	o.handlers["GET"]["/cell/{cell_id}/router/{router_id}/networks"] = network.NewFindCellNetworks(o.context, o.NetworkFindCellNetworksHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
@@ -1212,7 +1212,7 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/cell/{cell_id}/network/{network_id}"] = network.NewGetCellNetwork(o.context, o.NetworkGetCellNetworkHandler)
+	o.handlers["GET"]["/cell/{cell_id}/router/{router_id}/network/{network_id}"] = network.NewGetCellNetwork(o.context, o.NetworkGetCellNetworkHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

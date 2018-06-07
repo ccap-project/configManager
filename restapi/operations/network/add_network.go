@@ -57,7 +57,7 @@ func NewAddNetwork(ctx *middleware.Context, handler AddNetworkHandler) *AddNetwo
 	return &AddNetwork{Context: ctx, Handler: handler}
 }
 
-/*AddNetwork swagger:route POST /cell/{cell_id}/network network addNetwork
+/*AddNetwork swagger:route POST /cell/{cell_id}/router/{router_id}/network network addNetwork
 
 Add a new network
 

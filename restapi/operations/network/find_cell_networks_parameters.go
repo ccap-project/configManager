@@ -65,6 +65,14 @@ type FindCellNetworksParams struct {
 	  In: path
 	*/
 	CellID string
+	/*RouterID
+	  Required: true
+	  Max Length: 26
+	  Min Length: 26
+	  Pattern: ^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$
+	  In: path
+	*/
+	RouterID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -75,6 +83,11 @@ func (o *FindCellNetworksParams) BindRequest(r *http.Request, route *middleware.
 
 	rCellID, rhkCellID, _ := route.Params.GetOK("cell_id")
 	if err := o.bindCellID(rCellID, rhkCellID, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	rRouterID, rhkRouterID, _ := route.Params.GetOK("router_id")
+	if err := o.bindRouterID(rRouterID, rhkRouterID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -110,6 +123,38 @@ func (o *FindCellNetworksParams) validateCellID(formats strfmt.Registry) error {
 	}
 
 	if err := validate.Pattern("cell_id", "path", o.CellID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *FindCellNetworksParams) bindRouterID(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	o.RouterID = raw
+
+	if err := o.validateRouterID(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *FindCellNetworksParams) validateRouterID(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("router_id", "path", o.RouterID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("router_id", "path", o.RouterID, 26); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("router_id", "path", o.RouterID, `^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$`); err != nil {
 		return err
 	}
 

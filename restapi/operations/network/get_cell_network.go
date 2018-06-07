@@ -57,7 +57,7 @@ func NewGetCellNetwork(ctx *middleware.Context, handler GetCellNetworkHandler) *
 	return &GetCellNetwork{Context: ctx, Handler: handler}
 }
 
-/*GetCellNetwork swagger:route GET /cell/{cell_id}/network/{network_id} network getCellNetwork
+/*GetCellNetwork swagger:route GET /cell/{cell_id}/router/{router_id}/network/{network_id} network getCellNetwork
 
 Get Network
 
