@@ -31,7 +31,6 @@ package handlers
 
 import (
 	"fmt"
-	"log"
 
 	"configManager"
 	"configManager/models"
@@ -210,10 +209,15 @@ type getCellNetwork struct {
 
 func (ctx *getCellNetwork) Handle(params network.GetCellNetworkParams, principal *models.Customer) middleware.Responder {
 
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID,
+		"network_id":    params.NetworkID})
+
 	cellNetwork, err := _getCellNetwork(ctx.rt, principal.Name, &params.CellID, &params.NetworkID)
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Errorf("getting network, %s", err)
 		return network.NewGetCellNetworkInternalServerError()
 	}
 
@@ -330,7 +334,7 @@ func _getCellNetwork(rt *configManager.Runtime, customerName *string, CellID *st
 										(cell:Cell {id: {cell_id}})-[:HAS]->
 										(router:Router)-[:HAS]->
 										(network:Network {id: {network_id}})-[:DEPLOYED_ON]->(az:RegionAZ)
-								RETURN network {.*, region_az: az.name}`
+								RETURN network {.*, region_az: az.name, router: router.name}`
 
 	params := map[string]interface{}{
 		"name":       swag.StringValue(customerName),
@@ -345,7 +349,6 @@ func _getCellNetwork(rt *configManager.Runtime, customerName *string, CellID *st
 
 	if len(output) > 0 {
 		network = new(models.Network)
-		fmt.Println(output)
 		util.FillStruct(network, output[0].(map[string]interface{}))
 	}
 
@@ -409,8 +412,8 @@ func _getNetworkByName(rt *configManager.Runtime, customerName *string, CellID *
 	query := `MATCH (c:Customer {name: {name} })-[:OWN]->
 										(cell:Cell {id: {cell_id}})-[:HAS]->
 										(router:Router)-[:HAS]->
-										(network:Network {name: {network_name}})
-								RETURN network {.*}`
+										(network:Network {name: {network_name}})-[:DEPLOYED_ON]->(az:RegionAZ)
+									RETURN network {.*, region_az: az.name, router: router.name}`
 
 	params := map[string]interface{}{
 		"name":         swag.StringValue(customerName),
