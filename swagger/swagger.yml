@@ -2709,6 +2709,8 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/Securityrule"
+      router:
+        type: "string"
 
   ULID:
     type: "string"
