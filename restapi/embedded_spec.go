@@ -3531,6 +3531,12 @@ func init() {
         "provider": {
           "$ref": "#/definitions/Provider"
         },
+        "routers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Router"
+          }
+        },
         "securitygroups": {
           "type": "array",
           "items": {
@@ -3757,6 +3763,9 @@ func init() {
             "tls"
           ]
         },
+        "router": {
+          "type": "string"
+        },
         "securitygroups": {
           "type": "array",
           "items": {
@@ -3789,6 +3798,9 @@ func init() {
           "example": "test_network"
         },
         "region_az": {
+          "type": "string"
+        },
+        "router": {
           "type": "string"
         }
       }

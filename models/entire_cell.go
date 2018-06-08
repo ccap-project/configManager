@@ -66,6 +66,9 @@ type EntireCell struct {
 	// provider
 	Provider *Provider `json:"provider,omitempty"`
 
+	// routers
+	Routers EntireCellRouters `json:"routers"`
+
 	// securitygroups
 	Securitygroups EntireCellSecuritygroups `json:"securitygroups"`
 }

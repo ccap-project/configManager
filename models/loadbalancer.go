@@ -76,6 +76,9 @@ type Loadbalancer struct {
 	// Required: true
 	Protocol *string `json:"protocol"`
 
+	// router
+	Router string `json:"router,omitempty"`
+
 	// securitygroups
 	Securitygroups []string `json:"securitygroups"`
 

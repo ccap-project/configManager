@@ -575,6 +575,11 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cell *mod
 		members := _getLoadbalancerMembers(rt, customerName, &cellID, &lbID)
 
 		lb.Network = *_listLoadbalancerNetworks(rt, customerName, &cellID, &lbID)
+
+		// get lb router
+		_net, _ := _getNetworkByName(rt, customerName, &cellID, &lb.Network[0])
+		lb.Router = _net.Router
+
 		lb.Securitygroups = append(lb.Securitygroups, *lb.Name)
 
 		if members != nil {
@@ -586,9 +591,18 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cell *mod
 	}
 
 	/*
+	 * Routers
+	 */
+	res.Routers, _ = _findCellRouters(rt, customerName, &cellID)
+
+	/*
 	 * Networks
 	 */
-	res.Networks, _ = _findCellNetworks(rt, customerName, &cellID)
+	for _, router := range res.Routers {
+		r := string(router.ID)
+		_nets, _ := _findCellNetworks(rt, customerName, &cellID, &r)
+		res.Networks = append(res.Networks, _nets...)
+	}
 
 	/*
 	 * SecurityGroups

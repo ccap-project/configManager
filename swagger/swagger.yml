@@ -2362,6 +2362,10 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/Network"
+      routers:
+        type: array
+        items:
+          $ref: "#/definitions/Router"
       securitygroups:
         type: "array"
         items:
@@ -2518,6 +2522,8 @@ definitions:
         type: array
         items:
           type: "string"
+      router:
+        type: "string"
       securitygroups:
         type: "array"
         items:
@@ -2540,6 +2546,8 @@ definitions:
         type: "string"
         example: 192.168.100.0/24
       region_az:
+        type: "string"
+      router:
         type: "string"
 
   Parameter:
