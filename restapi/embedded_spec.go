@@ -3995,6 +3995,9 @@ func init() {
         "name": {
           "type": "string"
         },
+        "router": {
+          "type": "string"
+        },
         "rules": {
           "type": "array",
           "items": {
