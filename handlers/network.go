@@ -30,11 +30,12 @@
 package handlers
 
 import (
-	"log"
+	"fmt"
 
 	"configManager"
 	"configManager/models"
 	"configManager/restapi/operations/network"
+	"configManager/util"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/go-openapi/runtime/middleware"
@@ -51,22 +52,30 @@ type addCellNetwork struct {
 
 func (ctx *addCellNetwork) Handle(params network.AddNetworkParams, principal *models.Customer) middleware.Responder {
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})
-							CREATE (cell)-[:HAS]->(network:Network {
-								id: {network_id},
-								name: {network_name},
-								cidr: {network_cidr}})
-							RETURN	network.id AS id`
-
 	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
 		"customer_name": swag.StringValue(principal.Name),
 		"cell_id":       params.CellID,
 		"network_name":  swag.StringValue(params.Body.Name)})
 
-	// XXX: Consistency check should have more than only name...
-	if _getNetworkByName(ctx.rt, principal.Name, &params.CellID, params.Body.Name) != nil {
+	_router, err := _getCellRouter(ctx.rt, principal.Name, &params.CellID, &params.RouterID)
+	if err != nil {
+		ctxLogger.Error("getting router, ", err)
+		return network.NewAddNetworkInternalServerError()
+
+	} else if _router == nil {
+		ctxLogger.Warn("router does not exists !")
+		return network.NewAddNetworkNotFound().WithPayload(&models.APIResponse{Message: "router does not exists"})
+	}
+
+	// XXX: need to check cidr against other networks and router ?
+	_network, err := _getNetworkByName(ctx.rt, principal.Name, &params.CellID, params.Body.Name)
+	if _network != nil {
 		ctxLogger.Warn("network already exists !")
 		return network.NewAddNetworkConflict().WithPayload(&models.APIResponse{Message: "network already exists"})
+
+	} else if err != nil {
+		ctxLogger.Error("getting network, ", err)
+		return network.NewAddNetworkInternalServerError()
 	}
 
 	// Check if required az exists
@@ -89,22 +98,8 @@ func (ctx *addCellNetwork) Handle(params network.AddNetworkParams, principal *mo
 	}
 
 	if exists == 0 {
-		ctxLogger.Warnf("region az (%s) does not exists !", params.Body.RegionAz)
+		ctxLogger.Warnf("region az (%s) does not exists", *params.Body.RegionAz)
 		return network.NewAddNetworkConflict().WithPayload(&models.APIResponse{Message: "region az does not exists"})
-	}
-
-	db, err := ctx.rt.DB().OpenPool()
-
-	if err != nil {
-		ctxLogger.Error("error connecting to neo4j: ", err)
-		return network.NewAddNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
-	}
-	defer db.Close()
-
-	stmt, err := db.PrepareNeo(cypher)
-	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return network.NewAddNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
 	ulid := configManager.GetULID()
@@ -112,25 +107,45 @@ func (ctx *addCellNetwork) Handle(params network.AddNetworkParams, principal *mo
 	ctxLogger = ctxLogger.WithFields(logrus.Fields{
 		"network_id": ulid})
 
-	rows, err := stmt.QueryNeo(map[string]interface{}{
-		"name":         swag.StringValue(principal.Name),
-		"cell_id":      params.CellID,
-		"network_id":   ulid,
-		"network_name": swag.StringValue(params.Body.Name),
-		"network_cidr": swag.StringValue(params.Body.Cidr)})
+	cypher := `MATCH (Customer {name: {customer_name} })-[:OWN]->
+							(cell:Cell {id: {cell_id}})-[:HAS]->
+							(router:Router {id: {router_id}})
+								CREATE (router)-[:HAS]->(network:Network {
+									id: {network_id},
+									%s})
+								RETURN	network.id AS id`
+
+	_Query := fmt.Sprintf(cypher, util.BuildQuery(&params.Body, "network", "merge", []string{"ID", "RegionAz"}))
+	_Params := util.BuildParams(params.Body, "network",
+		map[string]interface{}{
+			"customer_name": swag.StringValue(principal.Name),
+			"cell_id":       params.CellID,
+			"router_id":     params.RouterID,
+			"network_id":    ulid},
+		[]string{"ID", "RegionAz"})
+
+	output, err := ctx.rt.QueryDB(&_Query, &_Params)
 
 	if err != nil {
-		ctxLogger.Error("An error occurred querying Neo: ", err)
+		ctxLogger.Error("adding network, ", err)
 		return network.NewAddNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
 	}
 
-	output, _, err := rows.NextNeo()
-	if err != nil {
-		ctxLogger.Error("An error occurred getting next row: ", err)
-		return network.NewAddNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+	ctxLogger.Info("Here 3")
+
+	ctxLogger.Infoln(output)
+	ctxLogger.Infoln(len(output))
+
+	if len(output) < 1 {
+		ctxLogger.Error("network not added")
+		return network.NewAddNetworkInternalServerError()
 	}
 
-	_connectToAZ(ctx.rt, ulid, string(networkAZ.ID))
+	err = _connectToAZ(ctx.rt, ulid, string(networkAZ.ID))
+	if err != nil {
+		ctxLogger.Error("Failure connecting network to AZ: ", err)
+		return network.NewAddNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+	}
 
 	ctxLogger.Info("OK")
 
@@ -147,44 +162,38 @@ type deleteCellNetwork struct {
 
 func (ctx *deleteCellNetwork) Handle(params network.DeleteCellNetworkParams, principal *models.Customer) middleware.Responder {
 
-	cypher := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
-							(cell:Cell{id: {cell_id}})-[:HAS]->
-							(network:Network {id: {network_id}})
-						DETACH DELETE network`
-
 	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
 		"customer_name": swag.StringValue(principal.Name),
 		"cell_id":       params.CellID,
 		"network_id":    params.NetworkID})
 
-	cell, _ := _getCellNetwork(ctx.rt, principal.Name, &params.CellID, &params.NetworkID)
-	if cell == nil {
+	_network, err := _getCellNetwork(ctx.rt, principal.Name, &params.CellID, &params.NetworkID)
+	if err != nil {
+		ctxLogger.Error("getting network, ", err)
+		return network.NewDeleteCellNetworkInternalServerError()
+
+	} else if _network == nil {
 		ctxLogger.Error("network does not exists !")
 		return network.NewDeleteCellNetworkNotFound()
 	}
 
-	db, err := ctx.rt.DB().OpenPool()
-	if err != nil {
-		ctxLogger.Error("error connecting to neo4j: ", err)
-		return network.NewDeleteCellNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
-	}
-	defer db.Close()
+	query := `MATCH (customer:Customer {name: {customer_name} })-[:OWN]->
+							(cell:Cell {id: {cell_id}})-[:HAS]->
+							(router:Router {id: {router_id}})-[:HAS]->
+							(network:Network {id: {network_id}})
+						DETACH DELETE network`
 
-	stmt, err := db.PrepareNeo(cypher)
-	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return network.NewDeleteCellNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
-	}
-	defer stmt.Close()
-
-	_, err = stmt.ExecNeo(map[string]interface{}{
+	_params := map[string]interface{}{
 		"customer_name": swag.StringValue(principal.Name),
 		"cell_id":       params.CellID,
-		"network_id":    params.NetworkID})
+		"router_id":     params.RouterID,
+		"network_id":    params.NetworkID}
+
+	_, err = ctx.rt.ExecDB(&query, &_params)
 
 	if err != nil {
-		ctxLogger.Error("An error occurred querying Neo: ", err)
-		return network.NewDeleteCellNetworkInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+		ctxLogger.Error("deleting network ", err)
+		return network.NewDeleteCellNetworkInternalServerError()
 	}
 
 	return network.NewDeleteCellNetworkOK()
@@ -200,10 +209,15 @@ type getCellNetwork struct {
 
 func (ctx *getCellNetwork) Handle(params network.GetCellNetworkParams, principal *models.Customer) middleware.Responder {
 
+	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
+		"customer_name": swag.StringValue(principal.Name),
+		"cell_id":       params.CellID,
+		"network_id":    params.NetworkID})
+
 	cellNetwork, err := _getCellNetwork(ctx.rt, principal.Name, &params.CellID, &params.NetworkID)
 
 	if err != nil {
-		log.Printf("An error occurred querying Neo: %s", err)
+		ctxLogger.Errorf("getting network, %s", err)
 		return network.NewGetCellNetworkInternalServerError()
 	}
 
@@ -224,7 +238,7 @@ type findCellNetworks struct {
 
 func (ctx *findCellNetworks) Handle(params network.FindCellNetworksParams, principal *models.Customer) middleware.Responder {
 
-	cellNetworks, err := _findCellNetworks(ctx.rt, principal.Name, &params.CellID)
+	cellNetworks, err := _findCellNetworks(ctx.rt, principal.Name, &params.CellID, &params.RouterID)
 
 	if err != nil {
 		return network.NewFindCellNetworksInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
@@ -233,32 +247,24 @@ func (ctx *findCellNetworks) Handle(params network.FindCellNetworksParams, princ
 	return network.NewFindCellNetworksOK().WithPayload(cellNetworks)
 }
 
-func _findCellNetworks(rt *configManager.Runtime, customerName *string, CellID *string) ([]*models.Network, error) {
+func _findCellNetworks(rt *configManager.Runtime, customerName *string, CellID *string, RouterID *string) ([]*models.Network, error) {
 
 	var res []*models.Network
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->(cell:Cell {id: {cell_id}})-[:HAS]->(network:Network)
-								RETURN network.id as id,
-												network.name as name`
+	query := `MATCH (c:Customer {name: {name} })-[:OWN]->
+							(cell:Cell {id: {cell_id}})-[:HAS]->
+							(router:Router {id: {router_id}})-[:HAS]->
+							(network:Network)
+								RETURN network.id as id`
 
-	db, err := rt.DB().OpenPool()
+	params := map[string]interface{}{
+		"name":      swag.StringValue(customerName),
+		"cell_id":   swag.StringValue(CellID),
+		"router_id": swag.StringValue(RouterID)}
 
-	ctxLogger := rt.Logger().WithFields(logrus.Fields{
-		"customer_name": swag.StringValue(customerName),
-		"cell_id":       swag.StringValue(CellID)})
-
-	if err != nil {
-		ctxLogger.Error("error connecting to neo4j:", err)
-		return nil, err
-	}
-	defer db.Close()
-
-	data, _, _, err := db.QueryNeoAll(cypher, map[string]interface{}{
-		"name":    swag.StringValue(customerName),
-		"cell_id": swag.StringValue(CellID)})
+	data, err := rt.QueryAllDB(&query, &params)
 
 	if err != nil {
-		ctxLogger.Error("An error occurred querying Neo: %s", err)
 		return nil, err
 
 	} else if len(data) == 0 {
@@ -321,67 +327,36 @@ func _findHostgroupNetworks(rt *configManager.Runtime, customerName *string, hos
 }
 
 func _getCellNetwork(rt *configManager.Runtime, customerName *string, CellID *string, NetworkID *string) (*models.Network, error) {
+
 	var network *models.Network
-	network = nil
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->
+	query := `MATCH (c:Customer {name: {name} })-[:OWN]->
 										(cell:Cell {id: {cell_id}})-[:HAS]->
+										(router:Router)-[:HAS]->
 										(network:Network {id: {network_id}})-[:DEPLOYED_ON]->(az:RegionAZ)
-								RETURN network.id as id,
-												network.name as name,
-												network.cidr as cidr,
-												az.name as az`
+								RETURN network {.*, region_az: az.name, router: router.name}`
 
-	db, err := rt.DB().OpenPool()
-	ctxLogger := rt.Logger().WithFields(logrus.Fields{
-		"customer_name": swag.StringValue(customerName),
-		"cell_id":       swag.StringValue(CellID)})
-
-	if err != nil {
-		ctxLogger.Error("error connecting to neo4j:", err)
-		return network, err
-	}
-	defer db.Close()
-
-	stmt, err := db.PrepareNeo(cypher)
-	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: %s", err)
-		return network, err
-	}
-
-	defer stmt.Close()
-
-	rows, err := stmt.QueryNeo(map[string]interface{}{
+	params := map[string]interface{}{
 		"name":       swag.StringValue(customerName),
 		"cell_id":    swag.StringValue(CellID),
-		"network_id": swag.StringValue(NetworkID)})
+		"network_id": swag.StringValue(NetworkID)}
 
-	if err != nil {
-		ctxLogger.Error("An error occurred querying Neo: %s", err)
-		return network, err
-	}
+	output, err := rt.QueryDB(&query, &params)
 
-	output, _, err := rows.NextNeo()
 	if err != nil {
 		return network, err
 	}
 
-	_name := output[1].(string)
-	_cidr := output[2].(string)
-	_az := output[3].(string)
-
-	network = &models.Network{
-		ID:       models.ULID(output[0].(string)),
-		Name:     &_name,
-		Cidr:     &_cidr,
-		RegionAz: &_az}
+	if len(output) > 0 {
+		network = new(models.Network)
+		util.FillStruct(network, output[0].(map[string]interface{}))
+	}
 
 	return network, nil
 }
 
 func _getNetworkByID(rt *configManager.Runtime, NetworkID *string) (*models.Network, error) {
 	var network *models.Network
-	network = nil
 
 	cypher := `MATCH (network:Network {id: {network_id}})
 								RETURN network.id as id,
@@ -430,92 +405,47 @@ func _getNetworkByID(rt *configManager.Runtime, NetworkID *string) (*models.Netw
 	return network, nil
 }
 
-func _getNetworkByName(rt *configManager.Runtime, customerName *string, CellID *string, networkName *string) *models.Network {
+func _getNetworkByName(rt *configManager.Runtime, customerName *string, CellID *string, networkName *string) (*models.Network, error) {
 
 	var network *models.Network
 
-	cypher := `MATCH (c:Customer {name: {name} })-[:OWN]->
+	query := `MATCH (c:Customer {name: {name} })-[:OWN]->
 										(cell:Cell {id: {cell_id}})-[:HAS]->
-										(network:Network {name: {network_name}})
-								RETURN network.id as id,
-												network.name as name,
-												network.cidr as cidr`
+										(router:Router)-[:HAS]->
+										(network:Network {name: {network_name}})-[:DEPLOYED_ON]->(az:RegionAZ)
+									RETURN network {.*, region_az: az.name, router: router.name}`
 
-	db, err := rt.DB().OpenPool()
-	ctxLogger := rt.Logger().WithFields(logrus.Fields{
-		"customer_name": swag.StringValue(customerName),
-		"cell_id":       swag.StringValue(CellID),
-		"network_name":  swag.StringValue(networkName)})
-
-	if err != nil {
-		ctxLogger.Error("error connecting to neo4j: ", err)
-		return network
-	}
-	defer db.Close()
-
-	stmt, err := db.PrepareNeo(cypher)
-	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: ", err)
-		return network
-	}
-	defer stmt.Close()
-
-	rows, err := stmt.QueryNeo(map[string]interface{}{
+	params := map[string]interface{}{
 		"name":         swag.StringValue(customerName),
 		"cell_id":      swag.StringValue(CellID),
-		"network_name": swag.StringValue(networkName)})
+		"network_name": swag.StringValue(networkName)}
+
+	output, err := rt.QueryDB(&query, &params)
 
 	if err != nil {
-		ctxLogger.Error("An error occurred querying Neo: %s", err)
-		return network
+		return network, err
 	}
 
-	output, _, err := rows.NextNeo()
-
-	if err != nil {
-		ctxLogger.Errorf("An error occurred querying Neo: %s", err)
-		return network
+	if len(output) > 0 {
+		network = new(models.Network)
+		util.FillStruct(network, output[0].(map[string]interface{}))
 	}
 
-	_name := output[1].(string)
-	_cidr := output[2].(string)
-
-	network = &models.Network{
-		ID:   models.ULID(output[0].(string)),
-		Name: &_name,
-		Cidr: &_cidr}
-
-	return network
+	return network, nil
 }
 
 func _connectToAZ(rt *configManager.Runtime, networkID string, regionAZID string) error {
 
-	cypher := `MATCH (network:Network {id: {network_id} })
+	query := `MATCH (network:Network {id: {network_id} })
 							MATCH (az:RegionAZ {id: {region_az_id}})
 							MERGE (network)-[:DEPLOYED_ON]->(az)`
 
-	db, err := rt.DB().OpenPool()
-
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	stmt, err := db.PrepareNeo(cypher)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
-	rows, err := stmt.QueryNeo(map[string]interface{}{
+	params := map[string]interface{}{
 		"network_id":   networkID,
-		"region_az_id": regionAZID})
+		"region_az_id": regionAZID}
 
-	if err != nil {
-		return err
-	}
+	_, err := rt.ExecDB(&query, &params)
 
-	_, _, err = rows.NextNeo()
 	if err != nil {
 		return err
 	}

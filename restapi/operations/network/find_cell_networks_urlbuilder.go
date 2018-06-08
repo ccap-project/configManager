@@ -40,7 +40,8 @@ import (
 
 // FindCellNetworksURL generates an URL for the find cell networks operation
 type FindCellNetworksURL struct {
-	CellID string
+	CellID   string
+	RouterID string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -66,13 +67,19 @@ func (o *FindCellNetworksURL) SetBasePath(bp string) {
 func (o *FindCellNetworksURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var _path = "/cell/{cell_id}/networks"
+	var _path = "/cell/{cell_id}/router/{router_id}/networks"
 
 	cellID := o.CellID
 	if cellID != "" {
 		_path = strings.Replace(_path, "{cell_id}", cellID, -1)
 	} else {
 		return nil, errors.New("CellID is required on FindCellNetworksURL")
+	}
+	routerID := o.RouterID
+	if routerID != "" {
+		_path = strings.Replace(_path, "{router_id}", routerID, -1)
+	} else {
+		return nil, errors.New("RouterID is required on FindCellNetworksURL")
 	}
 	_basePath := o._basePath
 	if _basePath == "" {

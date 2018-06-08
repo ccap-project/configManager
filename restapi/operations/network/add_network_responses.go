@@ -81,6 +81,49 @@ func (o *AddNetworkCreated) WriteResponse(rw http.ResponseWriter, producer runti
 
 }
 
+// AddNetworkNotFoundCode is the HTTP code returned for type AddNetworkNotFound
+const AddNetworkNotFoundCode int = 404
+
+/*AddNetworkNotFound not found
+
+swagger:response addNetworkNotFound
+*/
+type AddNetworkNotFound struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.APIResponse `json:"body,omitempty"`
+}
+
+// NewAddNetworkNotFound creates AddNetworkNotFound with default headers values
+func NewAddNetworkNotFound() *AddNetworkNotFound {
+	return &AddNetworkNotFound{}
+}
+
+// WithPayload adds the payload to the add network not found response
+func (o *AddNetworkNotFound) WithPayload(payload *models.APIResponse) *AddNetworkNotFound {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the add network not found response
+func (o *AddNetworkNotFound) SetPayload(payload *models.APIResponse) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *AddNetworkNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // AddNetworkMethodNotAllowedCode is the HTTP code returned for type AddNetworkMethodNotAllowed
 const AddNetworkMethodNotAllowedCode int = 405
 

@@ -57,7 +57,7 @@ func NewFindCellNetworks(ctx *middleware.Context, handler FindCellNetworksHandle
 	return &FindCellNetworks{Context: ctx, Handler: handler}
 }
 
-/*FindCellNetworks swagger:route GET /cell/{cell_id}/networks network findCellNetworks
+/*FindCellNetworks swagger:route GET /cell/{cell_id}/router/{router_id}/networks network findCellNetworks
 
 Finds Networks by Cell
 

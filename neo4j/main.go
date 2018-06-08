@@ -31,6 +31,7 @@ package neo4j
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 
@@ -39,6 +40,7 @@ import (
 
 type ConnPool driver.DriverPool
 type Conn driver.Conn
+type Result driver.Result
 type Tx driver.Tx
 
 func GetConnectionString() string {
@@ -51,25 +53,6 @@ func GetConnectionString() string {
 
 	return url
 }
-
-/*
-func Connect(host string, port string, user string, passwd string) (driver.Conn, error) {
-
-	var connStr string
-
-	if len(host) <= 0 {
-		port = "127.0.0.1"
-	}
-	if len(port) <= 0 {
-		port = "7687"
-	}
-
-	if len(user) <= 0 {
-		connStr = fmt.Sprintf("bolt://%s:%s", host, port)
-	} else {
-		connStr = fmt.Sprintf("bolt://%s:%s@%s:%s", user, passwd, host, port)
-	}
-*/
 
 func Connect(connStr string) (driver.Conn, error) {
 
@@ -84,6 +67,7 @@ func Connect(connStr string) (driver.Conn, error) {
 
 	return db, err
 }
+
 func Pool(host string, port string, user string, passwd string, max_conn int) (driver.DriverPool, error) {
 
 	var connStr string
@@ -115,4 +99,70 @@ func Pool(host string, port string, user string, passwd string, max_conn int) (d
 	}
 
 	return pool, err
+}
+
+func Exec(conn ConnPool, query *string, params *map[string]interface{}) (driver.Result, error) {
+
+	db, err := conn.OpenPool()
+	if err != nil {
+		return nil, fmt.Errorf("error connecting to neo4j: %s", err)
+	}
+	defer db.Close()
+
+	stmt, err := db.PrepareNeo(*query)
+	if err != nil {
+		return nil, fmt.Errorf("An error occurred preparing statement: %s", err)
+	}
+	defer stmt.Close()
+
+	res, err := stmt.ExecNeo(*params)
+	if err != nil {
+		return nil, fmt.Errorf("An error occurred querying Neo: %s", err)
+	}
+
+	return res, nil
+}
+
+func Query(conn ConnPool, query *string, params *map[string]interface{}) ([]interface{}, error) {
+
+	db, err := conn.OpenPool()
+	if err != nil {
+		return nil, fmt.Errorf("error connecting to neo4j: %s", err)
+	}
+	defer db.Close()
+
+	stmt, err := db.PrepareNeo(*query)
+	if err != nil {
+		return nil, fmt.Errorf("An error occurred preparing statement: %s", err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.QueryNeo(*params)
+	if err != nil {
+		return nil, fmt.Errorf("An error occurred querying Neo: %s", err)
+	}
+
+	output, _, err := rows.NextNeo()
+	if err != nil && err != io.EOF {
+		return nil, fmt.Errorf("An error occurred getting next row: %s", err)
+	}
+
+	return output, nil
+}
+
+func QueryAll(conn ConnPool, query *string, params *map[string]interface{}) ([][]interface{}, error) {
+
+	db, err := conn.OpenPool()
+	if err != nil {
+		return nil, fmt.Errorf("error connecting to neo4j: %s", err)
+	}
+	defer db.Close()
+
+	output, _, _, err := db.QueryNeoAll(*query, *params)
+
+	if err != nil {
+		return output, fmt.Errorf("An error occurred querying Neo: %s", err)
+	}
+
+	return output, nil
 }

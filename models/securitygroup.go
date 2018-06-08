@@ -45,6 +45,9 @@ type Securitygroup struct {
 	// name
 	Name string `json:"name,omitempty"`
 
+	// router
+	Router string `json:"router,omitempty"`
+
 	// rules
 	Rules SecuritygroupRules `json:"rules"`
 }

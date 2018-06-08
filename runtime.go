@@ -55,6 +55,18 @@ func (r *Runtime) Config() *viper.Viper {
 	return r.app.Config()
 }
 
+func (r *Runtime) ExecDB(query *string, params *map[string]interface{}) (neo4j.Result, error) {
+	return neo4j.Exec(r.DB(), query, params)
+}
+
+func (r *Runtime) QueryDB(query *string, params *map[string]interface{}) ([]interface{}, error) {
+	return neo4j.Query(r.DB(), query, params)
+}
+
+func (r *Runtime) QueryAllDB(query *string, params *map[string]interface{}) ([][]interface{}, error) {
+	return neo4j.QueryAll(r.DB(), query, params)
+}
+
 func GetULID() string {
 	t := time.Now()
 	entropy := rand.New(rand.NewSource(t.UnixNano()))

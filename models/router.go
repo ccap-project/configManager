@@ -36,53 +36,46 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
-// EntireCell entire cell
-// swagger:model EntireCell
-type EntireCell struct {
+// Router router
+// swagger:model Router
+type Router struct {
 
-	// customer name
-	CustomerName string `json:"customer_name,omitempty"`
+	// cidr
+	// Required: true
+	Cidr *string `json:"cidr"`
 
-	// hostgroups
-	Hostgroups EntireCellHostgroups `json:"hostgroups"`
+	// enable dns
+	EnableDNS bool `json:"enable_dns,omitempty"`
 
-	// hosts
-	Hosts EntireCellHosts `json:"hosts"`
+	// enable dns hostname
+	EnableDNSHostname bool `json:"enable_dns_hostname,omitempty"`
 
-	// keypair
-	Keypair *Keypair `json:"keypair,omitempty"`
-
-	// loadbalancers
-	Loadbalancers EntireCellLoadbalancers `json:"loadbalancers"`
+	// id
+	ID ULID `json:"id,omitempty"`
 
 	// name
-	Name string `json:"name,omitempty"`
-
-	// networks
-	Networks EntireCellNetworks `json:"networks"`
-
-	// provider
-	Provider *Provider `json:"provider,omitempty"`
-
-	// routers
-	Routers EntireCellRouters `json:"routers"`
-
-	// securitygroups
-	Securitygroups EntireCellSecuritygroups `json:"securitygroups"`
+	// Required: true
+	Name *string `json:"name"`
 }
 
-// Validate validates this entire cell
-func (m *EntireCell) Validate(formats strfmt.Registry) error {
+// Validate validates this router
+func (m *Router) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateKeypair(formats); err != nil {
+	if err := m.validateCidr(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
 
-	if err := m.validateProvider(formats); err != nil {
+	if err := m.validateID(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -93,46 +86,42 @@ func (m *EntireCell) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EntireCell) validateKeypair(formats strfmt.Registry) error {
+func (m *Router) validateCidr(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.Keypair) { // not required
-		return nil
-	}
-
-	if m.Keypair != nil {
-
-		if err := m.Keypair.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("keypair")
-			}
-			return err
-		}
+	if err := validate.Required("cidr", "body", m.Cidr); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func (m *EntireCell) validateProvider(formats strfmt.Registry) error {
+func (m *Router) validateID(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.Provider) { // not required
+	if swag.IsZero(m.ID) { // not required
 		return nil
 	}
 
-	if m.Provider != nil {
-
-		if err := m.Provider.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("provider")
-			}
-			return err
+	if err := m.ID.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("id")
 		}
+		return err
+	}
+
+	return nil
+}
+
+func (m *Router) validateName(formats strfmt.Registry) error {
+
+	if err := validate.Required("name", "body", m.Name); err != nil {
+		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *EntireCell) MarshalBinary() ([]byte, error) {
+func (m *Router) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -140,8 +129,8 @@ func (m *EntireCell) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EntireCell) UnmarshalBinary(b []byte) error {
-	var res EntireCell
+func (m *Router) UnmarshalBinary(b []byte) error {
+	var res Router
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

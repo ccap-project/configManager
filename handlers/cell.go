@@ -568,27 +568,45 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cell *mod
 	 */
 	loadbalancers, _ := _findCellLoadbalancers(rt, customerName, &cellID)
 	for _, lb := range loadbalancers {
+
 		lbID := string(lb.ID)
+
+		// Networks
+		lb.Network = *_listLoadbalancerNetworks(rt, customerName, &cellID, &lbID)
+
+		// get lb router
+		_net, _ := _getNetworkByName(rt, customerName, &cellID, &lb.Network[0])
+		lb.Router = _net.Router
+
+		// security group
 		securityGroup := &models.Securitygroup{Name: *lb.Name}
+		lb.Securitygroups = append(lb.Securitygroups, *lb.Name)
+		securityGroup.Router = _net.Router
+
+		res.Securitygroups = append(res.Securitygroups, securityGroup)
 
 		// get lb members
 		members := _getLoadbalancerMembers(rt, customerName, &cellID, &lbID)
-
-		lb.Network = *_listLoadbalancerNetworks(rt, customerName, &cellID, &lbID)
-		lb.Securitygroups = append(lb.Securitygroups, *lb.Name)
 
 		if members != nil {
 			lb.Members = *members
 			res.Loadbalancers = append(res.Loadbalancers, lb)
 		}
-
-		res.Securitygroups = append(res.Securitygroups, securityGroup)
 	}
+
+	/*
+	 * Routers
+	 */
+	res.Routers, _ = _findCellRouters(rt, customerName, &cellID)
 
 	/*
 	 * Networks
 	 */
-	res.Networks, _ = _findCellNetworks(rt, customerName, &cellID)
+	for _, router := range res.Routers {
+		r := string(router.ID)
+		_nets, _ := _findCellNetworks(rt, customerName, &cellID, &r)
+		res.Networks = append(res.Networks, _nets...)
+	}
 
 	/*
 	 * SecurityGroups
@@ -615,6 +633,11 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cell *mod
 			}
 			hg.Roles = models.HostgroupRoles(component.Roles)
 			res.Hostgroups = append(res.Hostgroups, hg)
+
+			if len(securityGroup.Router) == 0 {
+				_net, _ := _getNetworkByName(rt, customerName, &cellID, &hg.Network[0])
+				securityGroup.Router = _net.Router
+			}
 		}
 
 		// build SecurityRules

@@ -57,7 +57,7 @@ func NewDeleteCellNetwork(ctx *middleware.Context, handler DeleteCellNetworkHand
 	return &DeleteCellNetwork{Context: ctx, Handler: handler}
 }
 
-/*DeleteCellNetwork swagger:route DELETE /cell/{cell_id}/network/{network_id} network deleteCellNetwork
+/*DeleteCellNetwork swagger:route DELETE /cell/{cell_id}/router/{router_id}/network/{network_id} network deleteCellNetwork
 
 Delete Network
 

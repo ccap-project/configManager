@@ -1776,13 +1776,12 @@ paths:
           schema:
             $ref: "#/definitions/ApiResponse"
 
-
-  /cell/{cell_id}/networks:
+  /cell/{cell_id}/routers:
     get:
       tags:
-        - "network"
-      summary: "Finds Networks by Cell"
-      operationId: "findCellNetworks"
+        - "router"
+      summary: "Finds Routers by Cell"
+      operationId: "findCellRouters"
       produces:
         - "application/json"
       security:
@@ -1795,22 +1794,22 @@ paths:
           schema:
             type: array
             items:
-              $ref: "#/definitions/Network"
+              $ref: "#/definitions/Router"
         400:
           description: "Invalid cell id"
         404:
-          description: "network not found"
+          description: "router not found"
         500:
           description: "Internal error"
           schema:
             $ref: "#/definitions/ApiResponse"
-  /cell/{cell_id}/network:
+  /cell/{cell_id}/router:
     post:
       tags:
-        - "network"
-      summary: "Add a new network"
+        - "router"
+      summary: "Add a new router"
       description: ""
-      operationId: "addNetwork"
+      operationId: "addRouter"
       consumes:
         - "application/json"
       produces:
@@ -1821,10 +1820,10 @@ paths:
         - $ref: '#/parameters/CellID'
         - in: "body"
           name: "body"
-          description: "Network object that needs to be added"
+          description: "Router object that needs to be added"
           required: true
           schema:
-            $ref: "#/definitions/Network"
+            $ref: "#/definitions/Router"
       responses:
         201:
           description: "Created"
@@ -1842,7 +1841,139 @@ paths:
           description: "Internal error"
           schema:
             $ref: "#/definitions/ApiResponse"
-  /cell/{cell_id}/network/{network_id}:
+  /cell/{cell_id}/router/{router_id}:
+    delete:
+      tags:
+        - "router"
+      summary: "Delete Router"
+      operationId: "deleteCellRouter"
+      produces:
+        - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - $ref: '#/parameters/CellID'
+        - $ref: '#/parameters/RouterID'
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Router"
+          example:
+            id: 01C8KJMMYHPKYNXWWZFWQ61D0Z
+            name: test_router
+            cidr: 192.168.100.0/24
+        400:
+          description: "Invalid cell id or router id"
+        404:
+          description: "router not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+    get:
+      tags:
+        - "router"
+      summary: "Get Router"
+      operationId: "getCellRouter"
+      produces:
+        - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - $ref: '#/parameters/CellID'
+        - $ref: '#/parameters/RouterID'
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Router"
+          example:
+            id: 01C8KJMMYHPKYNXWWZFWQ61D0Z
+            name: test_router
+            cidr: 192.168.100.0/24
+        400:
+          description: "Invalid cell id or router id"
+        404:
+          description: "router not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+
+
+  /cell/{cell_id}/router/{router_id}/networks:
+    get:
+      tags:
+        - "network"
+      summary: "Finds Networks by Cell"
+      operationId: "findCellNetworks"
+      produces:
+        - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - $ref: '#/parameters/CellID'
+        - $ref: '#/parameters/RouterID'
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Network"
+        400:
+          description: "Invalid cell id"
+        404:
+          description: "network not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+  /cell/{cell_id}/router/{router_id}/network:
+    post:
+      tags:
+        - "network"
+      summary: "Add a new network"
+      description: ""
+      operationId: "addNetwork"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      security:
+        - APIKeyHeader: []
+      parameters:
+        - $ref: '#/parameters/CellID'
+        - $ref: '#/parameters/RouterID'
+        - in: "body"
+          name: "body"
+          description: "Network object that needs to be added"
+          required: true
+          schema:
+            $ref: "#/definitions/Network"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/ULID"
+        404:
+          description: "not found"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        409:
+          description: "Already exists"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+  /cell/{cell_id}/router/{router_id}/network/{network_id}:
     delete:
       tags:
         - "network"
@@ -1854,6 +1985,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
+        - $ref: '#/parameters/RouterID'
         - $ref: '#/parameters/NetworkID'
       responses:
         200:
@@ -1883,6 +2015,7 @@ paths:
         - APIKeyHeader: []
       parameters:
         - $ref: '#/parameters/CellID'
+        - $ref: '#/parameters/RouterID'
         - $ref: '#/parameters/NetworkID'
       responses:
         200:
@@ -2119,6 +2252,17 @@ parameters:
     maxLength: 26
     pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
 
+  RouterID:
+    name: "router_id"
+    in: "path"
+    description: "RouterID"
+    required: true
+    type: "string"
+    minLength: 26
+    maxLength: 26
+    pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$'
+
+
 
 definitions:
   ApiResponse:
@@ -2218,6 +2362,10 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/Network"
+      routers:
+        type: array
+        items:
+          $ref: "#/definitions/Router"
       securitygroups:
         type: "array"
         items:
@@ -2374,6 +2522,8 @@ definitions:
         type: array
         items:
           type: "string"
+      router:
+        type: "string"
       securitygroups:
         type: "array"
         items:
@@ -2396,6 +2546,8 @@ definitions:
         type: "string"
         example: 192.168.100.0/24
       region_az:
+        type: "string"
+      router:
         type: "string"
 
   Parameter:
@@ -2510,6 +2662,24 @@ definitions:
         items:
           $ref: "#/definitions/Parameter"
 
+  Router:
+    type: "object"
+    required:
+      - name
+      - cidr
+    properties:
+      id:
+        $ref: "#/definitions/ULID"
+      name:
+        type: "string"
+        example: test_router
+      cidr:
+        type: "string"
+      enable_dns:
+        type: "boolean"
+      enable_dns_hostname:
+        type: "boolean"
+
   Securityrule:
     type: "object"
     properties:
@@ -2539,6 +2709,8 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/Securityrule"
+      router:
+        type: "string"
 
   ULID:
     type: "string"

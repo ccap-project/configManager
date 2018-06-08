@@ -1883,199 +1883,6 @@ func init() {
         }
       }
     },
-    "/cell/{cell_id}/network": {
-      "post": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "network"
-        ],
-        "summary": "Add a new network",
-        "operationId": "addNetwork",
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/CellID"
-          },
-          {
-            "description": "Network object that needs to be added",
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/Network"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created",
-            "schema": {
-              "$ref": "#/definitions/ULID"
-            }
-          },
-          "405": {
-            "description": "Invalid input",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          },
-          "409": {
-            "description": "Already exists",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          },
-          "500": {
-            "description": "Internal error",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/cell/{cell_id}/network/{network_id}": {
-      "get": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "network"
-        ],
-        "summary": "Get Network",
-        "operationId": "getCellNetwork",
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/CellID"
-          },
-          {
-            "$ref": "#/parameters/NetworkID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/Network"
-            }
-          },
-          "400": {
-            "description": "Invalid cell id or network id"
-          },
-          "404": {
-            "description": "network not found"
-          },
-          "500": {
-            "description": "Internal error",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      },
-      "delete": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "network"
-        ],
-        "summary": "Delete Network",
-        "operationId": "deleteCellNetwork",
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/CellID"
-          },
-          {
-            "$ref": "#/parameters/NetworkID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/Network"
-            }
-          },
-          "400": {
-            "description": "Invalid cell id or network id"
-          },
-          "404": {
-            "description": "network not found"
-          },
-          "500": {
-            "description": "Internal error",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/cell/{cell_id}/networks": {
-      "get": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "network"
-        ],
-        "summary": "Finds Networks by Cell",
-        "operationId": "findCellNetworks",
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/CellID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Network"
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid cell id"
-          },
-          "404": {
-            "description": "network not found"
-          },
-          "500": {
-            "description": "Internal error",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
     "/cell/{cell_id}/provider": {
       "get": {
         "description": "Returns cell's provider",
@@ -2216,6 +2023,410 @@ func init() {
             "schema": {
               "$ref": "#/definitions/ApiResponse"
             }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/cell/{cell_id}/router": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "router"
+        ],
+        "summary": "Add a new router",
+        "operationId": "addRouter",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/CellID"
+          },
+          {
+            "description": "Router object that needs to be added",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Router"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/ULID"
+            }
+          },
+          "405": {
+            "description": "Invalid input",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          },
+          "409": {
+            "description": "Already exists",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/cell/{cell_id}/router/{router_id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "router"
+        ],
+        "summary": "Get Router",
+        "operationId": "getCellRouter",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/CellID"
+          },
+          {
+            "$ref": "#/parameters/RouterID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Router"
+            }
+          },
+          "400": {
+            "description": "Invalid cell id or router id"
+          },
+          "404": {
+            "description": "router not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "router"
+        ],
+        "summary": "Delete Router",
+        "operationId": "deleteCellRouter",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/CellID"
+          },
+          {
+            "$ref": "#/parameters/RouterID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Router"
+            }
+          },
+          "400": {
+            "description": "Invalid cell id or router id"
+          },
+          "404": {
+            "description": "router not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/cell/{cell_id}/router/{router_id}/network": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "network"
+        ],
+        "summary": "Add a new network",
+        "operationId": "addNetwork",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/CellID"
+          },
+          {
+            "$ref": "#/parameters/RouterID"
+          },
+          {
+            "description": "Network object that needs to be added",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Network"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/ULID"
+            }
+          },
+          "404": {
+            "description": "not found",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          },
+          "405": {
+            "description": "Invalid input",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          },
+          "409": {
+            "description": "Already exists",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/cell/{cell_id}/router/{router_id}/network/{network_id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "network"
+        ],
+        "summary": "Get Network",
+        "operationId": "getCellNetwork",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/CellID"
+          },
+          {
+            "$ref": "#/parameters/RouterID"
+          },
+          {
+            "$ref": "#/parameters/NetworkID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Network"
+            }
+          },
+          "400": {
+            "description": "Invalid cell id or network id"
+          },
+          "404": {
+            "description": "network not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "network"
+        ],
+        "summary": "Delete Network",
+        "operationId": "deleteCellNetwork",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/CellID"
+          },
+          {
+            "$ref": "#/parameters/RouterID"
+          },
+          {
+            "$ref": "#/parameters/NetworkID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Network"
+            }
+          },
+          "400": {
+            "description": "Invalid cell id or network id"
+          },
+          "404": {
+            "description": "network not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/cell/{cell_id}/router/{router_id}/networks": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "network"
+        ],
+        "summary": "Finds Networks by Cell",
+        "operationId": "findCellNetworks",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/CellID"
+          },
+          {
+            "$ref": "#/parameters/RouterID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Network"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid cell id"
+          },
+          "404": {
+            "description": "network not found"
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/cell/{cell_id}/routers": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "router"
+        ],
+        "summary": "Finds Routers by Cell",
+        "operationId": "findCellRouters",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/CellID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Router"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid cell id"
+          },
+          "404": {
+            "description": "router not found"
           },
           "500": {
             "description": "Internal error",
@@ -3320,6 +3531,12 @@ func init() {
         "provider": {
           "$ref": "#/definitions/Provider"
         },
+        "routers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Router"
+          }
+        },
         "securitygroups": {
           "type": "array",
           "items": {
@@ -3546,6 +3763,9 @@ func init() {
             "tls"
           ]
         },
+        "router": {
+          "type": "string"
+        },
         "securitygroups": {
           "type": "array",
           "items": {
@@ -3578,6 +3798,9 @@ func init() {
           "example": "test_network"
         },
         "region_az": {
+          "type": "string"
+        },
+        "router": {
           "type": "string"
         }
       }
@@ -3741,10 +3964,38 @@ func init() {
         }
       }
     },
+    "Router": {
+      "type": "object",
+      "required": [
+        "name",
+        "cidr"
+      ],
+      "properties": {
+        "cidr": {
+          "type": "string"
+        },
+        "enable_dns": {
+          "type": "boolean"
+        },
+        "enable_dns_hostname": {
+          "type": "boolean"
+        },
+        "id": {
+          "$ref": "#/definitions/ULID"
+        },
+        "name": {
+          "type": "string",
+          "example": "test_router"
+        }
+      }
+    },
     "Securitygroup": {
       "type": "object",
       "properties": {
         "name": {
+          "type": "string"
+        },
+        "router": {
           "type": "string"
         },
         "rules": {
@@ -3909,6 +4160,16 @@ func init() {
       "type": "string",
       "description": "Region AZ ID",
       "name": "region_az_id",
+      "in": "path",
+      "required": true
+    },
+    "RouterID": {
+      "maxLength": 26,
+      "minLength": 26,
+      "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$",
+      "type": "string",
+      "description": "RouterID",
+      "name": "router_id",
       "in": "path",
       "required": true
     }
