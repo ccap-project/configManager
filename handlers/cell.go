@@ -516,7 +516,7 @@ func getCellFull(rt *configManager.Runtime, customerName *string, cellID *string
 
 	res.CustomerName = *customerName
 	res.Keypair = getCellKeypair(rt, customerName, cellID)
-	res.Provider = getProvider(rt, customerName, cellID)
+	res.Provider, err = _getProvider(rt, customerName, cellID)
 
 	for _, row := range data {
 
@@ -557,7 +557,9 @@ func getCellRecursive(rt *configManager.Runtime, customerName *string, cell *mod
 		return nil, &err_msg
 	}
 
-	if res.Provider = getProvider(rt, customerName, &cellID); res.Provider == nil {
+	res.Provider, _ = _getProvider(rt, customerName, &cellID)
+
+	if res.Provider == nil {
 		err_msg := "Cell needs an associated provider"
 		ctxLogger.Error(err_msg)
 		return nil, &err_msg
