@@ -65,7 +65,7 @@ func (ctx *addCellProvider) Handle(params provider.AddProviderParams, principal 
 		return provider.NewAddProviderInternalServerError()
 	}
 
-	if providerType != nil {
+	if providerType == nil {
 		ctxLogger.Error("provider type does not exists !")
 		return provider.NewAddProviderBadRequest().WithPayload(&models.APIResponse{Message: "provider type does not exists"})
 	}
