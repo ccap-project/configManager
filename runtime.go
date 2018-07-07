@@ -14,10 +14,15 @@ import (
 
 // NewRuntime creates a new application level runtime that encapsulates the shared services for this application
 func NewRuntime(app app.Application) (*Runtime, error) {
+
+	/*
+	 * Allocate DB Connection Pool
+	 */
 	pool, err := neo4j.Pool(app.Config().GetString("db.Host"), app.Config().GetString("db.Port"), "", "", app.Config().GetInt("db.MaxConn"))
 	if err != nil {
 		return nil, err
 	}
+
 	return &Runtime{
 		pool: pool,
 		app:  app,
