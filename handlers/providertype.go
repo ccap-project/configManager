@@ -198,8 +198,9 @@ func InitProviderType(rt *configManager.Runtime) {
 		/*
 		 * initialize provider region nodes
 		 */
-		regions := rt.Config().GetStringSlice(fmt.Sprintf("providers.%s", providerName))
-		for _, regionName := range regions {
+		regions := rt.Config().GetStringMapStringSlice(fmt.Sprintf("providers.%s", providerName))
+
+		for regionName, AZs := range regions {
 
 			region, err := _getProviderRegionByName(rt, providerName, regionName)
 
@@ -214,28 +215,29 @@ func InitProviderType(rt *configManager.Runtime) {
 					rt.Logger().Infof("Initialized provider region (%s/%s)", providerName, regionName)
 				}
 			}
+
+			/*
+			 * initialize region AZ nodes
+			 */
+			for _, azName := range AZs {
+				az, err := _getRegionAZByName(rt, string(provider.ID), string(region.ID), azName)
+
+				if err != nil {
+					rt.Logger().Errorf("Error Initializing provider region AZ (%s/%s/%s), %s", providerName, regionName, azName, err)
+					continue
+				}
+				if az == nil {
+					_, err := _addRegionAZ(rt, string(provider.ID), string(region.ID), azName)
+					if err != nil {
+						rt.Logger().Errorf("Error Initializing provider region AZ (%s/%s/%s), %s", providerName, regionName, azName, err)
+					} else {
+						rt.Logger().Infof("Initialized provider region AZ (%s/%s/%s)", providerName, regionName, azName)
+					}
+				}
+
+			}
 		}
 	}
-
-	/*
-		if err := _addProviderType(rt, "Openstack", []string{"auth_url", "domain_name", "username", "password"}); err != nil {
-			rt.Logger().Error("Error Initializing provider types, ", err)
-		}
-		if err := _addProviderType(rt, "AWS", []string{"access_key", "secret_key", "region"}); err != nil {
-			rt.Logger().Error("Error Initializing provider types, ", err)
-		}
-
-		if err := _addProviderType(rt, "GCP", []string{"secret_key", "region"}); err != nil {
-			rt.Logger().Error("Error Initializing provider types, ", err)
-		}
-
-		if err := _addProviderRegion(rt, "GCP", "us-west1"); err != nil {
-			rt.Logger().Error("Error Initializing provider types, ", err)
-		}
-		if err := _addProviderRegion(rt, "GCP", "us-central1"); err != nil {
-			rt.Logger().Error("Error Initializing provider types, ", err)
-		}
-	*/
 }
 
 func _addProviderType(rt *configManager.Runtime, name string, fields []string) error {
