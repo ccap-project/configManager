@@ -1,2 +1,12 @@
 db:
   Host: 192.168.20.54
+providers:
+  AWS:
+    - us-east-1
+    - us-east-2
+    - us-west-1
+    - us-west-2
+    - sa-east-1
+  GCP:
+    - us-west1
+    - us-central1

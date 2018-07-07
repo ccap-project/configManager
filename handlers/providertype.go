@@ -156,19 +156,79 @@ func (ctx *listProviderTypes) Handle(params providertype.ListProviderTypesParams
 
 func InitProviderType(rt *configManager.Runtime) {
 
-	rt.Logger().Info("Checking provider types...")
+	rt.Logger().Info("Checking supported provider and regions...")
 
-	if err := _addProviderType(rt, "Openstack", []string{"auth_url", "domain_name", "username", "password"}); err != nil {
-		rt.Logger().Error("Error Initializing provider types, ", err)
-	}
-	if err := _addProviderType(rt, "AWS", []string{"access_key", "secret_key", "region"}); err != nil {
-		rt.Logger().Error("Error Initializing provider types, ", err)
+	//providers := rt.Config().GetStringMap("providers")
+
+	for _, providerName := range []string{"AWS", "GCP", "Openstack"} {
+
+		provider, err := _getProviderTypeByName(rt, providerName)
+		if err != nil {
+			rt.Logger().Error("Error Initializing provider types, ", err)
+			continue
+		}
+
+		/*
+		 * initialize provider type nodes
+		 */
+		if provider == nil {
+			var providerProperties []string
+
+			switch providerName {
+			case "AWS":
+				providerProperties = []string{"access_key", "secret_key", "region"}
+
+			case "GCP":
+				providerProperties = []string{"secret_key", "region"}
+
+			case "Openstack":
+				providerProperties = []string{"auth_url", "domain_name", "username", "password"}
+
+			default:
+				continue
+			}
+
+			if err := _addProviderType(rt, providerName, providerProperties); err != nil {
+				rt.Logger().Errorf("Error Initializing provider types (%s), %s", providerName, err)
+			} else {
+				rt.Logger().Infof("Initialized provider %s", providerName)
+			}
+		}
+
+		/*
+		 * initialize provider region nodes
+		 */
+		regions := rt.Config().GetStringSlice(fmt.Sprintf("providers.%s", providerName))
+		for _, regionName := range regions {
+
+			region, err := _getProviderRegionByName(rt, providerName, regionName)
+
+			if err != nil {
+				rt.Logger().Errorf("Error Initializing provider region (%s/%s), %s", providerName, regionName, err)
+				continue
+			}
+			if region == nil {
+				if err := _addProviderRegion(rt, providerName, regionName); err != nil {
+					rt.Logger().Errorf("Error Initializing provider region (%s/%s), %s", providerName, regionName, err)
+				} else {
+					rt.Logger().Infof("Initialized provider region (%s/%s)", providerName, regionName)
+				}
+			}
+		}
 	}
 
-	if err := _addProviderType(rt, "GCP", []string{"tenant_name", "secret_key", "region"}); err != nil {
-		rt.Logger().Error("Error Initializing provider types, ", err)
-	}
 	/*
+		if err := _addProviderType(rt, "Openstack", []string{"auth_url", "domain_name", "username", "password"}); err != nil {
+			rt.Logger().Error("Error Initializing provider types, ", err)
+		}
+		if err := _addProviderType(rt, "AWS", []string{"access_key", "secret_key", "region"}); err != nil {
+			rt.Logger().Error("Error Initializing provider types, ", err)
+		}
+
+		if err := _addProviderType(rt, "GCP", []string{"secret_key", "region"}); err != nil {
+			rt.Logger().Error("Error Initializing provider types, ", err)
+		}
+
 		if err := _addProviderRegion(rt, "GCP", "us-west1"); err != nil {
 			rt.Logger().Error("Error Initializing provider types, ", err)
 		}
