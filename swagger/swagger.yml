@@ -1999,6 +1999,10 @@ paths:
           description: "Invalid ID supplied"
         404:
           description: "Provider not found"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ApiResponse"
     post:
       tags:
         - "provider"
