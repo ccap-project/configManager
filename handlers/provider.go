@@ -72,9 +72,15 @@ func (ctx *addCellProvider) Handle(params provider.AddProviderParams, principal 
 		"provider_name": params.Body.Name,
 		"cell_id":       params.CellID})
 
-	if GetProviderTypeByName(ctx.rt, params.Body.Type) == nil {
+	providerType, err := _getProviderTypeByName(ctx.rt, params.Body.Type)
+	if providerType != nil {
 		ctxLogger.Error("provider type does not exists !")
 		return provider.NewAddProviderBadRequest().WithPayload(&models.APIResponse{Message: "provider type does not exists"})
+	}
+
+	if err != nil {
+		ctxLogger.Errorf("getting provider type, %s", err)
+		return provider.NewAddProviderInternalServerError()
 	}
 
 	Provider := getProvider(ctx.rt, principal.Name, &params.CellID)

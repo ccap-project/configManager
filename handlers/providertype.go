@@ -36,6 +36,7 @@ import (
 	"configManager"
 	"configManager/models"
 	"configManager/restapi/operations/providertype"
+	"configManager/util"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/go-openapi/runtime/middleware"
@@ -106,92 +107,6 @@ func (ctx *getProviderTypeByID) Handle(params providertype.GetProviderTypeByIDPa
 	return providertype.NewGetProviderTypeByIDOK().WithPayload(provider)
 }
 
-func GetProviderTypeByName(rt *configManager.Runtime, providertypeName string) *models.ProviderType {
-
-	var providerType *models.ProviderType
-
-	ctxLogger := rt.Logger().WithFields(logrus.Fields{
-		"provider_type": providertypeName})
-
-	cypher := `MATCH (p:ProviderType)
-							WHERE EXISTS(p.id) AND p.name = {name}
-							RETURN p.id as id,
-											p.name as name,
-											p.access_key as access_key,
-											p.auth_url as auth_url,
-											p.domain_name as domain_name,
-											p.username as username,
-											p.password as password,
-											p.region as region,
-											p.secret_key as secret_key`
-
-	db, err := rt.DB().OpenPool()
-	if err != nil {
-		ctxLogger.Error("error connecting to neo4j:", err)
-		return providerType
-	}
-	defer db.Close()
-
-	stmt, err := db.PrepareNeo(cypher)
-	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: %s", err)
-		return providerType
-	}
-	defer stmt.Close()
-
-	rows, err := stmt.QueryNeo(map[string]interface{}{
-		"name": providertypeName})
-
-	if err != nil {
-		ctxLogger.Error("An error occurred querying Neo: %s", err)
-		return providerType
-	}
-
-	if rows == nil {
-		return providerType
-	}
-
-	row, _, err := rows.NextNeo()
-
-	if err != nil {
-		ctxLogger.Error("An error occurred getting next row: %s", err)
-		return providerType
-	}
-
-	providerType = new(models.ProviderType)
-	providerType.ID = models.ULID(row[0].(string))
-	providerType.Name = row[1].(string)
-
-	if row[2] != nil {
-		providerType.AccessKey = row[2].(string)
-	}
-
-	if row[3] != nil {
-		providerType.AuthURL = row[3].(string)
-	}
-
-	if row[4] != nil {
-		providerType.DomainName = row[4].(string)
-	}
-
-	if row[5] != nil {
-		providerType.Username = row[5].(string)
-	}
-
-	if row[6] != nil {
-		providerType.Password = row[6].(string)
-	}
-	if row[7] != nil {
-		providerType.Region = row[7].(string)
-	}
-
-	if row[8] != nil {
-		providerType.SecretKey = row[8].(string)
-	}
-
-	return providerType
-}
-
 func NewListProviderTypes(rt *configManager.Runtime) providertype.ListProviderTypesHandler {
 	return &listProviderTypes{rt: rt}
 }
@@ -249,15 +164,31 @@ func InitProviderType(rt *configManager.Runtime) {
 	if err := _addProviderType(rt, "AWS", []string{"access_key", "secret_key", "region"}); err != nil {
 		rt.Logger().Error("Error Initializing provider types, ", err)
 	}
+
+	if err := _addProviderType(rt, "GCP", []string{"tenant_name", "secret_key", "region"}); err != nil {
+		rt.Logger().Error("Error Initializing provider types, ", err)
+	}
+	/*
+		if err := _addProviderRegion(rt, "GCP", "us-west1"); err != nil {
+			rt.Logger().Error("Error Initializing provider types, ", err)
+		}
+		if err := _addProviderRegion(rt, "GCP", "us-central1"); err != nil {
+			rt.Logger().Error("Error Initializing provider types, ", err)
+		}
+	*/
 }
 
 func _addProviderType(rt *configManager.Runtime, name string, fields []string) error {
 
 	var allFields []string
 
-	if GetProviderTypeByName(rt, name) != nil {
-		rt.Logger().Warnf("Provider %s already exists", name)
-		return nil
+	providerType, err := _getProviderTypeByName(rt, name)
+	if providerType != nil {
+		return fmt.Errorf("providertype %s already exists", name)
+	}
+
+	if err != nil {
+		return fmt.Errorf("getting providertype, %s", err)
 	}
 
 	createTmpl := `Create (p:ProviderType { id: '%s', name: '%s', %s })`
@@ -299,4 +230,54 @@ func _addProviderType(rt *configManager.Runtime, name string, fields []string) e
 	rt.Logger().Infof("Provider %s has been created", name)
 
 	return nil
+}
+
+func _getProviderTypeByName(rt *configManager.Runtime, providertypeName string) (*models.ProviderType, error) {
+
+	var providertype *models.ProviderType
+
+	query := `MATCH (p:ProviderType)
+							WHERE EXISTS(p.id) AND p.name = {name}
+							RETURN p {.*}`
+
+	params := map[string]interface{}{
+		"name": providertypeName}
+
+	output, err := rt.QueryDB(&query, &params)
+
+	if err != nil {
+		return providertype, err
+	}
+
+	if len(output) > 0 {
+		providertype = new(models.ProviderType)
+		util.FillStruct(providertype, output[0].(map[string]interface{}))
+	}
+
+	return providertype, nil
+}
+
+func _getProviderTypeByID(rt *configManager.Runtime, providertypeID string) (*models.ProviderType, error) {
+
+	var providertype *models.ProviderType
+
+	query := `MATCH (p:ProviderType)
+							WHERE EXISTS(p.id) AND p.id = {id}
+							RETURN p {.*}`
+
+	params := map[string]interface{}{
+		"id": providertypeID}
+
+	output, err := rt.QueryDB(&query, &params)
+
+	if err != nil {
+		return providertype, err
+	}
+
+	if len(output) > 0 {
+		providertype = new(models.ProviderType)
+		util.FillStruct(providertype, output[0].(map[string]interface{}))
+	}
+
+	return providertype, nil
 }
