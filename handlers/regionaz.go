@@ -30,16 +30,15 @@
 package handlers
 
 import (
-	"io"
-	"log"
+	"fmt"
 
 	"configManager"
 	"configManager/models"
 	"configManager/restapi/operations/regionaz"
+	"configManager/util"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
 )
 
 func NewAddRegionAZ(rt *configManager.Runtime) regionaz.AddRegionAZHandler {
@@ -53,59 +52,30 @@ type addRegionAZ struct {
 func (ctx *addRegionAZ) Handle(params regionaz.AddRegionAZParams) middleware.Responder {
 
 	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
-		"provider_region": params.Body.Name})
+		"provider_region":    params.Body.Name,
+		"provider_type_id":   params.ProvidertypeID,
+		"provider_region_id": params.ProviderRegionID})
 
-	cypher := `MATCH (provider:ProviderType {id: {provider_id}})
-							-[:HAS]->(region:ProviderRegion{id: {region_id}})
-							MERGE (region)-[:HAS]->(az:RegionAZ {
-									 id: {id},
-									name: {name}})
-								RETURN az.id`
+	regionAZ, err := _getRegionAZByName(ctx.rt, params.ProvidertypeID, params.ProviderRegionID, *params.Body.Name)
+	if err != nil {
+		ctxLogger.Errorf("getting region az, %s", err)
+		return regionaz.NewAddRegionAZInternalServerError()
+	}
 
-	if GetRegionAZByName(ctx.rt, params.ProvidertypeID, params.ProviderRegionID, *params.Body.Name) != nil {
+	if regionAZ != nil {
 		ctxLogger.Error("region az already exists !")
 		return regionaz.NewAddRegionAZInternalServerError().WithPayload(&models.APIResponse{Message: "region az already exists"})
 	}
 
-	db, err := ctx.rt.DB().OpenPool()
-	if err != nil {
-		ctxLogger.Error("error connecting to neo4j:", err)
-		return regionaz.NewAddRegionAZInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
-	}
-	defer db.Close()
-
-	stmt, err := db.PrepareNeo(cypher)
-	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: %s", err)
-		return regionaz.NewAddRegionAZInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
-	}
-	defer stmt.Close()
-
-	ulid := configManager.GetULID()
-
-	ctxLogger = ctx.rt.Logger().WithFields(logrus.Fields{
-		"provider_type_id":   params.ProvidertypeID,
-		"provider_region_id": params.ProviderRegionID})
-
-	rows, err := stmt.QueryNeo(map[string]interface{}{
-		"provider_id": params.ProvidertypeID,
-		"region_id":   params.ProviderRegionID,
-		"id":          ulid,
-		"name":        swag.StringValue(params.Body.Name)})
+	ulid, err := _addRegionAZ(ctx.rt, params.ProvidertypeID, params.ProviderRegionID, *params.Body.Name)
 
 	if err != nil {
-		ctxLogger.Error("An error occurred querying Neo: %s", err)
-		return regionaz.NewAddRegionAZInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
-	}
-
-	_, _, err = rows.NextNeo()
-	if err != nil {
-		log.Printf("An error occurred getting next row: %s", err)
-		return regionaz.NewAddRegionAZInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+		ctxLogger.Errorf("adding region az, %s", err)
+		return regionaz.NewAddRegionAZInternalServerError()
 	}
 
 	ctxLogger.Info("OK")
-	return regionaz.NewAddRegionAZCreated().WithPayload(models.ULID(ulid))
+	return regionaz.NewAddRegionAZCreated().WithPayload(models.ULID(*ulid))
 }
 
 func NewGetRegionAZByID(rt *configManager.Runtime) regionaz.GetRegionAZByIDHandler {
@@ -172,68 +142,6 @@ func (ctx *getRegionAZByID) Handle(params regionaz.GetRegionAZByIDParams) middle
 	return regionaz.NewGetRegionAZByIDOK().WithPayload(provider)
 }
 
-func GetRegionAZByName(rt *configManager.Runtime, provider_id string, region_id string, az string) *models.RegionAZ {
-
-	var regionAZ *models.RegionAZ
-
-	ctxLogger := rt.Logger().WithFields(logrus.Fields{
-		"provider_type_id":   provider_id,
-		"provider_region_id": region_id})
-
-	cypher := `MATCH (provider:ProviderType {id: {provider_id}})
-							-[:HAS]->(region:ProviderRegion{id: {region_id}})
-							-[:HAS]->(az:RegionAZ{name: {az_name}})
-							RETURN az.id as id,
-											az.name as name`
-
-	db, err := rt.DB().OpenPool()
-	if err != nil {
-		ctxLogger.Error("error connecting to neo4j:", err)
-		return regionAZ
-	}
-	defer db.Close()
-
-	stmt, err := db.PrepareNeo(cypher)
-	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: %s", err)
-		return regionAZ
-	}
-	defer stmt.Close()
-
-	rows, err := stmt.QueryNeo(map[string]interface{}{
-		"provider_id": provider_id,
-		"region_id":   region_id,
-		"az_name":     az})
-
-	if err != nil {
-		ctxLogger.Error("An error occurred querying Neo: %s", err)
-		return regionAZ
-	}
-
-	if rows == nil {
-		return regionAZ
-	}
-
-	row, _, err := rows.NextNeo()
-
-	if err != io.EOF {
-		ctxLogger.Errorf("An error occurred getting next row: %s", err)
-		return regionAZ
-	}
-
-	if len(row) == 0 {
-		return regionAZ
-	}
-
-	_name := row[1].(string)
-
-	regionAZ = new(models.RegionAZ)
-	regionAZ.ID = models.ULID(row[0].(string))
-	regionAZ.Name = &_name
-
-	return regionAZ
-}
-
 func NewListRegionAZs(rt *configManager.Runtime) regionaz.ListRegionAZsHandler {
 	return &listRegionAZs{rt: rt}
 }
@@ -251,6 +159,72 @@ func (ctx *listRegionAZs) Handle(params regionaz.ListRegionAZsParams) middleware
 	}
 
 	return regionaz.NewListRegionAZsOK().WithPayload(azs)
+}
+
+func _addRegionAZ(rt *configManager.Runtime, ProviderID string, RegionID string, AZName string) (*string, error) {
+
+	/*
+	 * Check if Region already exists
+	 */
+	regionAZ, err := _getRegionAZByName(rt, ProviderID, RegionID, AZName)
+	if err != nil {
+		return nil, fmt.Errorf("getting region az, %s", err)
+	}
+
+	if regionAZ != nil {
+		return nil, fmt.Errorf("region az already exists !")
+	}
+
+	query := `MATCH (provider:ProviderType {id: {provider_id}})
+							-[:HAS]->(region:ProviderRegion{id: {region_id}})
+							MERGE (region)-[:HAS]->(az:RegionAZ {
+									 id: {az_id},
+									name: {az_name}})
+								RETURN az.id`
+
+	ulid := configManager.GetULID()
+
+	params := map[string]interface{}{
+		"provider_id": ProviderID,
+		"region_id":   RegionID,
+		"az_id":       ulid,
+		"az_name":     AZName}
+
+	_, err = rt.QueryDB(&query, &params)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &ulid, nil
+}
+
+func _getRegionAZByName(rt *configManager.Runtime, provider_id string, region_id string, az string) (*models.RegionAZ, error) {
+
+	var regionAZ *models.RegionAZ
+
+	query := `MATCH (provider:ProviderType {id: {provider_id}})
+							-[:HAS]->(region:ProviderRegion{id: {region_id}})
+							-[:HAS]->(az:RegionAZ{name: {az_name}})
+							RETURN az {.*}`
+
+	params := map[string]interface{}{
+		"provider_id": provider_id,
+		"region_id":   region_id,
+		"az_name":     az}
+
+	output, err := rt.QueryDB(&query, &params)
+
+	if err != nil {
+		return regionAZ, err
+	}
+
+	if len(output) > 0 {
+		regionAZ = new(models.RegionAZ)
+		util.FillStruct(regionAZ, output[0].(map[string]interface{}))
+	}
+
+	return regionAZ, nil
 }
 
 func _listRegionAZs(rt *configManager.Runtime, provider_id *string, region_id *string) ([]*models.RegionAZ, error) {
