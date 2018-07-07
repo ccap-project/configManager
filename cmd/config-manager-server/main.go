@@ -179,7 +179,6 @@ func main() {
 	api.ProviderUpdateProviderHandler = handlers.NewUpdateProvider(rt)
 
 	// Provider Type
-	api.ProvidertypeAddProviderTypeHandler = handlers.NewAddProviderType(rt)
 	api.ProvidertypeGetProviderTypeByIDHandler = handlers.NewGetProviderTypeByID(rt)
 	api.ProvidertypeListProviderTypesHandler = handlers.NewListProviderTypes(rt)
 

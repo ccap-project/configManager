@@ -31,7 +31,6 @@ package handlers
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"configManager"
@@ -41,74 +40,6 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/go-openapi/runtime/middleware"
 )
-
-func NewAddProviderType(rt *configManager.Runtime) providertype.AddProviderTypeHandler {
-	return &addProviderType{rt: rt}
-}
-
-type addProviderType struct {
-	rt *configManager.Runtime
-}
-
-func (ctx *addProviderType) Handle(params providertype.AddProviderTypeParams) middleware.Responder {
-
-	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
-		"provider_type": params.Body.Name})
-
-	cypher := `create(p:ProviderType { id: {id},
-																			name: {name},
-																			auth_url: {auth_url},
-																			domain_name: {domain_name},
-																			username: {username},
-																			password: {password} }) RETURN {id}`
-
-	if len(GetProviderTypeByName(ctx.rt, params.Body.Name).Name) > 0 {
-		ctxLogger.Error("providertype already exists !")
-		return providertype.NewAddProviderTypeInternalServerError().WithPayload(&models.APIResponse{Message: "providertype already exists"})
-	}
-
-	db, err := ctx.rt.DB().OpenPool()
-	if err != nil {
-		ctxLogger.Error("error connecting to neo4j:", err)
-		return providertype.NewAddProviderTypeInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
-	}
-	defer db.Close()
-
-	stmt, err := db.PrepareNeo(cypher)
-	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: %s", err)
-		return providertype.NewAddProviderTypeInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
-	}
-	defer stmt.Close()
-
-	ulid := configManager.GetULID()
-
-	ctxLogger = ctx.rt.Logger().WithFields(logrus.Fields{
-		"provider_type":    params.Body.Name,
-		"provider_type_id": ulid})
-
-	rows, err := stmt.QueryNeo(map[string]interface{}{
-		"id":          ulid,
-		"name":        params.Body.Name,
-		"auth_url":    params.Body.AuthURL,
-		"domain_name": params.Body.DomainName,
-		"username":    params.Body.Username,
-		"password":    params.Body.Password})
-
-	if err != nil {
-		ctxLogger.Error("An error occurred querying Neo: %s", err)
-		return providertype.NewAddProviderTypeInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
-	}
-
-	_, _, err = rows.NextNeo()
-	if err != nil {
-		log.Printf("An error occurred getting next row: %s", err)
-		return providertype.NewAddProviderTypeInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
-	}
-
-	ctxLogger.Info("OK")
-	return providertype.NewAddProviderTypeCreated().WithPayload(models.ULID(ulid))
-}
 
 func NewGetProviderTypeByID(rt *configManager.Runtime) providertype.GetProviderTypeByIDHandler {
 	return &getProviderTypeByID{rt: rt}

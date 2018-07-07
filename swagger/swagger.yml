@@ -325,65 +325,6 @@ paths:
           description: "InternalError"
           schema:
             $ref: "#/definitions/ApiResponse"
-  /providertype:
-    post:
-      tags:
-      - "providertype"
-      summary: "Add a new provider type"
-      description: ""
-      operationId: "addProviderType"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "ProviderType object that needs to be added"
-        required: true
-        schema:
-          $ref: "#/definitions/ProviderType"
-      responses:
-        200:
-          description: "Already exists"
-          schema:
-            $ref: "#/definitions/ApiResponse"
-        201:
-          description: "Created"
-          schema:
-            $ref: "#/definitions/ULID"
-        405:
-          description: "Invalid input"
-        500:
-          description: "Internal error"
-          schema:
-            $ref: "#/definitions/ApiResponse"
-    put:
-      tags:
-      - "providertype"
-      summary: "Update an existing provider type"
-      description: ""
-      operationId: "updateProviderType"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "ProviderType object that needs to be updated"
-        required: true
-        schema:
-          $ref: "#/definitions/ProviderType"
-      responses:
-        201:
-          description: "Created"
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "ProviderType not found"
-        405:
-          description: "Validation exception"
   /providertype/{providertype_id}:
     get:
       tags:

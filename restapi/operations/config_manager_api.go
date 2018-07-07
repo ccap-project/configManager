@@ -145,9 +145,6 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		ProviderregionAddProviderRegionHandler: providerregion.AddProviderRegionHandlerFunc(func(params providerregion.AddProviderRegionParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProviderregionAddProviderRegion has not yet been implemented")
 		}),
-		ProvidertypeAddProviderTypeHandler: providertype.AddProviderTypeHandlerFunc(func(params providertype.AddProviderTypeParams) middleware.Responder {
-			return middleware.NotImplemented("operation ProvidertypeAddProviderType has not yet been implemented")
-		}),
 		RegionazAddRegionAZHandler: regionaz.AddRegionAZHandlerFunc(func(params regionaz.AddRegionAZParams) middleware.Responder {
 			return middleware.NotImplemented("operation RegionazAddRegionAZ has not yet been implemented")
 		}),
@@ -292,9 +289,6 @@ func NewConfigManagerAPI(spec *loads.Document) *ConfigManagerAPI {
 		ProviderUpdateProviderHandler: provider.UpdateProviderHandlerFunc(func(params provider.UpdateProviderParams, principal *models.Customer) middleware.Responder {
 			return middleware.NotImplemented("operation ProviderUpdateProvider has not yet been implemented")
 		}),
-		ProvidertypeUpdateProviderTypeHandler: providertype.UpdateProviderTypeHandlerFunc(func(params providertype.UpdateProviderTypeParams) middleware.Responder {
-			return middleware.NotImplemented("operation ProvidertypeUpdateProviderType has not yet been implemented")
-		}),
 
 		// Applies when the "x-api-token" header is set
 		APIKeyHeaderAuth: func(token string) (*models.Customer, error) {
@@ -385,8 +379,6 @@ type ConfigManagerAPI struct {
 	ProviderAddProviderHandler provider.AddProviderHandler
 	// ProviderregionAddProviderRegionHandler sets the operation handler for the add provider region operation
 	ProviderregionAddProviderRegionHandler providerregion.AddProviderRegionHandler
-	// ProvidertypeAddProviderTypeHandler sets the operation handler for the add provider type operation
-	ProvidertypeAddProviderTypeHandler providertype.AddProviderTypeHandler
 	// RegionazAddRegionAZHandler sets the operation handler for the add region a z operation
 	RegionazAddRegionAZHandler regionaz.AddRegionAZHandler
 	// RouterAddRouterHandler sets the operation handler for the add router operation
@@ -483,8 +475,6 @@ type ConfigManagerAPI struct {
 	KeypairUpdateKeypairWithFormHandler keypair.UpdateKeypairWithFormHandler
 	// ProviderUpdateProviderHandler sets the operation handler for the update provider operation
 	ProviderUpdateProviderHandler provider.UpdateProviderHandler
-	// ProvidertypeUpdateProviderTypeHandler sets the operation handler for the update provider type operation
-	ProvidertypeUpdateProviderTypeHandler providertype.UpdateProviderTypeHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -642,10 +632,6 @@ func (o *ConfigManagerAPI) Validate() error {
 
 	if o.ProviderregionAddProviderRegionHandler == nil {
 		unregistered = append(unregistered, "providerregion.AddProviderRegionHandler")
-	}
-
-	if o.ProvidertypeAddProviderTypeHandler == nil {
-		unregistered = append(unregistered, "providertype.AddProviderTypeHandler")
 	}
 
 	if o.RegionazAddRegionAZHandler == nil {
@@ -838,10 +824,6 @@ func (o *ConfigManagerAPI) Validate() error {
 
 	if o.ProviderUpdateProviderHandler == nil {
 		unregistered = append(unregistered, "provider.UpdateProviderHandler")
-	}
-
-	if o.ProvidertypeUpdateProviderTypeHandler == nil {
-		unregistered = append(unregistered, "providertype.UpdateProviderTypeHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -1058,11 +1040,6 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/providertype/{providertype_id}/region"] = providerregion.NewAddProviderRegion(o.context, o.ProviderregionAddProviderRegionHandler)
-
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/providertype"] = providertype.NewAddProviderType(o.context, o.ProvidertypeAddProviderTypeHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
@@ -1303,11 +1280,6 @@ func (o *ConfigManagerAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/cell/{cell_id}/provider"] = provider.NewUpdateProvider(o.context, o.ProviderUpdateProviderHandler)
-
-	if o.handlers["PUT"] == nil {
-		o.handlers["PUT"] = make(map[string]http.Handler)
-	}
-	o.handlers["PUT"]["/providertype"] = providertype.NewUpdateProviderType(o.context, o.ProvidertypeUpdateProviderTypeHandler)
 
 }
 
