@@ -30,17 +30,14 @@
 package handlers
 
 import (
-	"fmt"
-	"log"
-	"strings"
-
 	"configManager"
 	"configManager/models"
 	"configManager/restapi/operations/providerregion"
+	"configManager/util"
+	"fmt"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
 )
 
 func NewAddProviderRegion(rt *configManager.Runtime) providerregion.AddProviderRegionHandler {
@@ -56,54 +53,26 @@ func (ctx *addProviderRegion) Handle(params providerregion.AddProviderRegionPara
 	ctxLogger := ctx.rt.Logger().WithFields(logrus.Fields{
 		"provider_region": params.Body.Name})
 
-	cypher := `MATCH (provider:ProviderType {id: {provider_id}})
-							MERGE (provider)-[:HAS]->(region:ProviderRegion {
-									 id: {id},
-									name: {name}})
-								RETURN region.id`
-
-	if GetProviderRegionByName(ctx.rt, *params.Body.Name) != nil {
-		ctxLogger.Error("providerregion already exists !")
-		return providerregion.NewAddProviderRegionInternalServerError().WithPayload(&models.APIResponse{Message: "providerregion already exists"})
+	providerType, err := _getProviderTypeByID(ctx.rt, params.ProvidertypeID)
+	if err != nil {
+		ctxLogger.Errorf("getting providertype, %s", err)
+		return providerregion.NewAddProviderRegionInternalServerError()
 	}
 
-	db, err := ctx.rt.DB().OpenPool()
-	if err != nil {
-		ctxLogger.Error("error connecting to neo4j:", err)
-		return providerregion.NewAddProviderRegionInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
-	}
-	defer db.Close()
-
-	stmt, err := db.PrepareNeo(cypher)
-	if err != nil {
-		ctxLogger.Error("An error occurred preparing statement: %s", err)
-		return providerregion.NewAddProviderRegionInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
-	}
-	defer stmt.Close()
-
-	ulid := configManager.GetULID()
-
-	ctxLogger = ctx.rt.Logger().WithFields(logrus.Fields{
-		"provider_id": params.ProvidertypeID})
-
-	rows, err := stmt.QueryNeo(map[string]interface{}{
-		"provider_id": params.ProvidertypeID,
-		"id":          ulid,
-		"name":        swag.StringValue(params.Body.Name)})
-
-	if err != nil {
-		ctxLogger.Error("An error occurred querying Neo: %s", err)
-		return providerregion.NewAddProviderRegionInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+	if providerType == nil {
+		ctxLogger.Error("providertype does not exists")
+		return providerregion.NewAddProviderRegionInternalServerError().WithPayload(&models.APIResponse{Message: "providertype does not exists"})
 	}
 
-	_, _, err = rows.NextNeo()
+	err = _addProviderRegion(ctx.rt, providerType.Name, *params.Body.Name)
+
 	if err != nil {
-		log.Printf("An error occurred getting next row: %s", err)
-		return providerregion.NewAddProviderRegionInternalServerError().WithPayload(&models.APIResponse{Message: err.Error()})
+		ctxLogger.Error("Adding Provider Region: %s", err)
+		return providerregion.NewAddProviderRegionInternalServerError()
 	}
 
 	ctxLogger.Info("OK")
-	return providerregion.NewAddProviderRegionCreated().WithPayload(models.ULID(ulid))
+	return providerregion.NewAddProviderRegionCreated()
 }
 
 func NewGetProviderRegionByID(rt *configManager.Runtime) providerregion.GetProviderRegionByIDHandler {
@@ -260,66 +229,93 @@ func (ctx *listProviderRegions) Handle(params providerregion.ListProviderRegions
 	return providerregion.NewListProviderRegionsOK().WithPayload(res)
 }
 
-/*
-func InitProviderType(rt *configManager.Runtime) {
+func _addProviderRegion(rt *configManager.Runtime, ProvidertypeName string, RegionName string) error {
 
-	rt.Logger().Info("Checking provider types...")
+	cypher := `MATCH (provider:ProviderType {name: {provider_name}})
+							MERGE (provider)-[:HAS]->(region:ProviderRegion {
+									 id: {id},
+									name: {name}})
+								RETURN region.id`
 
-	if err := _addProviderType(rt, "Openstack", []string{"auth_url", "domain_name", "username", "password"}); err != nil {
-		rt.Logger().Error("Error Initializing provider types, ", err)
-	}
-	if err := _addProviderType(rt, "AWS", []string{"access_key", "secret_key", "region"}); err != nil {
-		rt.Logger().Error("Error Initializing provider types, ", err)
-	}
-}
-*/
+	/*
+	 * Validate Provider Type
+	 */
+	providerType, err := _getProviderTypeByName(rt, ProvidertypeName)
 
-func _addProviderRegion(rt *configManager.Runtime, name string, fields []string) error {
-
-	var allFields []string
-
-	if GetProviderRegionByName(rt, name) != nil {
-		rt.Logger().Warnf("Provider %s already exists", name)
-		return nil
+	if err != nil {
+		return fmt.Errorf("getting providertype, %s", err)
 	}
 
-	createTmpl := `Create (p:ProviderRegion { id: '%s', name: '%s', %s })`
-
-	lastField := len(fields)
-
-	if lastField <= 0 {
-		return fmt.Errorf("No fields specified !")
-	} else {
-		lastField -= 1
+	if providerType == nil {
+		return fmt.Errorf("providertype does not exists")
 	}
 
-	for i := 0; i < lastField; i++ {
-		allFields = append(allFields, fmt.Sprintf("%s: '%s', ", fields[i], fields[i]))
+	/*
+	 * Validate Provider Region
+	 */
+	providerRegion, err := _getProviderRegionByName(rt, ProvidertypeName, RegionName)
+
+	if err != nil {
+		return fmt.Errorf("getting provider region, %s", err)
 	}
 
-	allFields = append(allFields, fmt.Sprintf("%s: '%s'", fields[lastField], fields[lastField]))
-
-	create := fmt.Sprintf(createTmpl, configManager.GetULID(), name, strings.Join(allFields, ""))
+	if providerRegion != nil {
+		return fmt.Errorf("provider region already exists")
+	}
 
 	db, err := rt.DB().OpenPool()
 	if err != nil {
-		return fmt.Errorf("error connecting to neo4j:", err)
+		return fmt.Errorf("error connecting to neo4j: %s", err)
 	}
 	defer db.Close()
 
-	stmt, err := db.PrepareNeo(create)
+	stmt, err := db.PrepareNeo(cypher)
 	if err != nil {
 		return fmt.Errorf("An error occurred preparing statement: %s", err)
 	}
 	defer stmt.Close()
 
-	_, err = stmt.QueryNeo(nil)
+	ulid := configManager.GetULID()
+
+	rows, err := stmt.QueryNeo(map[string]interface{}{
+		"provider_name": ProvidertypeName,
+		"id":            ulid,
+		"name":          RegionName})
 
 	if err != nil {
 		return fmt.Errorf("An error occurred querying Neo: %s", err)
 	}
 
-	rt.Logger().Infof("Provider %s has been created", name)
+	_, _, err = rows.NextNeo()
+	if err != nil {
+		return fmt.Errorf("An error occurred getting next row: %s", err)
+	}
 
 	return nil
+}
+
+func _getProviderRegionByName(rt *configManager.Runtime, ProvidertypeName string, RegionName string) (*models.ProviderRegion, error) {
+
+	var providerRegion *models.ProviderRegion
+
+	query := `MATCH (provider:ProviderType {name: {provider_name}})-[:HAS]->
+										(region:ProviderRegion {name: {region_name}})
+							RETURN region {.*}`
+
+	params := map[string]interface{}{
+		"provider_name": ProvidertypeName,
+		"region_name":   RegionName}
+
+	output, err := rt.QueryDB(&query, &params)
+
+	if err != nil {
+		return providerRegion, err
+	}
+
+	if len(output) > 0 {
+		providerRegion = new(models.ProviderRegion)
+		util.FillStruct(providerRegion, output[0].(map[string]interface{}))
+	}
+
+	return providerRegion, nil
 }
